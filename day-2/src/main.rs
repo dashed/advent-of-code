@@ -87,11 +87,7 @@ fn parse_input(input: &str) -> Parsed {
     return result;
 }
 
-fn main() {
-    let input_string = include_str!("input.txt");
-
-    let inputs: Vec<&str> = input_string.split('\n').collect();
-
+fn part_1(inputs: Vec<&str>) {
     let (num_of_two, num_of_three) = inputs.into_iter().map(parse_input).fold(
         (
             // number of times inputs containing 2 letters that occur at least once
@@ -118,8 +114,28 @@ fn main() {
         },
     );
 
+    println!("Part 1:");
     println!("num_of_two: {}", num_of_two);
     println!("num_of_three: {}", num_of_three);
     let checksum = num_of_two * num_of_three;
     println!("checksum: {} * {} = {}", num_of_two, num_of_three, checksum);
+}
+
+fn part_2(inputs: Vec<&str>) {
+
+    println!("Part 2:");
+}
+
+fn main() {
+    let input_string = include_str!("input.txt");
+
+    let inputs: Vec<&str> = {
+        let mut inputs: Vec<&str> = input_string.split('\n').collect();
+        inputs.reverse();
+        inputs
+    };
+
+    part_1(inputs.clone());
+
+    part_2(inputs.clone());
 }
