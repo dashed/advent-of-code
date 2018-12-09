@@ -3,8 +3,6 @@
 // stdlib imports
 
 use std::collections::HashMap;
-use std::collections::HashSet;
-use std::iter::FromIterator;
 
 // types
 
@@ -137,15 +135,10 @@ enum Diff {
 
 // Check if two strings which differ by exactly one character at the same position in both strings
 fn strings_diff_by_1(this: &str, other: &str) -> bool {
-    println!("{}", this);
-    println!("{}", other);
-
     let result = this.chars().zip(other.chars()).fold(
         Diff::None,
         |acc, (this_char, other_char): (char, char)| {
             let has_diff = this_char != other_char;
-
-            println!("{} {} {}", this_char, other_char, has_diff);
 
             match acc {
                 Diff::None => {
@@ -167,8 +160,6 @@ fn strings_diff_by_1(this: &str, other: &str) -> bool {
         },
     );
 
-    println!("{:?}", result);
-
     match result {
         Diff::DiffByOne => {
             return true;
@@ -179,32 +170,40 @@ fn strings_diff_by_1(this: &str, other: &str) -> bool {
     }
 }
 
+fn common_letters(this: &str, other: &str) -> String {
+    let result: String = this
+        .chars()
+        .zip(other.chars())
+        .filter(|&(this_char, other_char): &(char, char)| -> bool {
+            return this_char == other_char;
+        })
+        .map(|(this_char, _other_char): (char, char)| this_char)
+        .collect();
+
+    return result;
+}
+
 fn part_2(inputs: Vec<&str>) {
-    let mut iterable_inputs = inputs.into_iter().peekable();
+    for input in inputs.clone() {
+        for other_input in inputs.clone() {
+            if input == other_input {
+                continue;
+            }
+            let result = strings_diff_by_1(input, other_input);
 
-    while iterable_inputs.peek().is_some() {
-        let current_input = iterable_inputs.next().unwrap();
+            if result {
+                println!("Part 2:");
 
-        if !iterable_inputs.peek().is_some() {
-            break;
-        }
+                println!("IDS:");
+                println!("{}", input);
+                println!("{}", other_input);
 
-        // TODO: redo this -- incorrect interpretation
+                // What letters are common between the two correct box IDs?
 
-        let next_input = iterable_inputs.next().unwrap();
+                println!("Common letters: {}", common_letters(input, other_input));
 
-        let result = strings_diff_by_1(current_input, next_input);
-
-        if result {
-            // What letters are common between the two correct box IDs?
-
-            println!("Part 2:");
-
-            println!("IDS:");
-            println!("{}", current_input);
-            println!("{}", next_input);
-
-            return;
+                return;
+            }
         }
     }
 }
