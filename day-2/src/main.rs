@@ -40,8 +40,13 @@ fn parse_input(input: &str) -> Parsed {
         },
     );
 
+    // from letter_counter, determine if input contains letters that either
+    // - occur exactly two times
+    // - occur exactly three times
+    // - or both
+
     let result = letter_counter.into_iter().fold(
-        Parsed::None,
+        Parsed::None, // accumulator
         |current_state, (_letter, num_of_occurrences)| {
             let has_two = num_of_occurrences == 2;
             let has_three = num_of_occurrences == 3;
@@ -85,28 +90,36 @@ fn parse_input(input: &str) -> Parsed {
 fn main() {
     let input_string = include_str!("input.txt");
 
-    let mut inputs: Vec<&str> = input_string.split('\n').collect();
+    let inputs: Vec<&str> = input_string.split('\n').collect();
 
-    // inputs.into_iter().map(parse_input);
+    let (num_of_two, num_of_three) = inputs.into_iter().map(parse_input).fold(
+        (
+            // number of times inputs containing 2 letters that occur at least once
+            0, // number of times inputs containing 3 letters that occur at least once
+            0,
+        ),
+        |accumulator, parsed_state: Parsed| {
+            let (num_of_two, num_of_three) = accumulator;
 
-    let raw_input = inputs.pop().unwrap();
+            match parsed_state {
+                Parsed::None => {
+                    return (num_of_two, num_of_three);
+                }
+                Parsed::HasBoth => {
+                    return (num_of_two + 1, num_of_three + 1);
+                }
+                Parsed::HasTwo => {
+                    return (num_of_two + 1, num_of_three);
+                }
+                Parsed::HasThree => {
+                    return (num_of_two, num_of_three + 1);
+                }
+            }
+        },
+    );
 
-    parse_input(raw_input);
-
-    // println!("{}", raw_input);
-
-    // while let Some(raw_input) = inputs.pop() {
-    //     let input = raw_input.trim();
-
-    //     if input.is_empty() {
-    //         // skip empty input
-    //         continue;
-    //     }
-
-    // }
-
-    // let mut num_of_ids_containing
-
-    // let mut inputs: Vec<&str> = input_string.split('\n').collect();
-    // println!("{}", input_string);
+    println!("num_of_two: {}", num_of_two);
+    println!("num_of_three: {}", num_of_three);
+    let checksum = num_of_two * num_of_three;
+    println!("checksum: {} * {} = {}", num_of_two, num_of_three, checksum);
 }
