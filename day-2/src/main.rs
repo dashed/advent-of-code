@@ -6,6 +6,7 @@ use std::collections::HashMap;
 
 // types
 
+#[derive(Debug)]
 enum Parsed {
     // input string only contain letter(s) that appear exactly two times
     HasTwo,
@@ -18,11 +19,10 @@ enum Parsed {
     None,
 }
 
-fn parse_input(input: &str) {
-    println!("{:?}", input);
+fn parse_input(input: &str) -> Parsed {
 
     let letter_counter = input.chars().fold(
-        HashMap::new(),
+        HashMap::new(), // accumulator
         |mut letter_counter: HashMap<char, i32>, letter| {
             // count the number of occurrences of the letters within the given input
 
@@ -41,7 +41,47 @@ fn parse_input(input: &str) {
         },
     );
 
-    println!("{:?}", letter_counter);
+    let result = letter_counter.into_iter().fold(
+        Parsed::None,
+        |current_state, (_letter, num_of_occurrences)| {
+
+            let has_two = num_of_occurrences == 2;
+            let has_three = num_of_occurrences == 3;
+
+            if !has_two && !has_three {
+                return current_state;
+            }
+
+            match current_state {
+                Parsed::None => {
+                    if has_two {
+                        return Parsed::HasTwo;
+                    }
+
+                    return Parsed::HasThree;
+                }
+                Parsed::HasTwo => {
+                    if has_two {
+                        return Parsed::HasTwo;
+                    }
+
+                    return Parsed::HasBoth;
+                }
+                Parsed::HasThree => {
+                    if has_three {
+                        return Parsed::HasThree;
+                    }
+
+                    return Parsed::HasBoth;
+                }
+                Parsed::HasBoth => {
+                    return Parsed::HasBoth;
+                }
+            }
+        }
+    );
+
+    return result;
 }
 
 fn main() {
