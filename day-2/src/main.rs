@@ -3,6 +3,8 @@
 // stdlib imports
 
 use std::collections::HashMap;
+use std::collections::HashSet;
+use std::iter::FromIterator;
 
 // types
 
@@ -18,6 +20,8 @@ enum Parsed {
     // input string does not satisfy the above conditions
     None,
 }
+
+// helpers
 
 fn parse_input(input: &str) -> Parsed {
     let letter_counter = input.chars().fold(
@@ -121,9 +125,88 @@ fn part_1(inputs: Vec<&str>) {
     println!("checksum: {} * {} = {}", num_of_two, num_of_three, checksum);
 }
 
-fn part_2(inputs: Vec<&str>) {
+#[derive(Debug)]
+enum Diff {
+    // indicates two strings have no difference in positional characters
+    None,
+    // indicates strings differ by exactly one character
+    DiffByOne,
+    // indicates strings differ by more than one character
+    DiffByMoreThanOne,
+}
 
-    println!("Part 2:");
+// Check if two strings which differ by exactly one character at the same position in both strings
+fn strings_diff_by_1(this: &str, other: &str) -> bool {
+    println!("{}", this);
+    println!("{}", other);
+
+    let result = this.chars().zip(other.chars()).fold(
+        Diff::None,
+        |acc, (this_char, other_char): (char, char)| {
+            let has_diff = this_char != other_char;
+
+            println!("{} {} {}", this_char, other_char, has_diff);
+
+            match acc {
+                Diff::None => {
+                    if has_diff {
+                        return Diff::DiffByOne;
+                    }
+                    return Diff::None;
+                }
+                Diff::DiffByOne => {
+                    if has_diff {
+                        return Diff::DiffByMoreThanOne;
+                    }
+                    return Diff::DiffByOne;
+                }
+                Diff::DiffByMoreThanOne => {
+                    return Diff::DiffByMoreThanOne;
+                }
+            }
+        },
+    );
+
+    println!("{:?}", result);
+
+    match result {
+        Diff::DiffByOne => {
+            return true;
+        }
+        _ => {
+            return false;
+        }
+    }
+}
+
+fn part_2(inputs: Vec<&str>) {
+    let mut iterable_inputs = inputs.into_iter().peekable();
+
+    while iterable_inputs.peek().is_some() {
+        let current_input = iterable_inputs.next().unwrap();
+
+        if !iterable_inputs.peek().is_some() {
+            break;
+        }
+
+        // TODO: redo this -- incorrect interpretation
+
+        let next_input = iterable_inputs.next().unwrap();
+
+        let result = strings_diff_by_1(current_input, next_input);
+
+        if result {
+            // What letters are common between the two correct box IDs?
+
+            println!("Part 2:");
+
+            println!("IDS:");
+            println!("{}", current_input);
+            println!("{}", next_input);
+
+            return;
+        }
+    }
 }
 
 fn main() {
