@@ -92,9 +92,8 @@ fn parse_input(input: &str) -> Parsed {
 fn part_1(inputs: Vec<&str>) {
     let (num_of_two, num_of_three) = inputs.into_iter().map(parse_input).fold(
         (
-            // number of times inputs containing 2 letters that occur at least once
+            0, // number of times inputs containing 2 letters that occur at least once
             0, // number of times inputs containing 3 letters that occur at least once
-            0,
         ),
         |accumulator, parsed_state: Parsed| {
             let (num_of_two, num_of_three) = accumulator;
