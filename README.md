@@ -8,7 +8,12 @@ https://adventofcode.com/2018
 ## Usage
 
 ```sh
+# running code for some day of the Advent of Code 2018
 cargo run -p <day-num>
 
+# quick check
 cargo check
+
+# creating a new cargo package
+cargo new <day-num>
 ```
