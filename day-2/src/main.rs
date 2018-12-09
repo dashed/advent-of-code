@@ -20,7 +20,6 @@ enum Parsed {
 }
 
 fn parse_input(input: &str) -> Parsed {
-
     let letter_counter = input.chars().fold(
         HashMap::new(), // accumulator
         |mut letter_counter: HashMap<char, i32>, letter| {
@@ -44,7 +43,6 @@ fn parse_input(input: &str) -> Parsed {
     let result = letter_counter.into_iter().fold(
         Parsed::None,
         |current_state, (_letter, num_of_occurrences)| {
-
             let has_two = num_of_occurrences == 2;
             let has_three = num_of_occurrences == 3;
 
@@ -78,7 +76,7 @@ fn parse_input(input: &str) -> Parsed {
                     return Parsed::HasBoth;
                 }
             }
-        }
+        },
     );
 
     return result;
