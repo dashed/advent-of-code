@@ -7,4 +7,6 @@ https://adventofcode.com/2018
 
 ```sh
 cargo run -p <day-num>
+
+cargo check
 ```
