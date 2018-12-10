@@ -183,6 +183,24 @@ mod tests {
 
     #[test]
     fn test_overlap() {
+
+        fn get_overlapping_area(this: &Fabric, other: &Fabric) -> i32 {
+            let intersection_fabric = this.generate_intersection_fabric(&other);
+
+            if intersection_fabric.is_some() {
+                let intersection_fabric = intersection_fabric.unwrap();
+                println!("{:?}", intersection_fabric);
+                let claimed_points = intersection_fabric.generate_claim_points();
+
+                println!("{:?}", claimed_points);
+
+                return claimed_points.len() as i32;
+            }
+
+            return 0;
+        }
+
+
         let fabric_1 = parse_to_fabric("#1 @ 1,3: 4x4");
         let fabric_2 = parse_to_fabric("#2 @ 3,1: 4x4");
         let fabric_3 = parse_to_fabric("#3 @ 5,5: 2x2");
