@@ -17,31 +17,45 @@ fn main() {
 
     let mut units: Vec<char> = input_string.chars().collect();
 
-    loop {
-        let mut units_iterable = units.iter().enumerate().peekable();
+    println!("len: {:?}", units.len());
+
+    // skip first N units known to not react
+    let mut skip_n = 0;
+
+    'outer_loop: loop {
+        let mut units_iterable = units.iter().skip(skip_n).enumerate().peekable();
 
         while let Some((current_index, current_unit)) = units_iterable.next() {
             if units_iterable.peek().is_none() {
-                break;
+                // no further reactions possible
+                break 'outer_loop;
             }
 
             let (next_index, next_unit) = units_iterable.peek().unwrap();
 
             if does_react(*current_unit, **next_unit) {
                 println!("{}{}", current_unit, next_unit);
-                println!("{}{}", current_index, next_index);
+                // println!("{},{}", current_index, next_index);
 
-                units.remove(current_index);
-                units.remove(current_index);
+                // remove these items and start from the beginning
+                units.drain(current_index..(current_index + 2));
+                // units.remove(current_index);
+                // units.remove(current_index);
+
+                // skip_n = current_index - 1;
+
+                // println!("new_len: {:?}", units.len());
 
                 break;
+            } else {
+                skip_n = current_index;
             }
-
-            // TODO: ????
         }
-
-        // TODO: ????
     }
+
+    println!("remaining units: {:?}", units.len());
+    let final_result: String = units.into_iter().collect();
+    println!("final_result: {}", final_result);
 }
 
 #[cfg(test)]
