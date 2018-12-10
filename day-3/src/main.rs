@@ -2,7 +2,6 @@
 
 // imports
 
-use itertools::Itertools;
 use std::cmp;
 use std::collections::HashSet;
 use std::str::Lines;
@@ -139,20 +138,27 @@ fn parse_to_fabric(input: &str) -> Fabric {
 
 fn part_1(inputs: Lines) {
     let fabrics: Vec<Fabric> = inputs.map(|x| parse_to_fabric(x)).collect();
-    let fabric_pairs = fabrics.into_iter().tuple_combinations();
 
     let mut known_intersection_points: HashSet<(i32, i32)> = HashSet::new();
 
-    for (fabric, other_fabric) in fabric_pairs {
-        let intersection_fabric = fabric.generate_intersection_fabric(&other_fabric);
+    for fabric in fabrics.clone() {
+        for other_fabric in fabrics.clone() {
 
-        if intersection_fabric.is_some() {
-            let intersection_fabric = intersection_fabric.unwrap();
-            let claimed_points = intersection_fabric.generate_claim_points();
-            known_intersection_points.extend(&claimed_points);
+            if fabric == other_fabric {
+                continue;
+            }
+
+            let intersection_fabric = fabric.generate_intersection_fabric(&other_fabric);
+
+            if intersection_fabric.is_some() {
+                let intersection_fabric = intersection_fabric.unwrap();
+                let claimed_points = intersection_fabric.generate_claim_points();
+                known_intersection_points.extend(&claimed_points);
+            }
         }
     }
 
+    // Not: 91586
     println!("Overlapping area: {:?}", known_intersection_points.len());
 }
 

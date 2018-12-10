@@ -5,4 +5,3 @@ authors = ["Alberto Leal <mail4alberto@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-itertools = "0.8.0"
