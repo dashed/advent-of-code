@@ -4,11 +4,11 @@
 
 use std::cmp;
 use std::collections::HashSet;
-use std::str::Lines;
+use std::iter::FromIterator;
 
 // part 1
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Hash, Eq)]
 struct Fabric {
     id: String,
 
@@ -135,10 +135,17 @@ fn parse_to_fabric(input: &str) -> Fabric {
     }
 }
 
-fn part_1(inputs: Lines) {
+fn main() {
+    let input_string = include_str!("input.txt");
+
+    let inputs = input_string.lines();
+
     let fabrics: Vec<Fabric> = inputs.map(|x| parse_to_fabric(x)).collect();
 
-    let mut known_intersection_points: HashSet<String> = HashSet::new();
+    // set of fabrics assumed to not overlap with any other fabric
+    let mut nonoverlapping_fabrics: HashSet<&Fabric> = HashSet::from_iter(fabrics.iter());
+
+    let mut known_overlapping_area: HashSet<String> = HashSet::new();
 
     for fabric in fabrics.clone() {
         for other_fabric in fabrics.clone() {
@@ -149,22 +156,30 @@ fn part_1(inputs: Lines) {
             let intersection_fabric = fabric.generate_intersection_fabric(&other_fabric);
 
             if intersection_fabric.is_some() {
+                // add intersection to overlapping area
+
                 let intersection_fabric = intersection_fabric.unwrap();
                 let claimed_points = intersection_fabric.generate_claim_points();
-                known_intersection_points.extend(claimed_points);
+                known_overlapping_area.extend(claimed_points);
+
+                // these fabrics overlap, remove them from nonoverlapping_fabrics set
+
+                nonoverlapping_fabrics.remove(&fabric);
+                nonoverlapping_fabrics.remove(&other_fabric);
             }
         }
     }
 
-    println!("Overlapping area: {:?}", known_intersection_points.len());
-}
+    // part 1: area overlapping 2 or more fabrics
+    println!("Overlapping area: {:?}", known_overlapping_area.len());
 
-fn main() {
-    let input_string = include_str!("input.txt");
+    // part 2:
 
-    let inputs = input_string.lines();
+    println!("Non-overlapping fabrics:");
 
-    part_1(inputs);
+    for fabric in nonoverlapping_fabrics {
+        println!("{}", fabric.id);
+    }
 }
 
 #[cfg(test)]
