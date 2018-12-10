@@ -23,7 +23,9 @@ enum GuardState {
     Wakes(Minute),
 }
 
+#[derive(Debug)]
 struct Record {
+    date_time: String,
     state: GuardState,
 }
 
@@ -36,9 +38,7 @@ struct Guard {
     occurences_counter: HashMap<Minute, Occurences>,
 }
 
-fn parse_record(input: &str) {
-    println!("input: {:?}", input);
-
+fn parse_record(input: &str) -> Record {
     let (date_string, state_string) = {
         let mut date_string = input.to_string();
         let state_string = date_string.split_off(19);
@@ -48,30 +48,39 @@ fn parse_record(input: &str) {
 
     // parse date
 
+    let minute: Minute = substring(&date_string, 15, 2).parse().unwrap();
+
+    // ensure this ordering invariant holds
+    assert!("1518-09-24" < "1518-10-24");
+
     // parse state_string
 
     let state: GuardState = if state_string.starts_with("wakes up") {
-        GuardState::Wakes(0)
+        GuardState::Wakes(minute)
     } else if state_string.starts_with("falls asleep") {
-        GuardState::Sleeps(0)
+        GuardState::Sleeps(minute)
     } else if state_string.starts_with("Guard") {
-        GuardState::BeginsShift("0".to_string())
+        let inputs: Vec<&str> = state_string.split_whitespace().collect();
+        let guard_id: GuardID = inputs.get(1).unwrap().to_string();
+        GuardState::BeginsShift(guard_id)
     } else {
         unreachable!();
     };
 
-    println!("{}", date_string);
-    println!("{:?}", state);
+    Record {
+        date_time: date_string,
+        state: state,
+    }
 }
 
 fn main() {
     let input_string = include_str!("input.txt");
 
-    let mut inputs = input_string.lines();
+    let inputs = input_string.lines();
 
-    parse_record(inputs.next().unwrap());
+    for input in inputs {
+        let record = parse_record(input);
 
-    // for input in inputs {
-    //     println!("{:?}", input);
-    // }
+        println!("{:?}", record);
+    }
 }
