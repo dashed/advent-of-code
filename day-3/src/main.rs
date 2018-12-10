@@ -6,6 +6,7 @@ use std::str::Lines;
 
 // part 1
 
+#[derive(Debug, PartialEq)]
 struct Fabric {
     id: String,
 
@@ -19,14 +20,44 @@ struct Fabric {
 }
 
 fn parse_to_fabric(input: &str) -> Fabric {
-    // TODO: parsing magic
+    let mut parts = input.split_whitespace();
+
+    let id = parts.next().unwrap().to_string();
+
+    let (left, top): (i32, i32) = {
+        let location_string = parts.nth(1).unwrap().to_string();
+
+        let location_string: String = location_string
+            .chars()
+            // ignore the last charcter which is expected to be a colon :
+            .take(location_string.len() - 1)
+            .collect();
+
+        let locations: Vec<i32> = location_string
+            .split(',')
+            .map(|x| -> i32 { return x.parse().unwrap() })
+            .collect();
+
+        (*locations.get(0).unwrap(), *locations.get(1).unwrap())
+    };
+
+    let (height, width): (i32, i32) = {
+        let size_string = parts.next().unwrap().to_string();
+
+        let sizes: Vec<i32> = size_string
+            .split('x')
+            .map(|x| -> i32 { return x.parse().unwrap() })
+            .collect();
+
+        (*sizes.get(0).unwrap(), *sizes.get(1).unwrap())
+    };
 
     Fabric {
-        id: "123".to_string(),
-        left: 123,
-        top: 123,
-        height: 123,
-        width: 123,
+        id: id,
+        left: left,
+        top: top,
+        height: height,
+        width: width,
     }
 }
 
@@ -42,5 +73,28 @@ fn main() {
 
     let inputs = input_string.lines();
 
-    part_1(inputs);
+    // part_1(inputs);
+
+    let fabric = parse_to_fabric("#123 @ 3,2: 5x4");
+
+    println!("{:?}", fabric);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_to_fabric() {
+        let expected = Fabric {
+            id: "#123".to_string(),
+            left: 3,
+            top: 2,
+            height: 5,
+            width: 4,
+        };
+
+        assert_eq!(parse_to_fabric("#123 @ 3,2: 5x4"), expected);
+    }
+
 }
