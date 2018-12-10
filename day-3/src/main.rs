@@ -30,14 +30,14 @@ impl Fabric {
         return self.top + self.height;
     }
 
-    fn generate_claim_points(&self) -> HashSet<(i32, i32)> {
+    fn generate_claim_points(&self) -> HashSet<String> {
         // NOTE: I don't like this :(
 
-        let mut points: HashSet<(i32, i32)> = HashSet::new();
+        let mut points: HashSet<String> = HashSet::new();
 
         for x in self.left..self.right() {
             for y in self.top..self.bottom() {
-                points.insert((x, y));
+                points.insert(format!("{},{}", x, y));
             }
         }
 
@@ -115,7 +115,7 @@ fn parse_to_fabric(input: &str) -> Fabric {
         (*locations.get(0).unwrap(), *locations.get(1).unwrap())
     };
 
-    let (height, width): (i32, i32) = {
+    let (width, height): (i32, i32) = {
         let size_string = parts.next().unwrap().to_string();
 
         let sizes: Vec<i32> = size_string
@@ -138,11 +138,11 @@ fn parse_to_fabric(input: &str) -> Fabric {
 fn part_1(inputs: Lines) {
     let fabrics: Vec<Fabric> = inputs.map(|x| parse_to_fabric(x)).collect();
 
-    let mut known_intersection_points: HashSet<(i32, i32)> = HashSet::new();
+    let mut known_intersection_points: HashSet<String> = HashSet::new();
 
     for fabric in fabrics.clone() {
         for other_fabric in fabrics.clone() {
-            if fabric == other_fabric {
+            if fabric.id == other_fabric.id {
                 continue;
             }
 
@@ -151,12 +151,11 @@ fn part_1(inputs: Lines) {
             if intersection_fabric.is_some() {
                 let intersection_fabric = intersection_fabric.unwrap();
                 let claimed_points = intersection_fabric.generate_claim_points();
-                known_intersection_points.extend(&claimed_points);
+                known_intersection_points.extend(claimed_points);
             }
         }
     }
 
-    // Not: 91586
     println!("Overlapping area: {:?}", known_intersection_points.len());
 }
 
@@ -178,8 +177,8 @@ mod tests {
             id: "#123".to_string(),
             left: 3,
             top: 2,
-            height: 5,
-            width: 4,
+            height: 4,
+            width: 5,
         };
 
         assert_eq!(parse_to_fabric("#123 @ 3,2: 5x4"), expected);
@@ -192,10 +191,7 @@ mod tests {
 
             if intersection_fabric.is_some() {
                 let intersection_fabric = intersection_fabric.unwrap();
-                println!("{:?}", intersection_fabric);
                 let claimed_points = intersection_fabric.generate_claim_points();
-
-                println!("{:?}", claimed_points);
 
                 return claimed_points.len() as i32;
             }
