@@ -15,7 +15,33 @@ fn does_react(x: char, y: char) -> bool {
 fn main() {
     let input_string = include_str!("input.txt");
 
-    println!("{}", input_string);
+    let mut units: Vec<char> = input_string.chars().collect();
+
+    loop {
+        let mut units_iterable = units.iter().enumerate().peekable();
+
+        while let Some((current_index, current_unit)) = units_iterable.next() {
+            if units_iterable.peek().is_none() {
+                break;
+            }
+
+            let (next_index, next_unit) = units_iterable.peek().unwrap();
+
+            if does_react(*current_unit, **next_unit) {
+                println!("{}{}", current_unit, next_unit);
+                println!("{}{}", current_index, next_index);
+
+                units.remove(current_index);
+                units.remove(current_index);
+
+                break;
+            }
+
+            // TODO: ????
+        }
+
+        // TODO: ????
+    }
 }
 
 #[cfg(test)]
@@ -34,6 +60,7 @@ mod tests {
         assert_eq!(is_opposite_polarity('a', 'a'), false);
         assert_eq!(is_opposite_polarity('B', 'B'), false);
         assert_eq!(is_opposite_polarity('a', 'A'), true);
+        assert_eq!(is_opposite_polarity('A', 'a'), true);
         assert_eq!(is_opposite_polarity('a', 'B'), true);
     }
 
