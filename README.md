@@ -4,6 +4,9 @@
 
 https://adventofcode.com/2018
 
+#### Btw, there are spoilers...
+
+![](https://media.giphy.com/media/3bznFj6OB5381BEjDu/giphy.gif)
 
 ## Usage
 
