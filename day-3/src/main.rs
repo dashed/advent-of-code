@@ -22,7 +22,6 @@ struct Fabric {
 }
 
 impl Fabric {
-
     fn right(&self) -> i32 {
         return self.left + self.width;
     }
@@ -143,7 +142,6 @@ fn part_1(inputs: Lines) {
 
     for fabric in fabrics.clone() {
         for other_fabric in fabrics.clone() {
-
             if fabric == other_fabric {
                 continue;
             }
@@ -189,7 +187,6 @@ mod tests {
 
     #[test]
     fn test_overlap() {
-
         fn get_overlapping_area(this: &Fabric, other: &Fabric) -> i32 {
             let intersection_fabric = this.generate_intersection_fabric(&other);
 
@@ -205,7 +202,6 @@ mod tests {
 
             return 0;
         }
-
 
         let fabric_1 = parse_to_fabric("#1 @ 1,3: 4x4");
         let fabric_2 = parse_to_fabric("#2 @ 3,1: 4x4");
