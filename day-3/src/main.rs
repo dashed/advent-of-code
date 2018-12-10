@@ -7,8 +7,8 @@ use std::str::Lines;
 // part 1
 
 #[derive(Debug, PartialEq)]
-struct Fabric {
-    id: String,
+struct Fabric<'id> {
+    id: &'id str,
 
     // starting coordinates
     left: i32,
@@ -22,7 +22,7 @@ struct Fabric {
 fn parse_to_fabric(input: &str) -> Fabric {
     let mut parts = input.split_whitespace();
 
-    let id = parts.next().unwrap().to_string();
+    let id = parts.next().unwrap();
 
     let (left, top): (i32, i32) = {
         let location_string = parts.nth(1).unwrap().to_string();
@@ -87,7 +87,7 @@ mod tests {
     #[test]
     fn test_parse_to_fabric() {
         let expected = Fabric {
-            id: "#123".to_string(),
+            id: "#123",
             left: 3,
             top: 2,
             height: 5,
