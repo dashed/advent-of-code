@@ -2,9 +2,8 @@
 
 // imports
 
-use std::collections::HashMap;
 use std::collections::BTreeMap;
-
+use std::collections::HashMap;
 
 // helpers
 
@@ -14,9 +13,9 @@ fn substring(this: &str, start: usize, len: usize) -> String {
 
 // types
 
-type GuardID = String;
+type GuardID = i32;
 type Minute = i32;
-// type Occurences = i32;
+type Occurences = i32;
 type Timestamp = String;
 
 // records are added to the b-tree map in the order of their timestamps
@@ -35,17 +34,67 @@ struct Record {
     state: GuardState,
 }
 
-// struct Guard {
-//     id: GuardID,
+#[derive(Debug)]
+struct Guard {
+    id: GuardID,
 
-//     minutes_slept: i32,
+    minutes_slept: i32,
 
-//     // which minute portion on midnight was the guard sleeping at, and how many times?
-//     occurences_counter: HashMap<Minute, Occurences>,
-// }
+    // which minute portion on midnight was the guard sleeping at, and how many times?
+    occurences_counter: HashMap<Minute, Occurences>,
+}
+
+impl Guard {
+    fn new(id: GuardID) -> Guard {
+        Guard {
+            id: id,
+            minutes_slept: 0,
+            occurences_counter: HashMap::new(),
+        }
+    }
+
+    fn slept_at_between(&mut self, slept_at: Minute, woke_up_at: Minute) {
+        assert!(slept_at < woke_up_at);
+
+        for minute in slept_at..woke_up_at {
+            self.occurences_counter
+                .entry(minute)
+                .and_modify(|x| *x += 1)
+                .or_insert(1);
+        }
+
+        let minutes_slept = woke_up_at - slept_at;
+
+        self.minutes_slept += minutes_slept;
+    }
+
+    fn get_minute_slept_most_at(&self) -> Option<Minute> {
+        // What minute does that guard spend asleep the most?
+
+        let result = self.occurences_counter.iter().fold(
+            None,
+            |acc: Option<(Minute, Occurences)>, (minute, occurences_count)| match acc {
+                None => {
+                    return Some((*minute, *occurences_count));
+                }
+                Some((_prev_minute, prev_occurences_count)) => {
+                    if occurences_count > &prev_occurences_count {
+                        return Some((*minute, *occurences_count));
+                    }
+                    return acc;
+                }
+            },
+        );
+
+        match result {
+            None => None,
+            Some((minute, _)) => Some(minute),
+        }
+    }
+}
 
 // track minutes slept for a guard
-type GuardSleepCounter = HashMap<GuardID, i32>;
+type GuardSleepCounter = HashMap<GuardID, Guard>;
 
 fn parse_record(input: &str) -> Record {
     let (date_string, state_string) = {
@@ -67,7 +116,10 @@ fn parse_record(input: &str) -> Record {
         GuardState::Sleeps(minute)
     } else if state_string.starts_with("Guard") {
         let inputs: Vec<&str> = state_string.split_whitespace().collect();
-        let guard_id: GuardID = inputs.get(1).unwrap().chars().skip(1).collect();
+        let guard_id: GuardID = {
+            let x: String = inputs.get(1).unwrap().chars().skip(1).collect();
+            x.parse().unwrap()
+        };
         GuardState::BeginsShift(guard_id)
     } else {
         unreachable!();
@@ -80,7 +132,6 @@ fn parse_record(input: &str) -> Record {
 }
 
 fn main() {
-
     // for the b-tree map; ensure this ordering invariant holds
     assert!("1518-09-24" < "1518-10-24");
 
@@ -98,63 +149,85 @@ fn main() {
 
     let mut guard_sleep_tracker: GuardSleepCounter = HashMap::new();
     let mut current_guard: Option<GuardID> = None;
-    let mut initial_slept: Option<Minute> = None;
+    let mut slept_at: Option<Minute> = None;
 
     for (_date_time, record) in guard_shifts {
-
         // println!("{:?}", record.state);
 
         match record.state {
             GuardState::BeginsShift(guard_id) => {
                 current_guard = Some(guard_id.clone());
-                guard_sleep_tracker.entry(guard_id).or_insert(0);
+                guard_sleep_tracker
+                    .entry(guard_id.clone())
+                    .or_insert(Guard::new(guard_id));
             }
             GuardState::Sleeps(minute) => {
                 assert!(current_guard.is_some());
-                assert!(initial_slept.is_none());
-                initial_slept = Some(minute);
+                assert!(slept_at.is_none());
+                slept_at = Some(minute);
             }
-            GuardState::Wakes(minute) => {
+            GuardState::Wakes(woke_up_at) => {
                 assert!(current_guard.is_some());
-                assert!(initial_slept.is_some());
-                let minutes_slept = minute - initial_slept.unwrap();
-
-                initial_slept = None;
+                assert!(slept_at.is_some());
 
                 // track minutes slept for current guard
 
-                guard_sleep_tracker
-                    .entry(current_guard.clone().unwrap())
-                   .and_modify(|x| { *x += minutes_slept })
-                   .or_insert(minutes_slept);
+                let guard_id = current_guard.clone().unwrap();
+
+                assert!(guard_sleep_tracker.contains_key(&guard_id));
+
+                let guard = guard_sleep_tracker.get_mut(&guard_id).unwrap();
+
+                guard.slept_at_between(slept_at.unwrap(), woke_up_at);
+
+                slept_at = None;
             }
         }
     }
 
     {
-
         // Find the guard that has the most minutes asleep.
 
-        let mut guard_who_sleeps_the_most: Option<GuardID> = None;
-        let mut guard_minutes_slept = 0;
+        let guard_who_sleeps_the_most =
+            guard_sleep_tracker
+                .iter()
+                .fold(None, |acc: Option<&Guard>, (_guard_id, guard)| match acc {
+                    None => {
+                        return Some(guard);
+                    }
+                    Some(prev_guard) => {
+                        if guard.minutes_slept > prev_guard.minutes_slept {
+                            return Some(guard);
+                        }
 
-        for (guard_id, minutes_slept) in guard_sleep_tracker {
+                        return acc;
+                    }
+                });
 
-            if guard_who_sleeps_the_most.is_none() {
-                guard_who_sleeps_the_most = Some(guard_id);
-                guard_minutes_slept = minutes_slept;
-                continue;
+        match guard_who_sleeps_the_most {
+            None => {
+                println!("No guard found");
             }
+            Some(guard) => {
+                println!(
+                    "Guard #{} slept the most with {} minutes",
+                    guard.id, guard.minutes_slept
+                );
 
-            if minutes_slept > guard_minutes_slept {
-                guard_who_sleeps_the_most = Some(guard_id);
-                guard_minutes_slept = minutes_slept;
+                let minute_slept_most_at = guard.get_minute_slept_most_at().unwrap();
+
+                println!(
+                    "This guard slept the most on the {} minute.",
+                    minute_slept_most_at
+                );
+
+                let part_1_answer = minute_slept_most_at * guard.id;
+
+                println!(
+                    "Part 1 answer: {} * {} = {}",
+                    guard.id, minute_slept_most_at, part_1_answer
+                );
             }
-
         }
-
-        // TODO: What minute does that guard spend asleep the most?
-
     };
-
 }
