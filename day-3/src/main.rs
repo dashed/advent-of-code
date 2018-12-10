@@ -157,7 +157,7 @@ fn part_1(inputs: Lines) {
     for (fabric, other_fabric) in fabric_pairs {
         // println!("{:?} {:?}", other, this);
 
-        let intersection_fabric = fabric.generate_intersection_fabric(other_fabric);
+        let intersection_fabric = fabric.generate_intersection_fabric(&other_fabric);
     }
 
     // TODO: this is not the right answer
