@@ -4,6 +4,7 @@
 
 use itertools::Itertools;
 use std::cmp;
+use std::collections::HashSet;
 use std::str::Lines;
 
 // part 1
@@ -22,12 +23,27 @@ struct Fabric {
 }
 
 impl Fabric {
+
     fn right(&self) -> i32 {
         return self.left + self.width;
     }
 
     fn bottom(&self) -> i32 {
         return self.top + self.height;
+    }
+
+    fn generate_claim_points(&self) -> HashSet<(i32, i32)> {
+        // NOTE: I don't like this :(
+
+        let mut points: HashSet<(i32, i32)> = HashSet::new();
+
+        for x in self.left..self.right() {
+            for y in self.top..self.bottom() {
+                points.insert((x, y));
+            }
+        }
+
+        return points;
     }
 
     fn is_overlapping(&self, other: &Fabric) -> bool {
@@ -121,47 +137,23 @@ fn parse_to_fabric(input: &str) -> Fabric {
     }
 }
 
-fn get_overlapping_area(this: &Fabric, other: &Fabric) -> i32 {
-    // determines if this is on the left side of other, and not overlapping
-    let this_left_of_other = this.right() < other.left;
-    // determines if this is on the right side of other, and not overlapping
-    let this_right_of_other = this.left > other.right();
-    // determines if this is above other, and not overlapping
-    let this_above_of_other = this.bottom() < other.top;
-    // determines if this is below other, and not overlapping
-    let this_below_of_other = this.top > other.bottom();
-
-    // this does not overlap other if any of the above conditions is true
-    let not_overlapping =
-        this_left_of_other || this_right_of_other || this_above_of_other || this_below_of_other;
-
-    if not_overlapping {
-        return 0;
-    }
-
-    let overlapping_width = cmp::min(this.right(), other.right()) - cmp::max(this.left, other.left);
-    let overlapping_height =
-        cmp::min(this.bottom(), other.bottom()) - cmp::max(this.top, other.top);
-
-    return overlapping_width * overlapping_height;
-}
-
 fn part_1(inputs: Lines) {
     let fabrics: Vec<Fabric> = inputs.map(|x| parse_to_fabric(x)).collect();
     let fabric_pairs = fabrics.into_iter().tuple_combinations();
 
-    let known_intersection_areas: Vec<Fabric> = vec![];
-
-    let mut overlapping_area = 0;
+    let mut known_intersection_points: HashSet<(i32, i32)> = HashSet::new();
 
     for (fabric, other_fabric) in fabric_pairs {
-        // println!("{:?} {:?}", other, this);
-
         let intersection_fabric = fabric.generate_intersection_fabric(&other_fabric);
+
+        if intersection_fabric.is_some() {
+            let intersection_fabric = intersection_fabric.unwrap();
+            let claimed_points = intersection_fabric.generate_claim_points();
+            known_intersection_points.extend(&claimed_points);
+        }
     }
 
-    // TODO: this is not the right answer
-    println!("Overlapping area: {:?}", overlapping_area);
+    println!("Overlapping area: {:?}", known_intersection_points.len());
 }
 
 fn main() {
