@@ -68,7 +68,7 @@ impl Guard {
         self.minutes_slept += minutes_slept;
     }
 
-    fn get_minute_slept_most_at(&self) -> Option<Minute> {
+    fn get_minute_slept_most_at(&self) -> Option<(Minute, Occurences)> {
         // What minute does that guard spend asleep the most?
 
         let result = self.occurences_counter.iter().fold(
@@ -86,10 +86,7 @@ impl Guard {
             },
         );
 
-        match result {
-            None => None,
-            Some((minute, _)) => Some(minute),
-        }
+        return result;
     }
 }
 
@@ -214,7 +211,7 @@ fn main() {
                     guard.id, guard.minutes_slept
                 );
 
-                let minute_slept_most_at = guard.get_minute_slept_most_at().unwrap();
+                let (minute_slept_most_at, _occurences) = guard.get_minute_slept_most_at().unwrap();
 
                 println!(
                     "This guard slept the most on the {} minute.",
