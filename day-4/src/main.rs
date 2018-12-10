@@ -206,6 +206,8 @@ fn main() {
                 println!("No guard found");
             }
             Some(guard) => {
+                println!("Part 1:");
+
                 println!(
                     "Guard #{} slept the most with {} minutes",
                     guard.id, guard.minutes_slept
@@ -227,4 +229,52 @@ fn main() {
             }
         }
     };
+
+    {
+        // part 2
+
+        let result = guard_sleep_tracker.iter().fold(
+            None,
+            |acc: Option<(&Guard, Minute, Occurences)>, (_guard_id, guard)| match acc {
+                None => match guard.get_minute_slept_most_at() {
+                    None => {
+                        return None;
+                    }
+                    Some((minute, occurences_count)) => {
+                        return Some((guard, minute, occurences_count));
+                    }
+                },
+                Some((_prev_guard, _best_minute, best_occurences_count)) => {
+                    match guard.get_minute_slept_most_at() {
+                        None => {
+                            return acc;
+                        }
+                        Some((minute, occurences_count)) => {
+                            if occurences_count > best_occurences_count {
+                                return Some((guard, minute, occurences_count));
+                            }
+
+                            return acc;
+                        }
+                    }
+                }
+            },
+        );
+
+        println!("Part 2:");
+
+        match result {
+            None => {
+                println!("no guard found");
+            }
+            Some((guard, minute, _count)) => {
+                let part_2_answer = guard.id * minute;
+
+                println!(
+                    "Part 2 answer: {} * {} = {}",
+                    guard.id, minute, part_2_answer
+                );
+            }
+        }
+    }
 }
