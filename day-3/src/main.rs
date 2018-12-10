@@ -62,9 +62,10 @@ fn parse_to_fabric(input: &str) -> Fabric {
 }
 
 fn part_1(inputs: Lines) {
-    for input in inputs {
-        let fabric = parse_to_fabric(input);
-        println!("{}", input);
+    let fabrics: Vec<Fabric> = inputs.map(|x| parse_to_fabric(x)).collect();
+
+    for fabric in fabrics {
+        println!("{:?}", fabric);
     }
 }
 
@@ -73,11 +74,7 @@ fn main() {
 
     let inputs = input_string.lines();
 
-    // part_1(inputs);
-
-    let fabric = parse_to_fabric("#123 @ 3,2: 5x4");
-
-    println!("{:?}", fabric);
+    part_1(inputs);
 }
 
 #[cfg(test)]
