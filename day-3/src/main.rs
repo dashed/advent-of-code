@@ -2,14 +2,15 @@
 
 // imports
 
+use itertools::Itertools;
 use std::cmp;
 use std::str::Lines;
 
 // part 1
 
-#[derive(Debug, PartialEq)]
-struct Fabric<'id> {
-    id: &'id str,
+#[derive(Debug, PartialEq, Clone)]
+struct Fabric {
+    id: String,
 
     // starting coordinates
     left: i32,
@@ -20,13 +21,61 @@ struct Fabric<'id> {
     width: i32,
 }
 
-impl<'id> Fabric<'id> {
+impl Fabric {
     fn right(&self) -> i32 {
         return self.left + self.width;
     }
 
     fn bottom(&self) -> i32 {
         return self.top + self.height;
+    }
+
+    fn is_overlapping(&self, other: &Fabric) -> bool {
+        // determines if self is on the left side of other, and not overlapping
+        let self_left_of_other = self.right() < other.left;
+        // determines if self is on the right side of other, and not overlapping
+        let self_right_of_other = self.left > other.right();
+        // determines if self is above other, and not overlapping
+        let self_above_of_other = self.bottom() < other.top;
+        // determines if self is below other, and not overlapping
+        let self_below_of_other = self.top > other.bottom();
+
+        // self does not overlap other if any of the above conditions is true
+        let not_overlapping =
+            self_left_of_other || self_right_of_other || self_above_of_other || self_below_of_other;
+
+        return !not_overlapping;
+    }
+
+    fn generate_intersection_fabric(&self, other: &Fabric) -> Option<Fabric> {
+        if !self.is_overlapping(other) {
+            return None;
+        }
+
+        let left = cmp::max(self.left, other.left);
+        let top = cmp::max(self.top, other.top);
+
+        let overlapping_width = cmp::min(self.right(), other.right()) - left;
+        let overlapping_height = cmp::min(self.bottom(), other.bottom()) - top;
+
+        let area = overlapping_width * overlapping_height;
+
+        if area <= 0 {
+            return None;
+        }
+
+        assert!(overlapping_width > 0);
+        assert!(overlapping_height > 0);
+
+        let intersection_fabric = Fabric {
+            id: format!("Insection of: {} and {}", self.id, other.id),
+            left: left,
+            top: top,
+            height: overlapping_height,
+            width: overlapping_width,
+        };
+
+        Some(intersection_fabric)
     }
 }
 
@@ -64,7 +113,7 @@ fn parse_to_fabric(input: &str) -> Fabric {
     };
 
     Fabric {
-        id: id,
+        id: id.to_string(),
         left: left,
         top: top,
         height: height,
@@ -99,17 +148,16 @@ fn get_overlapping_area(this: &Fabric, other: &Fabric) -> i32 {
 
 fn part_1(inputs: Lines) {
     let fabrics: Vec<Fabric> = inputs.map(|x| parse_to_fabric(x)).collect();
+    let fabric_pairs = fabrics.into_iter().tuple_combinations();
+
+    let known_intersection_areas: Vec<Fabric> = vec![];
 
     let mut overlapping_area = 0;
 
-    for fabric in &fabrics {
-        for other_fabric in &fabrics {
-            if fabric == other_fabric {
-                continue;
-            }
+    for (fabric, other_fabric) in fabric_pairs {
+        // println!("{:?} {:?}", other, this);
 
-            overlapping_area += get_overlapping_area(fabric, other_fabric);
-        }
+        let intersection_fabric = fabric.generate_intersection_fabric(other_fabric);
     }
 
     // TODO: this is not the right answer
@@ -131,7 +179,7 @@ mod tests {
     #[test]
     fn test_parse_to_fabric() {
         let expected = Fabric {
-            id: "#123",
+            id: "#123".to_string(),
             left: 3,
             top: 2,
             height: 5,
