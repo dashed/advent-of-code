@@ -2,6 +2,7 @@
 
 // imports
 
+use std::cmp;
 use std::str::Lines;
 
 // part 1
@@ -20,8 +21,12 @@ struct Fabric<'id> {
 }
 
 impl<'id> Fabric<'id> {
-    fn get_area(&self) -> i32 {
-        return self.height * self.width;
+    fn right(&self) -> i32 {
+        return self.left + self.width;
+    }
+
+    fn bottom(&self) -> i32 {
+        return self.top + self.height;
     }
 }
 
@@ -69,13 +74,13 @@ fn parse_to_fabric(input: &str) -> Fabric {
 
 fn get_overlapping_area(this: &Fabric, other: &Fabric) -> i32 {
     // determines if this is on the left side of other, and not overlapping
-    let this_left_of_other = (this.left + this.width) < other.left;
+    let this_left_of_other = this.right() < other.left;
     // determines if this is on the right side of other, and not overlapping
-    let this_right_of_other = this.left > (other.left + other.width);
+    let this_right_of_other = this.left > other.right();
     // determines if this is above other, and not overlapping
-    let this_above_of_other = (this.top + this.height) < other.top;
+    let this_above_of_other = this.bottom() < other.top;
     // determines if this is below other, and not overlapping
-    let this_below_of_other = this.top > (other.top + other.height);
+    let this_below_of_other = this.top > other.bottom();
 
     // this does not overlap other if any of the above conditions is true
     let not_overlapping =
@@ -85,7 +90,11 @@ fn get_overlapping_area(this: &Fabric, other: &Fabric) -> i32 {
         return 0;
     }
 
-    return (this.get_area() - other.get_area()).abs();
+    let overlapping_width = cmp::min(this.right(), other.right()) - cmp::max(this.left, other.left);
+    let overlapping_height =
+        cmp::min(this.bottom(), other.bottom()) - cmp::max(this.top, other.top);
+
+    return overlapping_width * overlapping_height;
 }
 
 fn part_1(inputs: Lines) {
@@ -130,6 +139,17 @@ mod tests {
         };
 
         assert_eq!(parse_to_fabric("#123 @ 3,2: 5x4"), expected);
+    }
+
+    #[test]
+    fn test_overlap() {
+        let fabric_1 = parse_to_fabric("#1 @ 1,3: 4x4");
+        let fabric_2 = parse_to_fabric("#2 @ 3,1: 4x4");
+        let fabric_3 = parse_to_fabric("#3 @ 5,5: 2x2");
+
+        assert_eq!(get_overlapping_area(&fabric_1, &fabric_2), 4);
+        assert_eq!(get_overlapping_area(&fabric_1, &fabric_3), 0);
+        assert_eq!(get_overlapping_area(&fabric_2, &fabric_3), 0);
     }
 
 }
