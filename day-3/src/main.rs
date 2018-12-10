@@ -19,6 +19,12 @@ struct Fabric<'id> {
     width: i32,
 }
 
+impl<'id> Fabric<'id> {
+    fn get_area(&self) -> i32 {
+        return self.height * self.width;
+    }
+}
+
 fn parse_to_fabric(input: &str) -> Fabric {
     let mut parts = input.split_whitespace();
 
@@ -61,12 +67,44 @@ fn parse_to_fabric(input: &str) -> Fabric {
     }
 }
 
+fn get_overlapping_area(this: &Fabric, other: &Fabric) -> i32 {
+    // determines if this is on the left side of other, and not overlapping
+    let this_left_of_other = (this.left + this.width) < other.left;
+    // determines if this is on the right side of other, and not overlapping
+    let this_right_of_other = this.left > (other.left + other.width);
+    // determines if this is above other, and not overlapping
+    let this_above_of_other = (this.top + this.height) < other.top;
+    // determines if this is below other, and not overlapping
+    let this_below_of_other = this.top > (other.top + other.height);
+
+    // this does not overlap other if any of the above conditions is true
+    let not_overlapping =
+        this_left_of_other || this_right_of_other || this_above_of_other || this_below_of_other;
+
+    if not_overlapping {
+        return 0;
+    }
+
+    return (this.get_area() - other.get_area()).abs();
+}
+
 fn part_1(inputs: Lines) {
     let fabrics: Vec<Fabric> = inputs.map(|x| parse_to_fabric(x)).collect();
 
-    for fabric in fabrics {
-        println!("{:?}", fabric);
+    let mut overlapping_area = 0;
+
+    for fabric in &fabrics {
+        for other_fabric in &fabrics {
+            if fabric == other_fabric {
+                continue;
+            }
+
+            overlapping_area += get_overlapping_area(fabric, other_fabric);
+        }
     }
+
+    // TODO: this is not the right answer
+    println!("Overlapping area: {:?}", overlapping_area);
 }
 
 fn main() {
