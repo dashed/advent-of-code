@@ -21,8 +21,6 @@ fn part_1(input: &str) -> String {
     'outer_loop: loop {
         let mut units_iterable = units.iter().enumerate().skip(skip_n).peekable();
 
-        // println!("skipping: {} {:?}", skip_n, units_iterable.peek().unwrap());
-
         while let Some((current_index, current_unit)) = units_iterable.next() {
             if units_iterable.peek().is_none() {
                 // no further reactions possible
@@ -32,13 +30,8 @@ fn part_1(input: &str) -> String {
             let (_next_index, next_unit) = units_iterable.peek().unwrap();
 
             if does_react(*current_unit, **next_unit) {
-                // println!("{} {}{}", current_index, current_unit, next_unit);
-                // println!("{},{}", current_index, next_index);
-
                 // remove these items and start from the beginning
                 units.drain(current_index..(current_index + 2));
-                // units.remove(current_index);
-                // units.remove(current_index);
 
                 // Know that first skip_n do not react, so we start again from there.
                 skip_n = if current_index == 0 {
