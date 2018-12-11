@@ -28,3 +28,14 @@ fn main() {
 
     println!("{:?}", destinations);
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_manhattan_distance() {
+        assert_eq!(get_manhattan_distance((0, 0), (0, 0)), 0);
+        assert_eq!(get_manhattan_distance((0, 0), (3, 3)), 6);
+    }
+}
