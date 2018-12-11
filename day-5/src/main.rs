@@ -1,5 +1,12 @@
 // https://adventofcode.com/2018/day/5
 
+// imports
+
+use std::collections::HashSet;
+use std::iter::FromIterator;
+
+// helpers
+
 fn is_same_type(x: char, y: char) -> bool {
     return x.to_lowercase().to_string() == y.to_lowercase().to_string();
 }
@@ -49,6 +56,36 @@ fn part_1(input: &str) -> String {
     return final_result;
 }
 
+fn part_2(input: &str) -> String {
+    let unique_types: HashSet<char> = HashSet::from_iter(input.to_lowercase().chars().into_iter());
+
+    let result = unique_types.iter().fold(
+        input.to_string(),
+        |shortest_string, character: &char| -> String {
+            let char_to_remove = character.to_lowercase().to_string();
+
+            let units: String = input
+                .chars()
+                .into_iter()
+                .filter(|x| -> bool {
+                    return x.to_lowercase().to_string() != char_to_remove;
+                })
+                .collect();
+
+            let reacted = part_1(&units);
+
+            if reacted.len() < shortest_string.len() {
+                // found new shortest polymer produced
+                return reacted;
+            }
+
+            return shortest_string;
+        },
+    );
+
+    return result;
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
@@ -60,6 +97,12 @@ fn main() {
         "How many units remain after fully reacting the polymer you scanned?: {}",
         final_result.len()
     );
+
+    println!("Part 2:");
+    let shortest_polymer = part_2(input_string);
+
+    println!("shortest_polymer length: {:?}", shortest_polymer.len());
+    // println!("shortest_polymer: {:?}", shortest_polymer);
 }
 
 #[cfg(test)]
