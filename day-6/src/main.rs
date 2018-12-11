@@ -215,29 +215,25 @@ fn main() {
         return;
     }
 
-    let lol: Regions = HashMap::new();
-
     let bounding_box = bounding_box.unwrap();
 
     // filter out destinations on the edge of the bounding box (i.e. grid).
     // we want to do this because regions for these destinations have infinite area.
 
+    let valid_destinations: Vec<Position> = destinations
+        .iter()
+        .map(|x| -> Position { *x })
+        .filter(|destination: &Position| -> bool {
+            return bounding_box.is_strictly_inside_bounding_box(*destination);
+        })
+        .collect();
+
     let regions = {
-        let destinations: Vec<Position> =
-            destinations
-                .iter()
-                .fold(vec![], |mut destinations, destination| {
-                    if bounding_box.is_strictly_inside_bounding_box(*destination) {
-                        destinations.push(*destination);
-                    }
-
-                    return destinations;
-                });
-
         let mut regions: Regions = HashMap::new();
 
-        for destination in destinations {
+        for destination in valid_destinations {
             let mut region = HashSet::new();
+            // a destination is part of its own region
             region.insert(destination);
 
             regions.insert(destination, region);
