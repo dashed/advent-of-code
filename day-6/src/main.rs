@@ -9,6 +9,7 @@ use std::collections::HashSet;
 
 type Position = (i32, i32);
 type Destination = Position;
+type Distance = i32;
 
 // set of Positions (i.e. grid coordinates) that belong to a region
 type Region = HashSet<Position>;
@@ -16,9 +17,10 @@ type Region = HashSet<Position>;
 type Regions = HashMap<Destination, Region>;
 
 enum GridPositionState {
+    FreeClaim,
     Neutral,
-    // current position belongs to region of given Position
-    Region(Position),
+    // current position belongs to region of given Destination and distance
+    Region(Destination, Distance),
 }
 
 // https://math.stackexchange.com/a/139604/10247
@@ -138,10 +140,10 @@ impl BoundingBox {
     fn is_strictly_inside_bounding_box(&self, target: Position) -> bool {
         let (x, y) = target;
 
-        return (self.get_x_start() < x
+        return self.get_x_start() < x
             && x < self.get_x_end()
             && self.get_y_start() < y
-            && y < self.get_y_end());
+            && y < self.get_y_end();
     }
 
     // left-most x coord
@@ -228,10 +230,10 @@ fn main() {
         })
         .collect();
 
-    let regions = {
+    let mut regions = {
         let mut regions: Regions = HashMap::new();
 
-        for destination in valid_destinations {
+        for destination in valid_destinations.clone() {
             let mut region = HashSet::new();
             // a destination is part of its own region
             region.insert(destination);
@@ -243,7 +245,82 @@ fn main() {
     };
 
     for position in bounding_box.generate_grid() {
-        println!("{:?}", position);
+        // find region that this position belongs to
+
+        let result = valid_destinations.iter().fold(
+            GridPositionState::FreeClaim,
+            |acc: GridPositionState, destination| -> GridPositionState {
+
+                match acc {
+                    GridPositionState::FreeClaim => {
+                        let distance = get_manhattan_distance(position, *destination);
+
+                        return GridPositionState::Region(*destination, distance);
+                    }
+                    GridPositionState::Neutral => {
+                        return acc;
+                    }
+                    GridPositionState::Region(destination, best_distance) => {
+                        let distance = get_manhattan_distance(position, destination);
+
+                        if distance < best_distance {
+                            return GridPositionState::Region(destination, distance);
+                        }
+
+                        if distance > best_distance {
+                            return acc;
+                        }
+
+                        // TODO: this is flawed
+
+                        // invariant: distance == best_distance
+                        return GridPositionState::Neutral;
+                    }
+                }
+            },
+        );
+
+        match result {
+            GridPositionState::FreeClaim => {
+                unreachable!();
+            }
+            GridPositionState::Neutral => {
+                // This region exclusively belongs to nobody
+            }
+            GridPositionState::Region(destination, _best_distance) => {
+                regions.entry(destination).and_modify(|set| {
+                    set.insert(position);
+                });
+            }
+        }
+    }
+
+    let largest_region_size = regions
+        .iter()
+        .fold(None, |acc, (_destination, region_area)| {
+            // println!("{:?}", region_area.len());
+
+            match acc {
+                None => return Some(region_area.len()),
+                Some(best_region_area_size) => {
+                    let region_area_size = region_area.len();
+
+                    if region_area_size > best_region_area_size {
+                        return Some(region_area_size);
+                    }
+
+                    return acc;
+                }
+            }
+        });
+
+    match largest_region_size {
+        None => {
+            println!("Part 1 -- no region found");
+        }
+        Some(largest_region_size) => {
+            println!("Part 1 -- largest area size: {}", largest_region_size);
+        }
     }
 }
 
