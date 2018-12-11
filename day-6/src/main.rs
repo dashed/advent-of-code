@@ -18,9 +18,8 @@ type Regions = HashMap<Destination, Region>;
 
 enum GridPositionState {
     FreeClaim,
-    Neutral,
     // current position belongs to region of given Destination and distance
-    Region(Destination, Distance),
+    Region(HashSet<Destination>, Distance),
 }
 
 // https://math.stackexchange.com/a/139604/10247
@@ -250,31 +249,36 @@ fn main() {
         let result = valid_destinations.iter().fold(
             GridPositionState::FreeClaim,
             |acc: GridPositionState, destination| -> GridPositionState {
-
                 match acc {
                     GridPositionState::FreeClaim => {
                         let distance = get_manhattan_distance(position, *destination);
 
-                        return GridPositionState::Region(*destination, distance);
-                    }
-                    GridPositionState::Neutral => {
-                        return acc;
-                    }
-                    GridPositionState::Region(destination, best_distance) => {
-                        let distance = get_manhattan_distance(position, destination);
+                        let mut set = HashSet::new();
+                        set.insert(*destination);
 
-                        if distance < best_distance {
-                            return GridPositionState::Region(destination, distance);
-                        }
+                        return GridPositionState::Region(set, distance);
+                    }
+                    GridPositionState::Region(mut set, best_distance) => {
+                        assert!(set.len() > 0);
+
+                        let some_destination = set.iter().next().unwrap();
+
+                        let distance = get_manhattan_distance(position, *some_destination);
 
                         if distance > best_distance {
-                            return acc;
+                            return GridPositionState::Region(set, distance);
                         }
 
-                        // TODO: this is flawed
+                        if distance < best_distance {
+                            let mut set = HashSet::new();
+                            set.insert(*destination);
+
+                            return GridPositionState::Region(set, distance);
+                        }
 
                         // invariant: distance == best_distance
-                        return GridPositionState::Neutral;
+                        set.insert(*destination);
+                        return GridPositionState::Region(set, distance);
                     }
                 }
             },
@@ -284,13 +288,13 @@ fn main() {
             GridPositionState::FreeClaim => {
                 unreachable!();
             }
-            GridPositionState::Neutral => {
-                // This region exclusively belongs to nobody
-            }
-            GridPositionState::Region(destination, _best_distance) => {
-                regions.entry(destination).and_modify(|set| {
-                    set.insert(position);
-                });
+            GridPositionState::Region(set, _best_distance) => {
+                if set.len() == 1 {
+                    let destination = set.iter().next().unwrap();
+                    regions.entry(*destination).and_modify(|set| {
+                        set.insert(position);
+                    });
+                }
             }
         }
     }
