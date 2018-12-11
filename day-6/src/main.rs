@@ -125,17 +125,6 @@ impl BoundingBox {
         }
     }
 
-    fn generate_grid(&self) -> GridPoints {
-        let starting_position: Position = (self.get_x_start(), self.get_y_start());
-
-        let grid = GridPoints {
-            current: starting_position,
-            bounding_box: self.clone(),
-        };
-
-        return grid;
-    }
-
     fn is_strictly_inside_bounding_box(&self, target: Position) -> bool {
         let (x, y) = target;
 
@@ -192,12 +181,9 @@ impl BoundingBox {
     }
 }
 
-fn main() {
-    let input_string = include_str!("input.txt");
+fn part_1(input_string: &str) -> Option<i32> {
 
-    let destinations: Vec<Position> = input_string.lines().map(parse_to_coord).collect();
-
-    // let ignored_destinations: HashSet<Position> = HashSet::new();
+    let destinations: Vec<Position> = input_string.trim().lines().map(parse_to_coord).collect();
 
     // from the given destinations, generate the bounding box.
 
@@ -209,16 +195,13 @@ fn main() {
                 return Some(bounding_box.add_point(*dest));
             }
         });
-    // println!("{:?}", bounding_box);
 
     if bounding_box.is_none() {
         println!("No bounding box generated.");
-        return;
+        return None;
     }
 
     let bounding_box = bounding_box.unwrap();
-
-    println!("bounding_box {:?}", bounding_box);
 
     let mut regions = {
         let mut regions: Regions = HashMap::new();
@@ -239,8 +222,6 @@ fn main() {
             // find region that this position belongs to
             let position = (x, y);
 
-            println!("position {:?}", position);
-
             let result = destinations.iter().fold(
                 GridPositionState::FreeClaim,
                 |acc: GridPositionState, destination| -> GridPositionState {
@@ -256,9 +237,7 @@ fn main() {
                         GridPositionState::Region(mut set, best_distance) => {
                             assert!(set.len() > 0);
 
-                            let some_destination = set.iter().next().unwrap();
-
-                            let distance = get_manhattan_distance(position, *some_destination);
+                            let distance = get_manhattan_distance(position, *destination);
 
                             if distance > best_distance {
                                 return GridPositionState::Region(set, best_distance);
@@ -298,25 +277,31 @@ fn main() {
     let largest_region_size = regions
         .iter()
         .fold(None, |acc, (destination, region_area)| {
-            println!("{:?} {:?}", destination, region_area.len());
-
             if !bounding_box.is_strictly_inside_bounding_box(*destination) {
                 return acc;
             }
 
             match acc {
-                None => return Some(region_area.len()),
+                None => return Some(region_area.len() as i32),
                 Some(best_region_area_size) => {
-                    let region_area_size = region_area.len();
+                    let region_area_size = region_area.len() as i32;
 
                     if region_area_size > best_region_area_size {
-                        return Some(region_area_size);
+                        return Some(region_area_size as i32);
                     }
 
                     return acc;
                 }
             }
         });
+
+    return largest_region_size;
+}
+
+fn main() {
+    let input_string = include_str!("input.txt");
+
+    let largest_region_size = part_1(input_string);
 
     match largest_region_size {
         None => {
@@ -339,4 +324,19 @@ mod tests {
         assert_eq!(get_manhattan_distance((0, 0), (0, 0)), 0);
         assert_eq!(get_manhattan_distance((0, 0), (3, 3)), 6);
     }
+
+    #[test]
+    fn test_part_1() {
+        let input = r###"
+1, 1
+1, 6
+8, 3
+3, 4
+5, 5
+8, 9
+        "###;
+
+        assert_eq!(part_1(input), Some(17));
+    }
+
 }
