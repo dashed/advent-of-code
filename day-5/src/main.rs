@@ -62,6 +62,7 @@ fn part_2(input: &str) -> String {
 
     let result = unique_types
         .par_iter()
+        // fold divides work into groups, and in for each group, find the shortest string
         .fold(
             || input.to_string(),
             |shortest_string, character: &char| -> String {
@@ -80,6 +81,7 @@ fn part_2(input: &str) -> String {
                 return shortest_string;
             },
         )
+        // find the shortest string among all the folded groups
         .reduce(
             || input.to_string(),
             |a, b| -> String {
