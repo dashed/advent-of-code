@@ -301,8 +301,8 @@ fn main() {
 
     let largest_region_size = regions
         .iter()
-        .fold(None, |acc, (_destination, region_area)| {
-            // println!("{:?}", region_area.len());
+        .fold(None, |acc, (destination, region_area)| {
+            println!("{:?} {:?}", destination, region_area.len());
 
             match acc {
                 None => return Some(region_area.len()),
