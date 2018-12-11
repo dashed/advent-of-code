@@ -23,7 +23,10 @@ fn main() {
     let mut skip_n = 0;
 
     'outer_loop: loop {
-        let mut units_iterable = units.iter().skip(skip_n).enumerate().peekable();
+
+        let mut units_iterable = units.iter().enumerate().skip(skip_n).peekable();
+
+        println!("skipping: {} {:?}", skip_n, units_iterable.peek().unwrap());
 
         while let Some((current_index, current_unit)) = units_iterable.next() {
             if units_iterable.peek().is_none() {
@@ -34,7 +37,7 @@ fn main() {
             let (next_index, next_unit) = units_iterable.peek().unwrap();
 
             if does_react(*current_unit, **next_unit) {
-                println!("{}{}", current_unit, next_unit);
+                println!("{} {}{}", current_index, current_unit, next_unit);
                 // println!("{},{}", current_index, next_index);
 
                 // remove these items and start from the beginning
@@ -42,13 +45,15 @@ fn main() {
                 // units.remove(current_index);
                 // units.remove(current_index);
 
-                // skip_n = current_index - 1;
+                skip_n = if current_index == 0 {
+                    current_index
+                } else {
+                    current_index - 1
+                };
 
                 // println!("new_len: {:?}", units.len());
 
                 break;
-            } else {
-                skip_n = current_index;
             }
         }
     }
