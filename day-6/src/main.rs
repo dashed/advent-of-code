@@ -225,6 +225,14 @@ fn part_1(input_string: &str) -> Option<i32> {
             let result = destinations.iter().fold(
                 GridPositionState::FreeClaim,
                 |acc: GridPositionState, destination| -> GridPositionState {
+
+                    if *destination == position {
+                                let mut new_set = HashSet::new();
+                                new_set.insert(*destination);
+
+                                return GridPositionState::Region(new_set, 0);
+                    }
+
                     match acc {
                         GridPositionState::FreeClaim => {
                             let distance = get_manhattan_distance(position, *destination);
@@ -236,18 +244,20 @@ fn part_1(input_string: &str) -> Option<i32> {
                         }
                         GridPositionState::Region(mut set, best_distance) => {
                             assert!(set.len() > 0);
+                            assert!(!set.contains(destination));
+
 
                             let distance = get_manhattan_distance(position, *destination);
 
-                            if distance > best_distance {
+                            if distance > best_distance || best_distance == 0 {
                                 return GridPositionState::Region(set, best_distance);
                             }
 
                             if distance < best_distance {
-                                let mut set = HashSet::new();
-                                set.insert(*destination);
+                                let mut new_set = HashSet::new();
+                                new_set.insert(*destination);
 
-                                return GridPositionState::Region(set, distance);
+                                return GridPositionState::Region(new_set, distance);
                             }
 
                             // invariant: distance == best_distance
@@ -265,8 +275,16 @@ fn part_1(input_string: &str) -> Option<i32> {
                 GridPositionState::Region(set, _best_distance) => {
                     if set.len() == 1 {
                         let destination = set.iter().next().unwrap();
-                        regions.entry(*destination).and_modify(|set| {
-                            set.insert(position);
+                        regions.entry(*destination).and_modify(|x| {
+                            assert!(x.len() > 0);
+                            assert!(x.contains(destination));
+                            if position != *destination {
+                                assert!(!x.contains(&position));
+                            } else {
+                                assert!(position == *destination);
+                            }
+
+                            x.insert(position);
                         });
                     }
                 }
@@ -310,6 +328,7 @@ fn main() {
         Some(largest_region_size) => {
             // not 13444
             // not 12570
+            // not 5826
             println!("Part 1 -- largest area size: {}", largest_region_size);
         }
     }
