@@ -59,6 +59,40 @@ fn is_better_right_edge(reference: Position, target: Position) -> bool {
     return target_point > ref_point;
 }
 
+struct GridPoints {
+    current: Position,
+    bounding_box: BoundingBox,
+}
+
+impl Iterator for GridPoints {
+    type Item = Position;
+
+    fn next(&mut self) -> Option<Position> {
+        let (x, y) = self.current;
+
+        // invariants
+        assert!(self.bounding_box.get_x_start() <= x);
+        assert!(x <= self.bounding_box.get_x_end());
+        assert!(self.bounding_box.get_y_start() <= y);
+        assert!(y <= self.bounding_box.get_y_end());
+
+        if x < self.bounding_box.get_x_end() {
+            let new_position = (x + 1, y);
+            self.current = new_position;
+            return Some(new_position);
+        }
+
+        if y < self.bounding_box.get_y_end() {
+            let new_x = self.bounding_box.get_x_start();
+            let new_position = (new_x, y + 1);
+            self.current = new_position;
+            return Some(new_position);
+        }
+
+        return None;
+    }
+}
+
 #[derive(Debug, Clone)]
 struct BoundingBox {
     top: Position,
@@ -75,6 +109,41 @@ impl BoundingBox {
             left: start,
             right: start,
         }
+    }
+
+    fn generate_grid(&self) -> GridPoints {
+        let starting_position: Position = (self.get_x_start(), self.get_y_start());
+
+        let grid = GridPoints {
+            current: starting_position,
+            bounding_box: self.clone(),
+        };
+
+        return grid;
+    }
+
+    // left-most x coord
+    fn get_x_start(&self) -> i32 {
+        let (x, _y) = self.left;
+        return x;
+    }
+
+    // right-most x coord
+    fn get_x_end(&self) -> i32 {
+        let (x, _y) = self.right;
+        return x;
+    }
+
+    // bottom-most y coord
+    fn get_y_start(&self) -> i32 {
+        let (_x, y) = self.bottom;
+        return y;
+    }
+
+    // top-most y coord
+    fn get_y_end(&self) -> i32 {
+        let (_x, y) = self.top;
+        return y;
     }
 
     fn add_point(&self, src: Position) -> BoundingBox {
@@ -119,7 +188,16 @@ fn main() {
             }
         });
 
-    println!("{:?}", bounding_box);
+    // println!("{:?}", bounding_box);
+
+    if bounding_box.is_none() {
+        println!("No bounding box generated.");
+        return;
+    }
+
+    for position in bounding_box.unwrap().generate_grid() {
+        println!("{:?}", position);
+    }
 }
 
 #[cfg(test)]
