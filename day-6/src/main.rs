@@ -2,11 +2,24 @@
 
 // imports
 
+use std::collections::HashMap;
 use std::collections::HashSet;
 
 // helpers
 
 type Position = (i32, i32);
+type Destination = Position;
+
+// set of Positions (i.e. grid coordinates) that belong to a region
+type Region = HashSet<Position>;
+// mapping a Region belonging to a Destination
+type Regions = HashMap<Destination, Region>;
+
+enum GridPositionState {
+    Neutral,
+    // current position belongs to region of given Position
+    Region(Position),
+}
 
 // https://math.stackexchange.com/a/139604/10247
 fn get_manhattan_distance(x: Position, y: Position) -> i32 {
@@ -122,6 +135,15 @@ impl BoundingBox {
         return grid;
     }
 
+    fn is_strictly_inside_bounding_box(&self, target: Position) -> bool {
+        let (x, y) = target;
+
+        return (self.get_x_start() < x
+            && x < self.get_x_end()
+            && self.get_y_start() < y
+            && y < self.get_y_end());
+    }
+
     // left-most x coord
     fn get_x_start(&self) -> i32 {
         let (x, _y) = self.left;
@@ -176,8 +198,7 @@ fn main() {
 
     // let ignored_destinations: HashSet<Position> = HashSet::new();
 
-    // filter out destinations on the edge of the bounding box (i.e. grid).
-    // we want to do this because regions for these destinations have infinite area.
+    // from the given destinations, generate the bounding box.
 
     let bounding_box = destinations
         .iter()
@@ -187,7 +208,6 @@ fn main() {
                 return Some(bounding_box.add_point(*dest));
             }
         });
-
     // println!("{:?}", bounding_box);
 
     if bounding_box.is_none() {
@@ -195,7 +215,38 @@ fn main() {
         return;
     }
 
-    for position in bounding_box.unwrap().generate_grid() {
+    let lol: Regions = HashMap::new();
+
+    let bounding_box = bounding_box.unwrap();
+
+    // filter out destinations on the edge of the bounding box (i.e. grid).
+    // we want to do this because regions for these destinations have infinite area.
+
+    let regions = {
+        let destinations: Vec<Position> =
+            destinations
+                .iter()
+                .fold(vec![], |mut destinations, destination| {
+                    if bounding_box.is_strictly_inside_bounding_box(*destination) {
+                        destinations.push(*destination);
+                    }
+
+                    return destinations;
+                });
+
+        let mut regions: Regions = HashMap::new();
+
+        for destination in destinations {
+            let mut region = HashSet::new();
+            region.insert(destination);
+
+            regions.insert(destination, region);
+        }
+
+        regions
+    };
+
+    for position in bounding_box.generate_grid() {
         println!("{:?}", position);
     }
 }
