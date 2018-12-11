@@ -73,39 +73,39 @@ fn is_better_right_edge(reference: Position, target: Position) -> bool {
     return target_point > ref_point;
 }
 
-struct GridPoints {
-    current: Position,
-    bounding_box: BoundingBox,
-}
+// struct GridPoints {
+//     current: Position,
+//     bounding_box: BoundingBox,
+// }
 
-impl Iterator for GridPoints {
-    type Item = Position;
+// impl Iterator for GridPoints {
+//     type Item = Position;
 
-    fn next(&mut self) -> Option<Position> {
-        let (x, y) = self.current;
+//     fn next(&mut self) -> Option<Position> {
+//         let (x, y) = self.current;
 
-        // invariants
-        assert!(self.bounding_box.get_x_start() <= x);
-        assert!(x <= self.bounding_box.get_x_end());
-        assert!(self.bounding_box.get_y_start() <= y);
-        assert!(y <= self.bounding_box.get_y_end());
+//         // invariants
+//         assert!(self.bounding_box.get_x_start() <= x);
+//         assert!(x <= self.bounding_box.get_x_end());
+//         assert!(self.bounding_box.get_y_start() <= y);
+//         assert!(y <= self.bounding_box.get_y_end());
 
-        if x < self.bounding_box.get_x_end() {
-            let new_position = (x + 1, y);
-            self.current = new_position;
-            return Some(new_position);
-        }
+//         if x < self.bounding_box.get_x_end() {
+//             let new_position = (x + 1, y);
+//             self.current = new_position;
+//             return Some(new_position);
+//         }
 
-        if y < self.bounding_box.get_y_end() {
-            let new_x = self.bounding_box.get_x_start();
-            let new_position = (new_x, y + 1);
-            self.current = new_position;
-            return Some(new_position);
-        }
+//         if y < self.bounding_box.get_y_end() {
+//             let new_x = self.bounding_box.get_x_start();
+//             let new_position = (new_x, y + 1);
+//             self.current = new_position;
+//             return Some(new_position);
+//         }
 
-        return None;
-    }
-}
+//         return None;
+//     }
+// }
 
 #[derive(Debug, Clone)]
 struct BoundingBox {
@@ -218,6 +218,7 @@ fn main() {
 
     let bounding_box = bounding_box.unwrap();
 
+    println!("bounding_box {:?}", bounding_box);
 
     let mut regions = {
         let mut regions: Regions = HashMap::new();
@@ -233,57 +234,62 @@ fn main() {
         regions
     };
 
-    for position in bounding_box.generate_grid() {
-        // find region that this position belongs to
+    for x in bounding_box.get_x_start()..(bounding_box.get_x_end() + 1) {
+        for y in bounding_box.get_y_start()..(bounding_box.get_y_end() + 1) {
+            // find region that this position belongs to
+            let position = (x, y);
 
-        let result = destinations.iter().fold(
-            GridPositionState::FreeClaim,
-            |acc: GridPositionState, destination| -> GridPositionState {
-                match acc {
-                    GridPositionState::FreeClaim => {
-                        let distance = get_manhattan_distance(position, *destination);
+            println!("position {:?}", position);
 
-                        let mut set = HashSet::new();
-                        set.insert(*destination);
+            let result = destinations.iter().fold(
+                GridPositionState::FreeClaim,
+                |acc: GridPositionState, destination| -> GridPositionState {
+                    match acc {
+                        GridPositionState::FreeClaim => {
+                            let distance = get_manhattan_distance(position, *destination);
 
-                        return GridPositionState::Region(set, distance);
-                    }
-                    GridPositionState::Region(mut set, best_distance) => {
-                        assert!(set.len() > 0);
-
-                        let some_destination = set.iter().next().unwrap();
-
-                        let distance = get_manhattan_distance(position, *some_destination);
-
-                        if distance > best_distance {
-                            return GridPositionState::Region(set, best_distance);
-                        }
-
-                        if distance < best_distance {
                             let mut set = HashSet::new();
                             set.insert(*destination);
 
                             return GridPositionState::Region(set, distance);
                         }
+                        GridPositionState::Region(mut set, best_distance) => {
+                            assert!(set.len() > 0);
 
-                        // invariant: distance == best_distance
-                        set.insert(*destination);
-                        return GridPositionState::Region(set, distance);
+                            let some_destination = set.iter().next().unwrap();
+
+                            let distance = get_manhattan_distance(position, *some_destination);
+
+                            if distance > best_distance {
+                                return GridPositionState::Region(set, best_distance);
+                            }
+
+                            if distance < best_distance {
+                                let mut set = HashSet::new();
+                                set.insert(*destination);
+
+                                return GridPositionState::Region(set, distance);
+                            }
+
+                            // invariant: distance == best_distance
+                            set.insert(*destination);
+                            return GridPositionState::Region(set, distance);
+                        }
                     }
-                }
-            },
-        );
+                },
+            );
 
-        match result {
-            GridPositionState::FreeClaim => {
-                unreachable!();
-            }
-            GridPositionState::Region(set, _best_distance) => {
-                if set.len() == 1 {
-                    let destination = set.iter().next().unwrap();
-                    regions.entry(*destination).and_modify(|set| {
-                        set.insert(position);
-                    });
+            match result {
+                GridPositionState::FreeClaim => {
+                    unreachable!();
+                }
+                GridPositionState::Region(set, _best_distance) => {
+                    if set.len() == 1 {
+                        let destination = set.iter().next().unwrap();
+                        regions.entry(*destination).and_modify(|set| {
+                            set.insert(position);
+                        });
+                    }
                 }
             }
         }
@@ -293,6 +299,10 @@ fn main() {
         .iter()
         .fold(None, |acc, (destination, region_area)| {
             println!("{:?} {:?}", destination, region_area.len());
+
+            if !bounding_box.is_strictly_inside_bounding_box(*destination) {
+                return acc;
+            }
 
             match acc {
                 None => return Some(region_area.len()),
@@ -313,7 +323,6 @@ fn main() {
             println!("Part 1 -- no region found");
         }
         Some(largest_region_size) => {
-
             // not 13444
             // not 12570
             println!("Part 1 -- largest area size: {}", largest_region_size);
