@@ -62,14 +62,10 @@ fn part_2(input: &str) -> String {
     let result = unique_types.iter().fold(
         input.to_string(),
         |shortest_string, character: &char| -> String {
-            let char_to_remove = character.to_lowercase().to_string();
-
             let units: String = input
                 .chars()
                 .into_iter()
-                .filter(|x| -> bool {
-                    return x.to_lowercase().to_string() != char_to_remove;
-                })
+                .filter(|x| -> bool { return !is_same_type(*x, *character) })
                 .collect();
 
             let reacted = part_1(&units);
