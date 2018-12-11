@@ -266,7 +266,7 @@ fn main() {
                         let distance = get_manhattan_distance(position, *some_destination);
 
                         if distance > best_distance {
-                            return GridPositionState::Region(set, distance);
+                            return GridPositionState::Region(set, best_distance);
                         }
 
                         if distance < best_distance {
@@ -323,6 +323,9 @@ fn main() {
             println!("Part 1 -- no region found");
         }
         Some(largest_region_size) => {
+
+            // not 13444
+            // not 12570
             println!("Part 1 -- largest area size: {}", largest_region_size);
         }
     }
