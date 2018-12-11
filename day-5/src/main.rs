@@ -2,6 +2,7 @@
 
 // imports
 
+use rayon::prelude::*;
 use std::collections::HashSet;
 use std::iter::FromIterator;
 
@@ -20,7 +21,7 @@ fn does_react(x: char, y: char) -> bool {
 }
 
 fn part_1(input: &str) -> String {
-    let mut units: Vec<char> = input.chars().collect();
+    let mut units: Vec<char> = input.par_chars().collect();
 
     // skip first N units known to not react
     let mut skip_n = 0;
@@ -59,25 +60,35 @@ fn part_1(input: &str) -> String {
 fn part_2(input: &str) -> String {
     let unique_types: HashSet<char> = HashSet::from_iter(input.to_lowercase().chars().into_iter());
 
-    let result = unique_types.iter().fold(
-        input.to_string(),
-        |shortest_string, character: &char| -> String {
-            let units: String = input
-                .chars()
-                .into_iter()
-                .filter(|x| -> bool { return !is_same_type(*x, *character) })
-                .collect();
+    let result = unique_types
+        .par_iter()
+        .fold(
+            || input.to_string(),
+            |shortest_string, character: &char| -> String {
+                let units: String = input
+                    .par_chars()
+                    .filter(|x| -> bool { return !is_same_type(*x, *character) })
+                    .collect();
 
-            let reacted = part_1(&units);
+                let reacted = part_1(&units);
 
-            if reacted.len() < shortest_string.len() {
-                // found new shortest polymer produced
-                return reacted;
-            }
+                if reacted.len() < shortest_string.len() {
+                    // found new shortest polymer produced
+                    return reacted;
+                }
 
-            return shortest_string;
-        },
-    );
+                return shortest_string;
+            },
+        )
+        .reduce(
+            || input.to_string(),
+            |a, b| -> String {
+                if a.len() > b.len() {
+                    return b;
+                }
+                return a;
+            },
+        );
 
     return result;
 }
