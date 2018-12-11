@@ -136,4 +136,9 @@ mod tests {
     fn test_part_1() {
         assert_eq!(part_1("dabAcCaCBAcCcaDA"), "dabCBAcaDA".to_string());
     }
+
+    #[test]
+    fn test_part_2() {
+        assert_eq!(part_2("dabAcCaCBAcCcaDA"), "daDA".to_string());
+    }
 }
