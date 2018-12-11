@@ -12,21 +12,16 @@ fn does_react(x: char, y: char) -> bool {
     return is_same_type(x, y) && is_opposite_polarity(x, y);
 }
 
-fn main() {
-    let input_string = include_str!("input.txt");
-
-    let mut units: Vec<char> = input_string.chars().collect();
-
-    println!("len: {:?}", units.len());
+fn part_1(input: &str) -> String {
+    let mut units: Vec<char> = input.chars().collect();
 
     // skip first N units known to not react
     let mut skip_n = 0;
 
     'outer_loop: loop {
-
         let mut units_iterable = units.iter().enumerate().skip(skip_n).peekable();
 
-        println!("skipping: {} {:?}", skip_n, units_iterable.peek().unwrap());
+        // println!("skipping: {} {:?}", skip_n, units_iterable.peek().unwrap());
 
         while let Some((current_index, current_unit)) = units_iterable.next() {
             if units_iterable.peek().is_none() {
@@ -34,10 +29,10 @@ fn main() {
                 break 'outer_loop;
             }
 
-            let (next_index, next_unit) = units_iterable.peek().unwrap();
+            let (_next_index, next_unit) = units_iterable.peek().unwrap();
 
             if does_react(*current_unit, **next_unit) {
-                println!("{} {}{}", current_index, current_unit, next_unit);
+                // println!("{} {}{}", current_index, current_unit, next_unit);
                 // println!("{},{}", current_index, next_index);
 
                 // remove these items and start from the beginning
@@ -45,22 +40,33 @@ fn main() {
                 // units.remove(current_index);
                 // units.remove(current_index);
 
+                // Know that first skip_n do not react, so we start again from there.
                 skip_n = if current_index == 0 {
                     current_index
                 } else {
                     current_index - 1
                 };
 
-                // println!("new_len: {:?}", units.len());
-
                 break;
             }
         }
     }
 
-    println!("remaining units: {:?}", units.len());
     let final_result: String = units.into_iter().collect();
-    println!("final_result: {}", final_result);
+    return final_result;
+}
+
+fn main() {
+    let input_string = include_str!("input.txt");
+
+    let final_result = part_1(input_string);
+
+    println!("Part 1:");
+    println!("Started with {} units.", input_string.len());
+    println!(
+        "How many units remain after fully reacting the polymer you scanned?: {}",
+        final_result.len()
+    );
 }
 
 #[cfg(test)]
@@ -88,5 +94,10 @@ mod tests {
         assert_eq!(does_react('a', 'a'), false);
         assert_eq!(does_react('A', 'A'), false);
         assert_eq!(does_react('a', 'A'), true);
+    }
+
+    #[test]
+    fn test_part_1() {
+        assert_eq!(part_1("dabAcCaCBAcCcaDA"), "dabCBAcaDA".to_string());
     }
 }
