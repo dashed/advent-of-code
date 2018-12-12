@@ -3,7 +3,7 @@ use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-#[derive(PartialEq, Hash, Eq)]
+#[derive(PartialEq, Hash, Eq, Clone)]
 struct Vertex(String);
 
 impl PartialOrd for Vertex {
@@ -36,8 +36,17 @@ impl Vertices {
         }
     }
 
-    fn has_vertex(&self, vertex: Vertex) -> bool {
-        return self.set.contains(&vertex);
+    fn has_vertex(&self, vertex: &Vertex) -> bool {
+        return self.set.contains(vertex);
+    }
+
+    fn add_vertex(&mut self, vertex: Vertex) {
+        if self.has_vertex(&vertex) {
+            return;
+        }
+
+        self.set.insert(vertex.clone());
+        self.order.push(vertex);
     }
 }
 
