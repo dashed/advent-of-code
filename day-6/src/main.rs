@@ -192,6 +192,10 @@ fn part_1(input_string: &str) -> Option<i32> {
             let (_dest2, second_smallest_distance) = distances.get(1).unwrap();
 
             if smallest_distance < second_smallest_distance {
+                // invariant: position belongs to the region defined by dest
+
+                // if a position is on the edge of the bounding box,
+                // then the region defined by dest has infinite area.
                 if !bounding_box.is_strictly_inside_bounding_box(position) {
                     regions.remove(&dest);
                     continue;
