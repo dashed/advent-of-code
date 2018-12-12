@@ -1,7 +1,13 @@
+// https://adventofcode.com/2018/day/7
+
+// imports
+
 use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::collections::HashSet;
+
+// types
 
 #[derive(PartialEq, Hash, Eq, Clone, Debug)]
 struct Vertex(String);
