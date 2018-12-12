@@ -229,6 +229,58 @@ fn part_1(input_string: &str) -> Option<i32> {
     return largest_region_size;
 }
 
+fn part_2(input_string: &str) -> Option<i32> {
+    let destinations: Vec<Position> = input_string.trim().lines().map(parse_to_coord).collect();
+
+    // from the given destinations, generate the bounding box.
+
+    let bounding_box = destinations
+        .iter()
+        .fold(None, |acc: Option<BoundingBox>, dest| match acc {
+            None => return Some(BoundingBox::new(*dest)),
+            Some(bounding_box) => {
+                return Some(bounding_box.add_point(*dest));
+            }
+        });
+
+    if bounding_box.is_none() {
+        println!("No bounding box generated.");
+        return None;
+    }
+
+    let bounding_box = bounding_box.unwrap();
+
+    let distance = 10000;
+    let gap = distance / destinations.len() as i32 + 1;
+
+    let mut size_of_region = 0;
+    for x in (bounding_box.get_x_start() - gap)..=(bounding_box.get_x_end() + gap) {
+        for y in (bounding_box.get_y_start() - gap)..=(bounding_box.get_y_end() + gap) {
+            let position = (x, y);
+
+            let mut total = 0;
+
+            for destination in &destinations {
+                let distance_to_position = get_manhattan_distance(position, *destination);
+
+                total += distance_to_position;
+
+                if total >= distance {
+                    continue;
+                }
+            }
+
+            if total >= distance {
+                continue;
+            }
+
+            size_of_region += 1;
+        }
+    }
+
+    return Some(size_of_region);
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
@@ -240,6 +292,17 @@ fn main() {
         }
         Some(largest_region_size) => {
             println!("Part 1 -- largest area size: {}", largest_region_size);
+        }
+    }
+
+    let largest_region_size = part_2(input_string);
+
+    match largest_region_size {
+        None => {
+            println!("Part 2 -- no region found");
+        }
+        Some(largest_region_size) => {
+            println!("Part 2 -- largest area size: {}", largest_region_size);
         }
     }
 }
