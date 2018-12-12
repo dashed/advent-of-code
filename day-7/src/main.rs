@@ -67,6 +67,13 @@ fn parse_instructions(input: &str) {
 }
 
 fn main() {
+
+    let input_string = include_str!("input.txt");
+
+    println!("{:?}", input_string);
+
+    // let dependency_edges: Vec<(Vertex, Vertex)> = input_string.trim().lines().map(parse_instructions).collect();
+
     // list of all vertices in the graph
     let vertices: Vertices = Vertices::new();
     // list of all vertices in the graph that have no pre-requisites
