@@ -42,6 +42,10 @@ impl Vertices {
         }
     }
 
+    fn get_vertices(&self) -> HashSet<Vertex> {
+        return self.set.clone();
+    }
+
     fn has_vertex(&self, vertex: &Vertex) -> bool {
         return self.set.contains(vertex);
     }
@@ -58,6 +62,10 @@ impl Vertices {
 
 type Edges = HashMap<Vertex, Vertices>;
 
+fn parse_instructions(input: &str) {
+
+}
+
 fn main() {
     // list of all vertices in the graph
     let vertices: Vertices = Vertices::new();
@@ -65,7 +73,29 @@ fn main() {
     let root_vertices: Vertices = Vertices::new();
     let edges: Edges = HashMap::new();
 
-    println!("Hello, world!");
+    // the min-heap always ensures available work is ordered alphabetically
+    let mut work_queue: BinaryHeap<Vertex> = BinaryHeap::new();
+
+    // TODO: add root into work queue
+
+    let mut work_order: Vec<String> = vec![];
+
+    while let Some(current_work) = work_queue.pop() {
+        let Vertex(name) = &current_work;
+        work_order.push(name.to_string());
+
+        // get all vertices adjacent to current_work, and add them to the work_queue
+        let vertices = {
+            edges.get(&current_work).unwrap();
+            vertices.get_vertices()
+        };
+
+        work_queue.extend(vertices.into_iter());
+    }
+
+    let work_order: String = work_order.join("");
+
+    println!("Part 1: {}", work_order);
 }
 
 #[cfg(test)]
