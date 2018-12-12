@@ -6,7 +6,6 @@ use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::iter::FromIterator;
 
 // types
 
@@ -71,7 +70,6 @@ impl Vertices {
         self.set.insert(vertex.clone());
         self.order.push(vertex);
     }
-
 }
 
 type Edges = HashMap<Vertex, Vertices>;
@@ -85,19 +83,19 @@ fn parse_instructions(input: &str) -> (Vertex, Vertex) {
     return (Vertex(first.to_string()), Vertex(second.to_string()));
 }
 
-fn main() {
-    let input_string = include_str!("input.txt");
-
+fn part_1(input_string: &str) -> String {
     let dependency_edges: Vec<(Vertex, Vertex)> = input_string
         .trim()
         .lines()
         .map(parse_instructions)
         .collect();
 
-
     // list of all vertices in the graph that have no pre-requisites
     let mut root_vertices: HashSet<Vertex> = HashSet::new();
+    // list of direct edges mapping one vertex to a set of vertices
     let mut edges: Edges = HashMap::new();
+    // vertices that have remaining work (vertices that need to be visited)
+    let mut remaining_work: HashMap<Vertex, HashSet<Vertex>> = HashMap::new();
 
     for (maybe_root, _) in &dependency_edges {
         root_vertices.insert(maybe_root.clone());
@@ -116,6 +114,17 @@ fn main() {
                 x.add_vertex(second.clone());
                 x
             });
+
+        remaining_work
+            .entry(second.clone())
+            .and_modify(|x| {
+                x.insert(first.clone());
+            })
+            .or_insert_with(|| {
+                let mut x = HashSet::new();
+                x.insert(first.clone());
+                x
+            });
     }
 
     // the min-heap always ensures available work is ordered alphabetically
@@ -129,10 +138,12 @@ fn main() {
     let mut work_order: Vec<String> = vec![];
 
     while let Some(current_work) = work_queue.pop() {
+        // perform work 🛠️
+
         let Vertex(name) = &current_work;
         work_order.push(name.to_string());
 
-        println!("visiting {}", name);
+        // println!("visiting {}", name);
 
         // get all vertices adjacent to current_work, and add them to the work_queue
 
@@ -143,17 +154,41 @@ fn main() {
             Some(adjacent_vertices) => {
                 let vertices = adjacent_vertices.get_vertices();
 
-                println!("add to work_queue: {:?}", vertices);
+                for adjacent_vertex in vertices.into_iter() {
+                    // for each adjacent vertex, remove current work from their set of remaining work
 
-                for vertex in vertices.into_iter() {
-                    work_queue.add_vertex(vertex);
+                    if remaining_work.contains_key(&adjacent_vertex) {
+                        let mut should_delete = false;
+
+                        remaining_work
+                            .entry(adjacent_vertex.clone())
+                            .and_modify(|x| {
+                                x.remove(&current_work);
+
+                                should_delete = x.is_empty();
+                            });
+
+                        if should_delete {
+                            // adjacent vertex has no remaining work left, add it to the work queue
+
+                            remaining_work.remove(&adjacent_vertex);
+                            work_queue.add_vertex(adjacent_vertex);
+                        }
+                    }
                 }
             }
         }
-
     }
 
     let work_order: String = work_order.join("");
+
+    return work_order;
+}
+
+fn main() {
+    let input_string = include_str!("input.txt");
+
+    let work_order = part_1(input_string);
 
     println!("Part 1: {}", work_order);
 }
@@ -173,6 +208,21 @@ mod tests {
         assert_eq!(heap.pop(), Some(Vertex("A".to_string())));
         assert_eq!(heap.pop(), Some(Vertex("B".to_string())));
         assert_eq!(heap.pop(), Some(Vertex("Z".to_string())));
+    }
+
+    #[test]
+    fn test_part_1() {
+        let input = r###"
+Step C must be finished before step A can begin.
+Step C must be finished before step F can begin.
+Step A must be finished before step B can begin.
+Step A must be finished before step D can begin.
+Step B must be finished before step E can begin.
+Step D must be finished before step E can begin.
+Step F must be finished before step E can begin.
+        "###;
+
+        assert_eq!(part_1(input), "CABDFE".to_string());
     }
 
 }
