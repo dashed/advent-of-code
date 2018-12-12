@@ -3,7 +3,6 @@
 // imports
 
 use std::collections::HashMap;
-use std::collections::HashSet;
 
 // helpers
 
@@ -11,16 +10,9 @@ type Position = (i32, i32);
 type Destination = Position;
 type Distance = i32;
 
-// set of Positions (i.e. grid coordinates) that belong to a region
-type Region = HashSet<Position>;
-// mapping a Region belonging to a Destination
-type Regions = HashMap<Destination, Region>;
-
-enum GridPositionState {
-    FreeClaim,
-    // current position belongs to region of given Destination and distance
-    Region(HashSet<Destination>, Distance),
-}
+type Area = i32;
+// mapping a Region to Area
+type Regions = HashMap<Destination, Area>;
 
 // https://math.stackexchange.com/a/139604/10247
 fn get_manhattan_distance(x: Position, y: Position) -> i32 {
@@ -72,40 +64,6 @@ fn is_better_right_edge(reference: Position, target: Position) -> bool {
     let target_point = get_x(target);
     return target_point > ref_point;
 }
-
-// struct GridPoints {
-//     current: Position,
-//     bounding_box: BoundingBox,
-// }
-
-// impl Iterator for GridPoints {
-//     type Item = Position;
-
-//     fn next(&mut self) -> Option<Position> {
-//         let (x, y) = self.current;
-
-//         // invariants
-//         assert!(self.bounding_box.get_x_start() <= x);
-//         assert!(x <= self.bounding_box.get_x_end());
-//         assert!(self.bounding_box.get_y_start() <= y);
-//         assert!(y <= self.bounding_box.get_y_end());
-
-//         if x < self.bounding_box.get_x_end() {
-//             let new_position = (x + 1, y);
-//             self.current = new_position;
-//             return Some(new_position);
-//         }
-
-//         if y < self.bounding_box.get_y_end() {
-//             let new_x = self.bounding_box.get_x_start();
-//             let new_position = (new_x, y + 1);
-//             self.current = new_position;
-//             return Some(new_position);
-//         }
-
-//         return None;
-//     }
-// }
 
 #[derive(Debug, Clone)]
 struct BoundingBox {
@@ -182,7 +140,6 @@ impl BoundingBox {
 }
 
 fn part_1(input_string: &str) -> Option<i32> {
-
     let destinations: Vec<Position> = input_string.trim().lines().map(parse_to_coord).collect();
 
     // from the given destinations, generate the bounding box.
@@ -207,111 +164,63 @@ fn part_1(input_string: &str) -> Option<i32> {
         let mut regions: Regions = HashMap::new();
 
         for destination in destinations.clone() {
-            let mut region = HashSet::new();
-            // a destination is part of its own region
-            region.insert(destination);
-
-            regions.insert(destination, region);
+            regions.insert(destination, 0);
         }
 
         regions
     };
 
-    for x in bounding_box.get_x_start()..(bounding_box.get_x_end() + 1) {
-        for y in bounding_box.get_y_start()..(bounding_box.get_y_end() + 1) {
+    for x in bounding_box.get_x_start()..=bounding_box.get_x_end() {
+        for y in bounding_box.get_y_start()..=bounding_box.get_y_end() {
             // find region that this position belongs to
             let position = (x, y);
 
-            let result = destinations.iter().fold(
-                GridPositionState::FreeClaim,
-                |acc: GridPositionState, destination| -> GridPositionState {
+            let mut distances: Vec<(Destination, Distance)> = destinations
+                .iter()
+                .map(|dest| {
+                    let distance_to_position = get_manhattan_distance(position, *dest);
+                    return (*dest, distance_to_position);
+                })
+                .collect();
 
-                    if *destination == position {
-                                let mut new_set = HashSet::new();
-                                new_set.insert(*destination);
+            // sort by distance from largest to smallest
+            distances.sort_by_key(|&(_dest, distance)| {
+                return distance;
+            });
 
-                                return GridPositionState::Region(new_set, 0);
-                    }
+            let (dest, smallest_distance) = distances.get(0).unwrap();
+            let (_dest2, second_smallest_distance) = distances.get(1).unwrap();
 
-                    match acc {
-                        GridPositionState::FreeClaim => {
-                            let distance = get_manhattan_distance(position, *destination);
-
-                            let mut set = HashSet::new();
-                            set.insert(*destination);
-
-                            return GridPositionState::Region(set, distance);
-                        }
-                        GridPositionState::Region(mut set, best_distance) => {
-                            assert!(set.len() > 0);
-                            assert!(!set.contains(destination));
-
-
-                            let distance = get_manhattan_distance(position, *destination);
-
-                            if distance > best_distance || best_distance == 0 {
-                                return GridPositionState::Region(set, best_distance);
-                            }
-
-                            if distance < best_distance {
-                                let mut new_set = HashSet::new();
-                                new_set.insert(*destination);
-
-                                return GridPositionState::Region(new_set, distance);
-                            }
-
-                            // invariant: distance == best_distance
-                            set.insert(*destination);
-                            return GridPositionState::Region(set, distance);
-                        }
-                    }
-                },
-            );
-
-            match result {
-                GridPositionState::FreeClaim => {
-                    unreachable!();
+            if smallest_distance < second_smallest_distance {
+                if !bounding_box.is_strictly_inside_bounding_box(position) {
+                    regions.remove(&dest);
+                    continue;
                 }
-                GridPositionState::Region(set, _best_distance) => {
-                    if set.len() == 1 {
-                        let destination = set.iter().next().unwrap();
-                        regions.entry(*destination).and_modify(|x| {
-                            assert!(x.len() > 0);
-                            assert!(x.contains(destination));
-                            if position != *destination {
-                                assert!(!x.contains(&position));
-                            } else {
-                                assert!(position == *destination);
-                            }
 
-                            x.insert(position);
-                        });
-                    }
-                }
+                regions.entry(*dest).and_modify(|e| *e += 1);
             }
         }
     }
 
-    let largest_region_size = regions
-        .iter()
-        .fold(None, |acc, (destination, region_area)| {
-            if !bounding_box.is_strictly_inside_bounding_box(*destination) {
-                return acc;
-            }
-
-            match acc {
-                None => return Some(region_area.len() as i32),
-                Some(best_region_area_size) => {
-                    let region_area_size = region_area.len() as i32;
-
-                    if region_area_size > best_region_area_size {
-                        return Some(region_area_size as i32);
-                    }
-
+    let largest_region_size =
+        regions
+            .iter()
+            .fold(None, |acc: Option<i32>, (destination, region_area)| {
+                if !bounding_box.is_strictly_inside_bounding_box(*destination) {
                     return acc;
                 }
-            }
-        });
+
+                match acc {
+                    None => return Some(*region_area),
+                    Some(largest_region_area_size) => {
+                        if region_area > &largest_region_area_size {
+                            return Some(*region_area);
+                        }
+
+                        return acc;
+                    }
+                }
+            });
 
     return largest_region_size;
 }
@@ -326,9 +235,6 @@ fn main() {
             println!("Part 1 -- no region found");
         }
         Some(largest_region_size) => {
-            // not 13444
-            // not 12570
-            // not 5826
             println!("Part 1 -- largest area size: {}", largest_region_size);
         }
     }
@@ -337,6 +243,11 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_parse_to_coord() {
+        assert_eq!(parse_to_coord("1, 6"), (1, 6));
+    }
 
     #[test]
     fn test_get_manhattan_distance() {
