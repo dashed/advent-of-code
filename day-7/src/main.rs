@@ -6,6 +6,7 @@ use std::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::iter::FromIterator;
 
 // types
 
@@ -42,6 +43,18 @@ impl Vertices {
         }
     }
 
+    fn pop(&mut self) -> Option<Vertex> {
+        let popped = self.order.pop();
+
+        match popped {
+            None => None,
+            Some(popped) => {
+                self.set.remove(&popped);
+                return Some(popped);
+            }
+        }
+    }
+
     fn get_vertices(&self) -> HashSet<Vertex> {
         return self.set.clone();
     }
@@ -58,32 +71,60 @@ impl Vertices {
         self.set.insert(vertex.clone());
         self.order.push(vertex);
     }
+
 }
 
 type Edges = HashMap<Vertex, Vertices>;
 
-fn parse_instructions(input: &str) {
+fn parse_instructions(input: &str) -> (Vertex, Vertex) {
+    let tokens: Vec<&str> = input.split_whitespace().collect();
 
+    let first = tokens.get(1).unwrap();
+    let second = tokens.get(7).unwrap();
+
+    return (Vertex(first.to_string()), Vertex(second.to_string()));
 }
 
 fn main() {
-
     let input_string = include_str!("input.txt");
 
-    println!("{:?}", input_string);
+    let dependency_edges: Vec<(Vertex, Vertex)> = input_string
+        .trim()
+        .lines()
+        .map(parse_instructions)
+        .collect();
 
-    // let dependency_edges: Vec<(Vertex, Vertex)> = input_string.trim().lines().map(parse_instructions).collect();
 
-    // list of all vertices in the graph
-    let vertices: Vertices = Vertices::new();
     // list of all vertices in the graph that have no pre-requisites
-    let root_vertices: Vertices = Vertices::new();
-    let edges: Edges = HashMap::new();
+    let mut root_vertices: HashSet<Vertex> = HashSet::new();
+    let mut edges: Edges = HashMap::new();
+
+    for (maybe_root, _) in &dependency_edges {
+        root_vertices.insert(maybe_root.clone());
+    }
+
+    for (first, second) in &dependency_edges {
+        root_vertices.remove(second);
+
+        edges
+            .entry(first.clone())
+            .and_modify(|x| {
+                x.add_vertex(second.clone());
+            })
+            .or_insert_with(|| {
+                let mut x = Vertices::new();
+                x.add_vertex(second.clone());
+                x
+            });
+    }
 
     // the min-heap always ensures available work is ordered alphabetically
-    let mut work_queue: BinaryHeap<Vertex> = BinaryHeap::new();
+    let mut work_queue = Vertices::new();
 
-    // TODO: add root into work queue
+    // add roots into work queue
+    for vertex in root_vertices {
+        work_queue.add_vertex(vertex);
+    }
 
     let mut work_order: Vec<String> = vec![];
 
@@ -91,13 +132,25 @@ fn main() {
         let Vertex(name) = &current_work;
         work_order.push(name.to_string());
 
-        // get all vertices adjacent to current_work, and add them to the work_queue
-        let vertices = {
-            edges.get(&current_work).unwrap();
-            vertices.get_vertices()
-        };
+        println!("visiting {}", name);
 
-        work_queue.extend(vertices.into_iter());
+        // get all vertices adjacent to current_work, and add them to the work_queue
+
+        let adjacent_vertices = edges.get(&current_work);
+
+        match adjacent_vertices {
+            None => {}
+            Some(adjacent_vertices) => {
+                let vertices = adjacent_vertices.get_vertices();
+
+                println!("add to work_queue: {:?}", vertices);
+
+                for vertex in vertices.into_iter() {
+                    work_queue.add_vertex(vertex);
+                }
+            }
+        }
+
     }
 
     let work_order: String = work_order.join("");
