@@ -3,7 +3,7 @@ use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-#[derive(PartialEq, Hash, Eq, Clone)]
+#[derive(PartialEq, Hash, Eq, Clone, Debug)]
 struct Vertex(String);
 
 impl PartialOrd for Vertex {
@@ -60,4 +60,23 @@ fn main() {
     let edges: Edges = HashMap::new();
 
     println!("Hello, world!");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_binary_heap() {
+        let mut heap: BinaryHeap<Vertex> = BinaryHeap::new();
+
+        heap.push(Vertex("Z".to_string()));
+        heap.push(Vertex("A".to_string()));
+        heap.push(Vertex("B".to_string()));
+
+        assert_eq!(heap.pop(), Some(Vertex("A".to_string())));
+        assert_eq!(heap.pop(), Some(Vertex("B".to_string())));
+        assert_eq!(heap.pop(), Some(Vertex("Z".to_string())));
+    }
+
 }
