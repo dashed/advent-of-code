@@ -37,13 +37,22 @@ fn get_total_power_level_of_square(
     // similarly for end_y
     let end_y = size + start_y - 1;
 
-    let mut total = 0;
+    let x_range: Vec<i32> = (start_x..=end_x).into_iter().collect();
+    let y_range: Vec<i32> = (start_y..=end_y).into_iter().collect();
 
-    for x in start_x..=end_x {
-        for y in start_y..=end_y {
-            total += get_power_level(x, y, grid_serial_number);
-        }
-    }
+    let total: i32 = x_range
+        .into_par_iter()
+        .map(|x| -> i32 {
+            let result: i32 = y_range
+                .par_iter()
+                .map(|y| -> i32 {
+                    return get_power_level(x, *y, grid_serial_number);
+                })
+                .sum();
+
+            return result;
+        })
+        .sum();
 
     return total;
 }
@@ -118,6 +127,8 @@ fn main() {
 
     println!("Part 1: {:?}", position);
 
+    // TODO: this is slow af.
+    // use this: https://en.wikipedia.org/wiki/Summed-area_table
     part_2(grid_serial_number);
 }
 
