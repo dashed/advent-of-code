@@ -130,5 +130,5 @@ fn main() {
         *pixel = image::Luma([color]);
     }
 
-    img_buffer.save("day_10_result.png").unwrap();
+    img_buffer.save("day-10/day_10_result.png").unwrap();
 }
