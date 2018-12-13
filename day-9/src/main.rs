@@ -4,8 +4,8 @@ type Score = usize;
 
 struct GameState {
     state: Vec<usize>,
-    // number of marbles added to the circle
-    num_of_marbles: usize,
+    // number of marbles added
+    num_of_marbles_added: usize,
     pos_of_current_marble: usize,
     players: Vec<Score>,
 }
@@ -22,7 +22,7 @@ impl GameState {
         GameState {
             // initially, the marble numbered 0 is placed within the circle
             state: vec![0],
-            num_of_marbles: 1,
+            num_of_marbles_added: 1,
             pos_of_current_marble: 0,
             players,
         }
@@ -30,7 +30,16 @@ impl GameState {
 
     fn get_position_clockwise(&self, pos_to_move: usize) -> usize {
         // get vector position that is pos_to_move to the right (i.e. clockwise) of pos_of_current_marble
-        return get_position_clockwise(self.pos_of_current_marble, pos_to_move, self.num_of_marbles);
+        return get_position_clockwise(self.pos_of_current_marble, pos_to_move, self.state.len());
+    }
+
+    fn get_position_counter_clockwise(&self, pos_to_move: usize) -> usize {
+        // get vector position that is pos_to_move to the left (i.e. clockwise) of pos_of_current_marble
+        return get_position_counter_clockwise(
+            self.pos_of_current_marble,
+            pos_to_move,
+            self.state.len(),
+        );
     }
 
     fn max_score(&self) -> Score {
@@ -38,32 +47,35 @@ impl GameState {
     }
 
     fn add_marble(&mut self) {
-        let value_of_next_marble = self.num_of_marbles;
+        let value_of_next_marble = self.num_of_marbles_added;
 
         // zero-based index
         let current_player = (value_of_next_marble - 1) % self.players.len();
 
-        if value_of_next_marble % 23 == 0 {
+        if (value_of_next_marble % 23) == 0 {
             // add new marble to current player's score
             self.players[current_player] += value_of_next_marble;
 
-            // TODO: the marble 7 marbles counter-clockwise from the current marble is removed from the circle
+            // the marble 7 marbles counter-clockwise from the current marble is removed from the circle
             // and also added to the current player's score.
+            let pos_to_remove = self.get_position_counter_clockwise(7);
+            let removed_marble = self.state.remove(pos_to_remove);
+            self.players[current_player] += removed_marble;
 
-            // TODO: The marble located immediately clockwise of the marble that was removed becomes the new current marble.
+            // The marble located immediately clockwise of the marble that was removed becomes the new current marble.
+            self.pos_of_current_marble = pos_to_remove % self.state.len();
+
+            self.num_of_marbles_added += 1;
             return;
         }
 
-        let new_num_of_marbles = self.num_of_marbles + 1;
-
         // get position to add new marble into
-        let new_position = (self.get_position_clockwise(1) + 1) % new_num_of_marbles;
+        let new_position = (self.get_position_clockwise(1) + 1) % (self.state.len() + 1);
 
         // update game state
 
-        self.num_of_marbles += 1;
         self.pos_of_current_marble = new_position;
-
+        self.num_of_marbles_added += 1;
         self.state.insert(new_position, value_of_next_marble);
     }
 }
@@ -94,9 +106,7 @@ fn get_position_counter_clockwise(
     return modulo(new_position, num_of_marbles);
 }
 
-fn main() {
-    let input_string = include_str!("input.txt");
-
+fn part_1(input_string: &str) -> Score {
     let (num_of_players, nth_marble): (usize, i32) = {
         let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
 
@@ -106,26 +116,22 @@ fn main() {
         )
     };
 
-    println!("num_of_players: {}", num_of_players);
-    println!("nth_marble: {}", nth_marble);
-
     // init marble game with the first marble in the circle
     let mut game_state: GameState = GameState::new(num_of_players);
 
-    for _ in 0..9 {
-        println!(
-            "{:?}",
-            game_state
-                .state
-                .iter()
-                .map(|x| x.to_string())
-                .collect::<Vec<String>>()
-                .join("  ")
-        );
+    for _idx in 1..=nth_marble {
         game_state.add_marble();
     }
 
-    println!("{}", get_position_clockwise(0, 2, 1));
+    return game_state.max_score();
+}
+
+fn main() {
+    let input_string = include_str!("input.txt");
+
+    let max_score = part_1(input_string);
+
+    println!("Part 1: {:?}", max_score);
 }
 
 #[cfg(test)]
@@ -144,6 +150,24 @@ mod tests {
     fn test_get_position_counter_clockwise() {
         assert_eq!(get_position_counter_clockwise(12, 1, 13), 11);
         assert_eq!(get_position_counter_clockwise(0, 1, 13), 12);
+    }
+
+    #[test]
+    fn test_part_1() {
+        assert_eq!(part_1("10 players; last marble is worth 1618 points"), 8317);
+        assert_eq!(
+            part_1("13 players; last marble is worth 7999 points"),
+            146373
+        );
+        assert_eq!(part_1("17 players; last marble is worth 1104 points"), 2764);
+        assert_eq!(
+            part_1("21 players; last marble is worth 6111 points"),
+            54718
+        );
+        assert_eq!(
+            part_1("30 players; last marble is worth 5807 points"),
+            37305
+        );
     }
 
 }
