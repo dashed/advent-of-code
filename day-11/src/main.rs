@@ -1,5 +1,7 @@
 // https://adventofcode.com/2018/day/11
 
+use rayon::prelude::*;
+
 fn get_power_level(x: i32, y: i32, grid_serial_number: i32) -> i32 {
     let rack_id = x + 10;
     let power_level = rack_id * y;
@@ -46,28 +48,77 @@ fn get_total_power_level_of_square(
     return total;
 }
 
-fn main() {
-    let grid_serial_number = 4172;
-
-    let sub_grid_size = 3;
+fn part_1(grid_serial_number: i32, sub_grid_size: i32) -> ((i32, i32), i32) {
     let height = 300;
     let width = 300;
 
-    let mut position: Option<(i32, i32)> = None;
-    let mut largest_total_power = 0;
+    let x_range: Vec<i32> = (1..=(height - sub_grid_size + 1)).into_iter().collect();
+    let y_range: Vec<i32> = (1..=(width - sub_grid_size + 1)).into_iter().collect();
 
-    for x in 1..=(width - sub_grid_size) {
-        for y in 1..=(height - sub_grid_size) {
-            let total = get_total_power_level_of_square(x, y, sub_grid_size, grid_serial_number);
+    let best: ((i32, i32), i32) = x_range
+        .into_par_iter()
+        .map(|x| {
+            let best: ((i32, i32), i32) = y_range
+                .par_iter()
+                .map(|y| {
+                    let total =
+                        get_total_power_level_of_square(x, *y, sub_grid_size, grid_serial_number);
 
-            if total > largest_total_power {
-                largest_total_power = total;
-                position = Some((x, y));
-            }
-        }
-    }
+                    let position: (i32, i32) = (x, *y);
+
+                    return (position, total);
+                })
+                .max_by_key(|item| {
+                    let (_position, total) = item;
+                    return total.clone();
+                })
+                .unwrap();
+
+            return best;
+        })
+        .max_by_key(|item| {
+            let (_position, total) = item;
+            return total.clone();
+        })
+        .unwrap();
+
+    let (position, largest_total_power) = best;
+
+    return (position, largest_total_power);
+}
+
+fn part_2(grid_serial_number: i32) {
+    let range: Vec<i32> = (1..=300).into_iter().collect();
+
+    let result = range
+        .into_par_iter()
+        .map(|sub_grid_size: i32| {
+            println!("sub_grid_size: {}", sub_grid_size);
+
+            let (position, total) = part_1(grid_serial_number, sub_grid_size);
+
+            return (position, total, sub_grid_size);
+        })
+        .max_by_key(|x| {
+            let (_position, total, _sub_grid_size) = x;
+            return total.clone();
+        })
+        .unwrap();
+
+    let (best_position, _total, best_sub_grid_size) = result;
+
+    println!("Part 2: {:?},{}", best_position, best_sub_grid_size);
+}
+
+fn main() {
+    let grid_serial_number = 4172;
+    let sub_grid_size = 3;
+
+    let (position, _) = part_1(grid_serial_number, sub_grid_size);
 
     println!("Part 1: {:?}", position);
+
+    part_2(grid_serial_number);
 }
 
 #[cfg(test)]
