@@ -90,22 +90,22 @@ fn main() {
     println!("max_x: {}", max_x);
     println!("max_y: {}", max_y);
 
-    let margin_gap = 50;
+    let margin_gap = 10;
 
     let x_adjustment = if min_x < 0 {
-        min_x.abs() + margin_gap
+        min_x.abs()
     } else {
-        0
+        -min_x
     };
 
     let y_adjustment = if min_y < 0 {
-        min_y.abs() + margin_gap
+        min_y.abs()
     } else {
-        0
+        -min_y
     };
 
-    let width = max_x + x_adjustment + 1 + margin_gap * 2;
-    let height = max_y + y_adjustment + 1 + margin_gap * 2;
+    let width = (max_x - min_x + 1) + margin_gap * 2;
+    let height = (max_y -min_y + 1) + margin_gap * 2;
 
     println!("width: {}", width);
     println!("height: {}", height);
@@ -116,8 +116,8 @@ fn main() {
     for star in inputs.iter() {
         let (x, y) = star.position;
 
-        let x = x_adjustment + x;
-        let y = y_adjustment + y;
+        let x = x_adjustment + x + margin_gap;
+        let y = y_adjustment + y + margin_gap;
 
         assert!(x < width);
         assert!(x >= 0);
