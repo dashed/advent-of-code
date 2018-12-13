@@ -8,15 +8,26 @@ struct Node {
 }
 
 impl Node {
-
     fn part_2_get_value(&self) -> i32 {
-
         if self.children.len() <= 0 {
             return self.metadata.iter().sum();
         }
 
-        // TODO: implement
-        return 0;
+        let mut total_value = 0;
+
+        for nth_child in &self.metadata {
+            let index = (*nth_child - 1) as usize;
+
+            let child_node = self.children.get(index);
+
+            if child_node.is_none() {
+                continue;
+            }
+
+            total_value += child_node.unwrap().part_2_get_value();
+        }
+
+        return total_value;
     }
 }
 
