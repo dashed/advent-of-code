@@ -92,20 +92,12 @@ fn main() {
 
     let margin_gap = 10;
 
-    let x_adjustment = if min_x < 0 {
-        min_x.abs()
-    } else {
-        -min_x
-    };
+    let x_adjustment = if min_x < 0 { min_x.abs() } else { -min_x };
 
-    let y_adjustment = if min_y < 0 {
-        min_y.abs()
-    } else {
-        -min_y
-    };
+    let y_adjustment = if min_y < 0 { min_y.abs() } else { -min_y };
 
     let width = (max_x - min_x + 1) + margin_gap * 2;
-    let height = (max_y -min_y + 1) + margin_gap * 2;
+    let height = (max_y - min_y + 1) + margin_gap * 2;
 
     println!("width: {}", width);
     println!("height: {}", height);
