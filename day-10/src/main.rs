@@ -65,7 +65,7 @@ fn parse_input_to_star(input: &str) -> Star {
 }
 
 fn main() {
-    let wait_for = 3;
+    let wait_for = 10124;
 
     let input_string = include_str!("input.txt");
 
@@ -95,13 +95,13 @@ fn main() {
     let x_adjustment = if min_x < 0 {
         min_x.abs() + margin_gap
     } else {
-        margin_gap
+        0
     };
 
     let y_adjustment = if min_y < 0 {
         min_y.abs() + margin_gap
     } else {
-        margin_gap
+        0
     };
 
     let width = max_x + x_adjustment + 1 + margin_gap * 2;
@@ -109,6 +109,7 @@ fn main() {
 
     println!("width: {}", width);
     println!("height: {}", height);
+    println!("area: {}", height * width);
 
     let mut img_buffer = image::GrayImage::new(width as u32, height as u32);
 
