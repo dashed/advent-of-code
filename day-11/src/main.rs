@@ -30,8 +30,6 @@ fn get_total_power_level_of_square(
     size: i32,
     grid_serial_number: i32,
 ) -> i32 {
-    let size = size - 1;
-
     // end_y - start_x + 1 = size
     let end_x = size + start_x - 1;
     // similarly for end_y
@@ -51,12 +49,25 @@ fn get_total_power_level_of_square(
 fn main() {
     let grid_serial_number = 4172;
 
+    let sub_grid_size = 3;
     let height = 300;
     let width = 300;
 
-    get_power_level(3, 5, 8);
+    let mut position: Option<(i32, i32)> = None;
+    let mut largest_total_power = 0;
 
-    println!("Hello, world!");
+    for x in 1..=(width - sub_grid_size) {
+        for y in 1..=(height - sub_grid_size) {
+            let total = get_total_power_level_of_square(x, y, sub_grid_size, grid_serial_number);
+
+            if total > largest_total_power {
+                largest_total_power = total;
+                position = Some((x, y));
+            }
+        }
+    }
+
+    println!("Part 1: {:?}", position);
 }
 
 #[cfg(test)]
@@ -69,6 +80,12 @@ mod tests {
         assert_eq!(get_power_level(122, 79, 57), -5);
         assert_eq!(get_power_level(217, 196, 39), 0);
         assert_eq!(get_power_level(101, 153, 71), 4);
+    }
+
+    #[test]
+    fn test_get_total_power_level_of_square() {
+        assert_eq!(get_total_power_level_of_square(33, 45, 3, 18), 29);
+        assert_eq!(get_total_power_level_of_square(21, 61, 3, 42), 30);
     }
 
 }
