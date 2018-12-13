@@ -4,7 +4,9 @@ type Score = i32;
 
 struct GameState {
     state: Vec<i32>,
-    current_marble: usize,
+    // number of marbles added to the circle
+    num_of_marbles: usize,
+    pos_of_current_marble: usize,
     players: Vec<Score>,
 }
 
@@ -18,8 +20,10 @@ impl GameState {
         }
 
         GameState {
+            // initially, the marble numbered 0 is placed within the circle
             state: vec![0],
-            current_marble: 0,
+            num_of_marbles: 1,
+            pos_of_current_marble: 0,
             players,
         }
     }
