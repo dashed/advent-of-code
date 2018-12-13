@@ -1,9 +1,9 @@
 // https://adventofcode.com/2018/day/9
 
-type Score = i32;
+type Score = usize;
 
 struct GameState {
-    state: Vec<i32>,
+    state: Vec<usize>,
     // number of marbles added to the circle
     num_of_marbles: usize,
     pos_of_current_marble: usize,
@@ -37,13 +37,61 @@ impl GameState {
         return *self.players.iter().max().unwrap();
     }
 
-    fn add_marble() {
+    fn add_marble(&mut self) {
+        let value_of_next_marble = self.num_of_marbles;
 
+        // zero-based index
+        let current_player = (value_of_next_marble - 1) % self.players.len();
+
+        if value_of_next_marble % 23 == 0 {
+            // add new marble to current player's score
+            self.players[current_player] += value_of_next_marble;
+
+            // TODO: the marble 7 marbles counter-clockwise from the current marble is removed from the circle
+            // and also added to the current player's score.
+
+            // TODO: The marble located immediately clockwise of the marble that was removed becomes the new current marble.
+            return;
+        }
+
+        let new_num_of_marbles = self.num_of_marbles + 1;
+
+        // get position to add new marble into
+        let new_position = (self.get_position_clockwise(1) + 1) % new_num_of_marbles;
+
+        // update game state
+
+        self.num_of_marbles += 1;
+        self.pos_of_current_marble = new_position;
+
+        self.state.insert(new_position, value_of_next_marble);
     }
 }
 
-fn get_position_clockwise(current_position: usize, pos_to_move: usize, num_of_marbles: usize) -> usize {
-    return (current_position + pos_to_move) % num_of_marbles;
+// ref: http://yourdailygeekery.com/2011/06/28/modulo-of-negative-numbers.html
+fn modulo(a: i32, b: usize) -> usize {
+    let b = b as i32;
+    (((a % b) + b) % b) as usize
+}
+
+fn get_position_clockwise(
+    current_position: usize,
+    pos_to_move: usize,
+    num_of_marbles: usize,
+) -> usize {
+    assert!(current_position < num_of_marbles);
+    let new_position: i32 = (current_position as i32) + (pos_to_move as i32);
+    return modulo(new_position, num_of_marbles);
+}
+
+fn get_position_counter_clockwise(
+    current_position: usize,
+    pos_to_move: usize,
+    num_of_marbles: usize,
+) -> usize {
+    assert!(current_position < num_of_marbles);
+    let new_position: i32 = (current_position as i32) - (pos_to_move as i32);
+    return modulo(new_position, num_of_marbles);
 }
 
 fn main() {
@@ -62,11 +110,23 @@ fn main() {
     println!("nth_marble: {}", nth_marble);
 
     // init marble game with the first marble in the circle
-    let game_state: GameState = GameState::new(num_of_players);
+    let mut game_state: GameState = GameState::new(num_of_players);
+
+    for _ in 0..9 {
+        println!(
+            "{:?}",
+            game_state
+                .state
+                .iter()
+                .map(|x| x.to_string())
+                .collect::<Vec<String>>()
+                .join("  ")
+        );
+        game_state.add_marble();
+    }
 
     println!("{}", get_position_clockwise(0, 2, 1));
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -74,8 +134,16 @@ mod tests {
 
     #[test]
     fn test_get_position_clockwise() {
+        assert_eq!(get_position_clockwise(0, 1, 1), 0);
         assert_eq!(get_position_clockwise(1, 1, 8), 2);
         assert_eq!(get_position_clockwise(7, 1, 8), 0);
+        assert_eq!(get_position_clockwise(12, 1, 13), 0);
+    }
+
+    #[test]
+    fn test_get_position_counter_clockwise() {
+        assert_eq!(get_position_counter_clockwise(12, 1, 13), 11);
+        assert_eq!(get_position_counter_clockwise(0, 1, 13), 12);
     }
 
 }
