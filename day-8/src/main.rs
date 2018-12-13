@@ -16,9 +16,13 @@ impl Node {
         let mut total_value = 0;
 
         for nth_child in &self.metadata {
-            let index = (*nth_child - 1) as usize;
+            let index = *nth_child - 1;
 
-            let child_node = self.children.get(index);
+            if index < 0 {
+                continue;
+            }
+
+            let child_node = self.children.get(index as usize);
 
             if child_node.is_none() {
                 continue;
