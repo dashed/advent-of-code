@@ -7,6 +7,19 @@ struct Node {
     metadata: Vec<i32>,
 }
 
+impl Node {
+
+    fn part_2_get_value(&self) -> i32 {
+
+        if self.children.len() <= 0 {
+            return self.metadata.iter().sum();
+        }
+
+        // TODO: implement
+        return 0;
+    }
+}
+
 fn parse_node<I: Iterator<Item = i32>>(iter: &mut I) -> Node {
     // parse headers
     let num_of_child_nodes = iter.next().unwrap();
@@ -64,11 +77,28 @@ fn part_1(input_string: &str) -> i32 {
     return total;
 }
 
+fn part_2(input_string: &str) -> i32 {
+    let mut iter = input_string
+        .trim()
+        .split_whitespace()
+        .map(|x| -> i32 {
+            return x.trim().parse().unwrap();
+        })
+        .into_iter();
+
+    let root_node = parse_node(&mut iter);
+
+    return root_node.part_2_get_value();
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
     let total = part_1(input_string);
     println!("Part 1: {}", total);
+
+    let root_node_value = part_2(input_string);
+    println!("Part 2: {}", root_node_value);
 }
 
 #[cfg(test)]
@@ -76,12 +106,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_vertex_binary_heap() {
+    fn test_part_1() {
         let input_string = r###"
 2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2
         "###;
 
         assert_eq!(part_1(input_string), 138);
+    }
+
+    #[test]
+    fn test_part_2() {
+        let input_string = r###"
+2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2
+        "###;
+
+        assert_eq!(part_2(input_string), 66);
     }
 
 }
