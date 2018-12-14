@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 type Coordinate = (i32, i32);
 
@@ -21,6 +22,7 @@ enum Track {
 
 type Map = HashMap<Coordinate, Track>;
 
+#[derive(Debug, PartialEq, Eq, Hash)]
 enum TurningOption {
     Left,
     Straight,
@@ -37,6 +39,7 @@ impl TurningOption {
     }
 }
 
+#[derive(Debug, Eq, PartialEq, Hash)]
 struct Cart {
     current_position: Coordinate,
     // when a cart arrives at an intersection, this rule determines the cart's
@@ -44,6 +47,12 @@ struct Cart {
     turning_option: TurningOption,
 }
 
+type Carts = HashSet<Cart>;
+
 fn main() {
-    println!("Hello, world!");
+    let input_string = include_str!("input.txt");
+
+    println!("{:?}", input_string);
+
+    let carts: Carts = HashSet::new();
 }
