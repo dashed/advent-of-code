@@ -14,9 +14,22 @@ fn is_valid_plant_state(x: char) -> bool {
     return x == '.' || x == '#';
 }
 
+#[derive(Debug)]
 enum PotState {
     NoPlant,
     HasPlant,
+}
+
+impl PotState {
+    fn from_char(x: char) -> PotState {
+        assert!(is_valid_plant_state(x));
+
+        if has_plant(x) {
+            return PotState::HasPlant;
+        }
+
+        return PotState::NoPlant;
+    }
 }
 
 struct Rule {
@@ -34,7 +47,20 @@ struct Rule {
 
 impl Rule {
     fn from_string(input: &str) {
-        input.trim().split("=>");
+        let mut iter = input.trim().split("=>").into_iter();
+
+        let initial_rule: &str = iter.next().unwrap().trim();
+
+        let next_state: PotState = iter
+            .next()
+            .unwrap()
+            .trim()
+            .chars()
+            .map(PotState::from_char)
+            .next()
+            .unwrap();
+
+        println!("{} => {:?}", initial_rule, next_state);
     }
 }
 
@@ -66,7 +92,11 @@ fn main() {
         // skip empty line
         iter.next();
 
-        let inputs: Vec<String> = iter.map(|x| x.to_string()).collect();
+        let inputs: Vec<String> = iter.map(|x| x.trim().to_string()).collect();
+
+        for input in inputs {
+            Rule::from_string(&input);
+        }
     };
 
     // println!("{:?}", inputs);
