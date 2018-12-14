@@ -1,5 +1,8 @@
 use std::collections::BTreeMap;
 use std::collections::HashMap;
+use std::collections::HashSet;
+use std::collections::VecDeque;
+use std::iter::FromIterator;
 
 // helpers and types
 
@@ -159,12 +162,30 @@ fn generate_next_state(mut state: State, rules: &Rules) -> State {
 fn state_to_string(state: &State) -> String {
     let state_string: String = state
         .iter()
-        .map(|(_key, plant_state)| match plant_state {
-            PotState::HasPlant => "#",
-            PotState::NoPlant => ".",
+        .map(|(key, plant_state)| {
+            if *key < 0 || *key > 120 {
+                return "";
+            }
+
+            match plant_state {
+                PotState::HasPlant => "#",
+                PotState::NoPlant => ".",
+            }
         })
         .collect();
     return state_string;
+}
+
+fn state_to_sum(state: &State) -> i32 {
+    return state
+        .iter()
+        .map(|(pot_index, plant_state)| -> i32 {
+            match plant_state {
+                PotState::HasPlant => *pot_index,
+                PotState::NoPlant => 0,
+            }
+        })
+        .sum();
 }
 
 fn main() {
@@ -222,15 +243,38 @@ fn main() {
         // println!("{}", state_to_string(&state));
     }
 
-    let part_1: i32 = state
-        .iter()
-        .map(|(pot_index, plant_state)| -> i32 {
-            match plant_state {
-                PotState::HasPlant => *pot_index,
-                PotState::NoPlant => 0,
-            }
-        })
-        .sum();
+    println!("Part 1: {}", state_to_sum(&state));
 
-    println!("Part 1: {}", part_1);
+    let mut tracked_diffs: VecDeque<i32> = VecDeque::new();
+
+    for generation in (num_of_generations + 1)..=2000 {
+        let prev_sum = state_to_sum(&state);
+        let next_state = generate_next_state(state, &rules);
+
+        let total = state_to_sum(&next_state);
+        let diff = total - prev_sum;
+
+        // println!("sum: {} diff: {} generation: {}", total, diff, generation);
+
+        state = next_state;
+
+        // below is based on https://www.reddit.com/r/adventofcode/comments/a5eztl/2018_day_12_solutions/ebm4c9d/
+
+        if tracked_diffs.len() >= 100 {
+            tracked_diffs.pop_front();
+        }
+
+        tracked_diffs.push_back(diff);
+
+        if tracked_diffs.len() >= 100 {
+            let set: HashSet<&i32> = HashSet::from_iter(tracked_diffs.iter());
+            if set.len() <= 1 {
+                let generation_target: i64 = 50_000_000_000;
+                let part_2_answer: i64 =
+                    (generation_target - (generation as i64)) * (diff as i64) + (total as i64);
+                println!("Part 2: {}", part_2_answer);
+                break;
+            }
+        }
+    }
 }
