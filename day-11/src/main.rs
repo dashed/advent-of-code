@@ -7,6 +7,7 @@ fn get_row_major_order_idx(x: usize, y: usize, width: usize) -> usize {
 }
 
 struct SummedAreaTable {
+    grid_size: usize,
     inner_array: Vec<i32>,
 }
 
@@ -25,7 +26,10 @@ impl SummedAreaTable {
         // pre-populate the array with their corresponding power levels
         for x in 0..grid_size {
             for y in 0..grid_size {
-                let power_level = get_power_level(x as i32, y as i32, grid_serial_number);
+                let normalized_x = (x + 1) as i32;
+                let normalized_y = (y + 1) as i32;
+
+                let power_level = get_power_level(normalized_x, normalized_y, grid_serial_number);
 
                 let index = get_row_major_order_idx(x, y, grid_size);
                 inner_array[index] = power_level;
@@ -37,8 +41,7 @@ impl SummedAreaTable {
         for x in 0..grid_size {
             for y in 0..grid_size {
                 // sum itself
-                let index = get_row_major_order_idx(x, y, grid_size);
-                let mut sum = inner_array[index];
+                let mut sum: i32 = inner_array[get_row_major_order_idx(x, y, grid_size)];
 
                 // to the left
                 if x > 0 {
@@ -52,20 +55,49 @@ impl SummedAreaTable {
 
                 // above and to the left
                 if x > 0 && y > 0 {
-                    sum += inner_array[get_row_major_order_idx(x - 1, y - 1, grid_size)];
+                    sum -= inner_array[get_row_major_order_idx(x - 1, y - 1, grid_size)];
                 }
 
-                sum = inner_array[index];
+                inner_array[get_row_major_order_idx(x, y, grid_size)] = sum;
             }
         }
 
         SummedAreaTable {
+            grid_size: grid_size,
             inner_array: inner_array,
         }
+    }
+
+    fn get_spanned_square(&self, x: usize, y: usize, sub_grid_size: usize) -> i32 {
+        assert!(x < self.grid_size);
+        assert!(y < self.grid_size);
+        assert!(sub_grid_size <= self.grid_size);
+        assert!(x + sub_grid_size <= self.grid_size);
+
+        // top-left corner
+        let index = get_row_major_order_idx(x, y, self.grid_size);
+        let top_left = self.inner_array[index];
+
+        // invariant: end_x - x + 1 = sub_grid_size
+        let end_x = sub_grid_size + x - 1;
+        // invariant: end_y - y + 1 = sub_grid_size
+        let end_y = sub_grid_size + y - 1;
+
+        // top-right corner
+        let top_right = self.inner_array[get_row_major_order_idx(end_x, y, self.grid_size)];
+        // bottom-left corner
+        let bottom_left = self.inner_array[get_row_major_order_idx(x, end_y, self.grid_size)];
+        // bottom-right corner
+        let bottom_right = self.inner_array[get_row_major_order_idx(end_x, end_y, self.grid_size)];
+
+        return bottom_right + top_left - top_right - bottom_left;
     }
 }
 
 fn get_power_level(x: i32, y: i32, grid_serial_number: i32) -> i32 {
+    assert!(x > 0);
+    assert!(y > 0);
+
     let rack_id = x + 10;
     let power_level = rack_id * y;
     let power_level = power_level + grid_serial_number;
@@ -159,6 +191,29 @@ fn part_1(grid_serial_number: i32, sub_grid_size: i32) -> ((i32, i32), i32) {
     return (position, largest_total_power);
 }
 
+fn part_1_optimized(
+    summed_area_table: &SummedAreaTable,
+    sub_grid_size: usize,
+) -> ((usize, usize), i32) {
+    let width = summed_area_table.grid_size;
+    let height = summed_area_table.grid_size;
+
+    let mut largest_total_power = 0;
+    let mut best_position = None;
+
+    for x in 1..=(width - sub_grid_size + 1) {
+        for y in 1..=(height - sub_grid_size + 1) {
+            let total = summed_area_table.get_spanned_square(x - 1, y - 1, sub_grid_size);
+            if total > largest_total_power {
+                largest_total_power = total;
+                best_position = Some((x, y));
+            }
+        }
+    }
+
+    return (best_position.unwrap(), largest_total_power);
+}
+
 fn part_2(grid_serial_number: i32) {
     let range: Vec<i32> = (1..=300).into_iter().collect();
 
@@ -183,16 +238,28 @@ fn part_2(grid_serial_number: i32) {
 }
 
 fn main() {
+    let grid_size = 300;
     let grid_serial_number = 4172;
-    let sub_grid_size = 3;
+    let sub_grid_size: usize = 3;
 
-    let (position, _) = part_1(grid_serial_number, sub_grid_size);
+    let (position, power) = part_1(grid_serial_number, sub_grid_size as i32);
 
-    println!("Part 1: {:?}", position);
+    println!("Part 1: {:?} {}", position, power);
 
     // TODO: this is slow af.
     // use this: https://en.wikipedia.org/wiki/Summed-area_table
-    part_2(grid_serial_number);
+    // part_2(grid_serial_number);
+
+    let summed_area_table = SummedAreaTable::new(grid_size, grid_serial_number);
+
+    // let (position, power) = part_1_optimized(&summed_area_table, sub_grid_size);
+
+    // println!("Part 1 optimized: {:?} {}", position, power);
+    println!("{:?}", summed_area_table.get_spanned_square(0, 0, 1));
+    println!(
+        "{:?}",
+        get_total_power_level_of_square(1, 1, sub_grid_size as i32, grid_serial_number)
+    );
 }
 
 #[cfg(test)]
