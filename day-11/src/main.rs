@@ -2,6 +2,69 @@
 
 use rayon::prelude::*;
 
+fn get_row_major_order_idx(x: usize, y: usize, width: usize) -> usize {
+    return width * y + x;
+}
+
+struct SummedAreaTable {
+    inner_array: Vec<i32>,
+}
+
+// https://en.wikipedia.org/wiki/Summed-area_table
+impl SummedAreaTable {
+    fn new(grid_size: usize, grid_serial_number: i32) -> SummedAreaTable {
+        assert!(grid_size > 0);
+
+        // this will be a square summed-area table
+
+        let area = (grid_size * grid_size) as usize;
+
+        // linear array: https://en.wikipedia.org/wiki/Row-_and_column-major_order
+        let mut inner_array = vec![0; area];
+
+        // pre-populate the array with their corresponding power levels
+        for x in 0..grid_size {
+            for y in 0..grid_size {
+                let power_level = get_power_level(x as i32, y as i32, grid_serial_number);
+
+                let index = get_row_major_order_idx(x, y, grid_size);
+                inner_array[index] = power_level;
+            }
+        }
+
+        // for each fuel cell (item in the array), the sum of all the values above
+        // and to the left of (x, y), inclusive
+        for x in 0..grid_size {
+            for y in 0..grid_size {
+                // sum itself
+                let index = get_row_major_order_idx(x, y, grid_size);
+                let mut sum = inner_array[index];
+
+                // to the left
+                if x > 0 {
+                    sum += inner_array[get_row_major_order_idx(x - 1, y, grid_size)];
+                }
+
+                // above
+                if y > 0 {
+                    sum += inner_array[get_row_major_order_idx(x, y - 1, grid_size)];
+                }
+
+                // above and to the left
+                if x > 0 && y > 0 {
+                    sum += inner_array[get_row_major_order_idx(x - 1, y - 1, grid_size)];
+                }
+
+                sum = inner_array[index];
+            }
+        }
+
+        SummedAreaTable {
+            inner_array: inner_array,
+        }
+    }
+}
+
 fn get_power_level(x: i32, y: i32, grid_serial_number: i32) -> i32 {
     let rack_id = x + 10;
     let power_level = rack_id * y;
