@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 
 // helpers and types
 
@@ -95,15 +95,51 @@ impl Rule {
     }
 }
 
-fn generate_next_state(state: State, rules: &Rules) -> State {
+fn get_pot_from_state(state: &State, index: PotIndex) -> PotState {
+    match state.get(&index) {
+        None => PotState::NoPlant,
+        Some(plant_state) => plant_state.clone(),
+    }
+}
 
-    let next_state = state.clone();
+fn generate_next_state(state: State, rules: &Rules) -> State {
+    let mut next_state = state.clone();
 
     for (pot_index, plant_state) in state.iter() {
-        println!("{} {:?}", pot_index, plant_state);
+        let left_plant_2: PotState = get_pot_from_state(&state, pot_index - 2);
+        let left_plant_1: PotState = get_pot_from_state(&state, pot_index - 1);
+        let right_plant_1: PotState = get_pot_from_state(&state, pot_index + 1);
+        let right_plant_2: PotState = get_pot_from_state(&state, pot_index + 2);
+
+        let rule_needle = InitialRule {
+            left: (left_plant_2, left_plant_1),
+            current: plant_state.clone(),
+            right: (right_plant_1, right_plant_2),
+        };
+
+        if rules.contains_key(&rule_needle) {
+            // assert!(rules.contains_key(&rule_needle));
+
+            let next_plant_state = &rules.get(&rule_needle).unwrap().next;
+
+            next_state.insert(*pot_index, next_plant_state.clone());
+        } else {
+            next_state.insert(*pot_index, PotState::NoPlant);
+        }
     }
 
     return next_state;
+}
+
+fn state_to_string(state: &State) -> String {
+    let state_string: String = state
+        .iter()
+        .map(|(_key, plant_state)| match plant_state {
+            PotState::HasPlant => "#",
+            PotState::NoPlant => ".",
+        })
+        .collect();
+    return state_string;
 }
 
 fn main() {
@@ -150,9 +186,27 @@ fn main() {
         rules
     };
 
-    let num_of_generations = 20;
+    println!("{}", state_to_string(&state));
+
+    let num_of_generations = 1;
 
     for _generation in 1..=num_of_generations {
         state = generate_next_state(state, &rules);
+
+        // Debug
+
+        println!("{}", state_to_string(&state));
     }
+
+    let part_1: i32 = state
+        .iter()
+        .map(|(pot_index, plant_state)| -> i32 {
+            match plant_state {
+                PotState::HasPlant => *pot_index,
+                PotState::NoPlant => 0,
+            }
+        })
+        .sum();
+
+    println!("Part 1: {}", part_1);
 }
