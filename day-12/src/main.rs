@@ -211,7 +211,7 @@ fn main() {
         rules
     };
 
-    // println!("{}", state_to_string(&state));
+    println!("Initial state: {}", state_to_string(&state));
 
     let num_of_generations = 20;
 
@@ -219,7 +219,6 @@ fn main() {
         state = generate_next_state(state, &rules);
 
         // Debug
-
         // println!("{}", state_to_string(&state));
     }
 
