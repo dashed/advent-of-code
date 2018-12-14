@@ -254,26 +254,55 @@ fn part_2(grid_serial_number: i32) {
 fn part_2_optimized(summed_area_table: &SummedAreaTable) -> ((usize, usize), usize) {
     let width = summed_area_table.grid_size;
     let height = summed_area_table.grid_size;
-    let grid_size = summed_area_table.grid_size;
 
-    let mut largest_total_power = 0;
-    let mut best_position = None;
-    let mut best_grid_size = 0;
+    let sub_grid_size_range: Vec<usize> = (1..=summed_area_table.grid_size).into_iter().collect();
 
-    for sub_grid_size in 1..=grid_size {
-        for x in 1..=(width - sub_grid_size + 1) {
-            for y in 1..=(height - sub_grid_size + 1) {
-                let total = summed_area_table.get_spanned_square(x - 1, y - 1, sub_grid_size);
-                if total > largest_total_power {
-                    largest_total_power = total;
-                    best_position = Some((x, y));
-                    best_grid_size = sub_grid_size
+    let result = sub_grid_size_range
+        .into_par_iter()
+        .map(|sub_grid_size: usize| {
+            let mut largest_total_power = 0;
+            let mut best_position = None;
+
+            for x in 1..=(width - sub_grid_size + 1) {
+                for y in 1..=(height - sub_grid_size + 1) {
+                    let total = summed_area_table.get_spanned_square(x - 1, y - 1, sub_grid_size);
+                    if total > largest_total_power {
+                        largest_total_power = total;
+                        best_position = Some((x, y));
+                    }
                 }
             }
-        }
-    }
 
-    return (best_position.unwrap(), best_grid_size);
+            return (best_position, largest_total_power, sub_grid_size);
+        })
+        .max_by_key(|x| {
+            let (_position, total, _sub_grid_size) = x;
+            return total.clone();
+        })
+        .unwrap();
+
+    let (best_position, _total, best_sub_grid_size) = result;
+
+    return (best_position.unwrap(), best_sub_grid_size);
+
+    // Naive version
+    // let mut largest_total_power = 0;
+    // let mut best_position = None;
+    // let mut best_grid_size = 0;
+    // for sub_grid_size in 1..=grid_size {
+    //     for x in 1..=(width - sub_grid_size + 1) {
+    //         for y in 1..=(height - sub_grid_size + 1) {
+    //             let total = summed_area_table.get_spanned_square(x - 1, y - 1, sub_grid_size);
+    //             if total > largest_total_power {
+    //                 largest_total_power = total;
+    //                 best_position = Some((x, y));
+    //                 best_grid_size = sub_grid_size
+    //             }
+    //         }
+    //     }
+    // }
+
+    // return (best_position.unwrap(), best_grid_size);
 }
 
 fn main() {
