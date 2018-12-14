@@ -4,8 +4,7 @@ use std::collections::BTreeMap;
 // helpers and types
 
 type PotIndex = i32;
-type HasPlant = bool;
-type State = BTreeMap<PotIndex, HasPlant>;
+type State = BTreeMap<PotIndex, PotState>;
 type Rules = HashMap<InitialRule, Rule>;
 
 fn has_plant(x: char) -> bool {
@@ -100,6 +99,10 @@ fn generate_next_state(state: State, rules: &Rules) -> State {
 
     let next_state = state.clone();
 
+    for (pot_index, plant_state) in state.iter() {
+        println!("{} {:?}", pot_index, plant_state);
+    }
+
     return next_state;
 }
 
@@ -125,7 +128,7 @@ fn main() {
             .enumerate();
 
         for (pot_index, has_plant_char) in initial_state_iter {
-            state.insert(pot_index as i32, has_plant(has_plant_char));
+            state.insert(pot_index as i32, PotState::from_char(has_plant_char));
         }
 
         // skip empty line
