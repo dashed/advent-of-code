@@ -27,6 +27,16 @@ enum TurningOption {
     Right,
 }
 
+impl TurningOption {
+    fn next(&self) -> TurningOption {
+        match self {
+            TurningOption::Left => TurningOption::Straight,
+            TurningOption::Straight => TurningOption::Right,
+            TurningOption::Right => TurningOption::Left,
+        }
+    }
+}
+
 struct Cart {
     current_position: Coordinate,
     // when a cart arrives at an intersection, this rule determines the cart's
