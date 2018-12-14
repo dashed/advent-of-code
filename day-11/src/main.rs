@@ -75,8 +75,11 @@ impl SummedAreaTable {
         assert!(x + sub_grid_size <= self.grid_size);
 
         // top-left corner
-        let index = get_row_major_order_idx(x, y, self.grid_size);
-        let top_left = self.inner_array[index];
+        let top_left = if x > 0 && y > 0 {
+            self.inner_array[get_row_major_order_idx(x - 1, y - 1, self.grid_size)]
+        } else {
+            0
+        };
 
         // invariant: end_x - x + 1 = sub_grid_size
         let end_x = sub_grid_size + x - 1;
@@ -84,9 +87,19 @@ impl SummedAreaTable {
         let end_y = sub_grid_size + y - 1;
 
         // top-right corner
-        let top_right = self.inner_array[get_row_major_order_idx(end_x, y, self.grid_size)];
+        let top_right = if y > 0 {
+            self.inner_array[get_row_major_order_idx(end_x, y - 1, self.grid_size)]
+        } else {
+            0
+        };
+
         // bottom-left corner
-        let bottom_left = self.inner_array[get_row_major_order_idx(x, end_y, self.grid_size)];
+        let bottom_left = if x > 0 {
+            self.inner_array[get_row_major_order_idx(x - 1, end_y, self.grid_size)]
+        } else {
+            0
+        };
+
         // bottom-right corner
         let bottom_right = self.inner_array[get_row_major_order_idx(end_x, end_y, self.grid_size)];
 
@@ -214,6 +227,7 @@ fn part_1_optimized(
     return (best_position.unwrap(), largest_total_power);
 }
 
+#[allow(dead_code)]
 fn part_2(grid_serial_number: i32) {
     let range: Vec<i32> = (1..=300).into_iter().collect();
 
@@ -237,13 +251,37 @@ fn part_2(grid_serial_number: i32) {
     println!("Part 2: {:?},{}", best_position, best_sub_grid_size);
 }
 
+fn part_2_optimized(summed_area_table: &SummedAreaTable) -> ((usize, usize), usize) {
+    let width = summed_area_table.grid_size;
+    let height = summed_area_table.grid_size;
+    let grid_size = summed_area_table.grid_size;
+
+    let mut largest_total_power = 0;
+    let mut best_position = None;
+    let mut best_grid_size = 0;
+
+    for sub_grid_size in 1..=grid_size {
+        for x in 1..=(width - sub_grid_size + 1) {
+            for y in 1..=(height - sub_grid_size + 1) {
+                let total = summed_area_table.get_spanned_square(x - 1, y - 1, sub_grid_size);
+                if total > largest_total_power {
+                    largest_total_power = total;
+                    best_position = Some((x, y));
+                    best_grid_size = sub_grid_size
+                }
+            }
+        }
+    }
+
+    return (best_position.unwrap(), best_grid_size);
+}
+
 fn main() {
     let grid_size = 300;
     let grid_serial_number = 4172;
     let sub_grid_size: usize = 3;
 
     let (position, power) = part_1(grid_serial_number, sub_grid_size as i32);
-
     println!("Part 1: {:?} {}", position, power);
 
     // TODO: this is slow af.
@@ -252,14 +290,12 @@ fn main() {
 
     let summed_area_table = SummedAreaTable::new(grid_size, grid_serial_number);
 
-    // let (position, power) = part_1_optimized(&summed_area_table, sub_grid_size);
+    let (position, power) = part_1_optimized(&summed_area_table, sub_grid_size);
 
-    // println!("Part 1 optimized: {:?} {}", position, power);
-    println!("{:?}", summed_area_table.get_spanned_square(0, 0, 1));
-    println!(
-        "{:?}",
-        get_total_power_level_of_square(1, 1, sub_grid_size as i32, grid_serial_number)
-    );
+    println!("Part 1 optimized: {:?} {}", position, power);
+
+    let (position, grid_size) = part_2_optimized(&summed_area_table);
+    println!("Part 2 optimized: {:?} {}", position, grid_size);
 }
 
 #[cfg(test)]
