@@ -31,6 +31,13 @@ impl PotState {
 
         return PotState::NoPlant;
     }
+
+    fn has_plant(&self) -> bool {
+        match self {
+            PotState::HasPlant => true,
+            PotState::NoPlant => false,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
@@ -102,7 +109,25 @@ fn get_pot_from_state(state: &State, index: PotIndex) -> PotState {
     }
 }
 
-fn generate_next_state(state: State, rules: &Rules) -> State {
+fn generate_next_state(mut state: State, rules: &Rules) -> State {
+    {
+        // extend state by considering two pots on both ends;
+        // only if there are pots with plants on either ends
+        let keys: Vec<PotIndex> = state.keys().cloned().collect();
+        let highest: PotIndex = *keys.iter().max().unwrap();
+        let lowest: PotIndex = *keys.iter().min().unwrap();
+
+        if state.get(&highest).unwrap().has_plant() {
+            state.insert(highest + 1, PotState::NoPlant);
+            state.insert(highest + 2, PotState::NoPlant);
+        }
+
+        if state.get(&lowest).unwrap().has_plant() {
+            state.insert(lowest - 1, PotState::NoPlant);
+            state.insert(lowest - 2, PotState::NoPlant);
+        }
+    };
+
     let mut next_state = state.clone();
 
     for (pot_index, plant_state) in state.iter() {
@@ -186,16 +211,16 @@ fn main() {
         rules
     };
 
-    println!("{}", state_to_string(&state));
+    // println!("{}", state_to_string(&state));
 
-    let num_of_generations = 1;
+    let num_of_generations = 20;
 
     for _generation in 1..=num_of_generations {
         state = generate_next_state(state, &rules);
 
         // Debug
 
-        println!("{}", state_to_string(&state));
+        // println!("{}", state_to_string(&state));
     }
 
     let part_1: i32 = state
