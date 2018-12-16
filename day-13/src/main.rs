@@ -363,7 +363,7 @@ fn print_map(map: &Map, carts: &Carts, max_x: i32, max_y: i32) {
     }
 }
 
-fn part_1(input_string: &str) -> Coordinate {
+fn parse_input(input_string: &str) -> (Map, Carts) {
     #[allow(unused_variables)]
     let num_of_lines = input_string.lines().into_iter().count() as i32;
     #[allow(unused_variables)]
@@ -526,6 +526,12 @@ fn part_1(input_string: &str) -> Coordinate {
 
         map
     };
+
+    return (map, carts);
+}
+
+fn part_1(input_string: &str) -> Coordinate {
+    let (map, mut carts) = parse_input(input_string);
 
     // print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
 
