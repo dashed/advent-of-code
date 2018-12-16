@@ -2,10 +2,10 @@
 
 // imports
 
-use std::time::Duration;
-use std::thread;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::thread;
+use std::time::Duration;
 
 type Coordinate = (i32, i32);
 
@@ -172,7 +172,7 @@ impl Cart {
         return orientation.to_string();
     }
 
-    fn tick(&mut self, map: &Map) {
+    fn tick(&self, map: &Map) -> Cart {
         let (x, y) = self.position;
 
         // println!("{:?}", self.position);
@@ -186,8 +186,6 @@ impl Cart {
             Orientation::Right => (x + 1, y),
         };
 
-        self.position = next_position;
-
         // generate next orientation
 
         let next_track: Track = match map.get(&next_position) {
@@ -198,9 +196,12 @@ impl Cart {
             Some(track) => track.clone(),
         };
 
+        let mut next_orientation = self.orientation.clone();
+        let mut next_turning_option = self.turning_option.clone();
+
         match next_track {
             Track::BottomAndRight => {
-                self.orientation = match self.orientation {
+                next_orientation = match self.orientation {
                     Orientation::Up => Orientation::Right,
                     Orientation::Left => Orientation::Down,
                     _ => {
@@ -209,7 +210,7 @@ impl Cart {
                 }
             }
             Track::TopAndLeft => {
-                self.orientation = match self.orientation {
+                next_orientation = match self.orientation {
                     Orientation::Down => Orientation::Left,
                     Orientation::Right => Orientation::Up,
                     _ => {
@@ -218,7 +219,7 @@ impl Cart {
                 }
             }
             Track::BottomAndLeft => {
-                self.orientation = match self.orientation {
+                next_orientation = match self.orientation {
                     Orientation::Up => Orientation::Left,
                     Orientation::Right => Orientation::Down,
                     _ => {
@@ -227,7 +228,7 @@ impl Cart {
                 }
             }
             Track::TopAndRight => {
-                self.orientation = match self.orientation {
+                next_orientation = match self.orientation {
                     Orientation::Down => Orientation::Right,
                     Orientation::Left => Orientation::Up,
                     _ => {
@@ -236,10 +237,16 @@ impl Cart {
                 }
             }
             Track::Intersection => {
-                self.orientation = self.orientation.turn(&self.turning_option);
-                self.turning_option = self.turning_option.next();
+                next_orientation = self.orientation.turn(&self.turning_option);
+                next_turning_option = self.turning_option.next();
             }
             _ => {}
+        }
+
+        Cart {
+            orientation: next_orientation,
+            position: next_position,
+            turning_option: next_turning_option,
         }
     }
 }
@@ -271,15 +278,17 @@ impl Carts {
         let mut next_carts: HashMap<Coordinate, Cart> = HashMap::new();
 
         let next_carts_iter = self.carts.iter().map(|(_position, cart)| -> Cart {
-            let mut cart: Cart = cart.clone();
-            cart.tick(&map);
-            return cart;
+            let next_cart = cart.tick(&map);
+            return next_cart;
         });
 
         for cart in next_carts_iter {
             if next_positions.contains(&cart.position) {
                 next_carts.remove(&cart.position);
                 crashed_carts.insert(cart.position);
+                if crashed_carts.len() > 0 {
+                    return Some(crashed_carts);
+                }
             } else {
                 next_positions.insert(cart.position);
                 next_carts.insert(cart.position, cart);
@@ -321,8 +330,6 @@ fn print_map(map: &Map, carts: &Carts, max_x: i32, max_y: i32) {
 }
 
 fn part_1(input_string: &str) -> Coordinate {
-
-
     let num_of_lines = input_string.lines().into_iter().count() as i32;
     let num_of_cols = input_string
         .lines()
@@ -494,12 +501,11 @@ fn part_1(input_string: &str) -> Coordinate {
         let crashed_carts = carts.tick(&map);
         num_of_ticks += 1;
         // print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
-        // thread::sleep(Duration::from_millis(500));
+        // thread::sleep(Duration::from_millis(100));
 
         match crashed_carts {
             None => {}
             Some(crashed_carts) => {
-
                 // not: 29,104
                 println!("{:?}", crashed_carts);
                 println!("crashed at tick: {}", num_of_ticks);
@@ -518,7 +524,6 @@ fn main() {
     println!("Part 1: {:?}", crashed_position);
 }
 
-
 // /---\
 // |   v
 // | /-+-\
@@ -526,7 +531,6 @@ fn main() {
 // \-+-/ |
 //   |   |
 //   \---/
-
 
 #[cfg(test)]
 mod tests {
@@ -542,7 +546,7 @@ mod tests {
   \------/
         "###;
 
-        assert_eq!(part_1(input_string), (7,3));
+        assert_eq!(part_1(input_string), (7, 3));
 
         let input_string = r###"/---\
 | />+<--\
@@ -551,7 +555,7 @@ mod tests {
   \-----/
         "###;
 
-        assert_eq!(part_1(input_string), (4,1));
+        assert_eq!(part_1(input_string), (4, 1));
     }
 
 }
