@@ -39,23 +39,23 @@ fn is_vertical(cell: char) -> bool {
     }
 }
 
-impl Track {
-    fn has_horizontal(&self) -> bool {
-        match self {
-            Track::Horizontal => true,
-            Track::Intersection => true,
-            _ => false,
-        }
-    }
+// impl Track {
+//     fn has_horizontal(&self) -> bool {
+//         match self {
+//             Track::Horizontal => true,
+//             Track::Intersection => true,
+//             _ => false,
+//         }
+//     }
 
-    fn has_vertical(&self) -> bool {
-        match self {
-            Track::Vertical => true,
-            Track::Intersection => true,
-            _ => false,
-        }
-    }
-}
+//     fn has_vertical(&self) -> bool {
+//         match self {
+//             Track::Vertical => true,
+//             Track::Intersection => true,
+//             _ => false,
+//         }
+//     }
+// }
 
 type Map = HashMap<Coordinate, Track>;
 
@@ -142,8 +142,8 @@ fn main() {
                     let is_configuration_1 = valid_right_side && valid_bottom_side;
 
                     // match configuration:
-                    //   |
-                    //  -/
+                    //    |
+                    //   -/
                     let valid_left_side = match cell_map.get(&(x - 1, y)) {
                         None => false,
                         Some(cell) => is_horizontal(*cell),
@@ -172,7 +172,50 @@ fn main() {
                     );
                 }
                 '\\' => {
-                    println!("found \\");
+                    // match configuration:
+                    //   -\
+                    //    |
+                    let valid_left_side = match cell_map.get(&(x - 1, y)) {
+                        None => false,
+                        Some(cell) => is_horizontal(*cell),
+                    };
+
+                    let valid_bottom_side = match cell_map.get(&(x, y + 1)) {
+                        None => false,
+                        Some(cell) => is_vertical(*cell),
+                    };
+
+                    let is_configuration_1 = valid_left_side && valid_bottom_side;
+
+                    // match configuration:
+                    //   |
+                    //   \-
+                    let valid_top_side = match cell_map.get(&(x, y - 1)) {
+                        None => false,
+                        Some(cell) => is_vertical(*cell),
+                    };
+
+                    let valid_right_side = match cell_map.get(&(x + 1, y)) {
+                        None => false,
+                        Some(cell) => is_horizontal(*cell),
+                    };
+
+                    let is_configuration_2 = valid_top_side && valid_right_side;
+
+                    if is_configuration_1 && !is_configuration_2 {
+                        map.insert(position, Track::BottomToLeft);
+                        continue;
+                    }
+
+                    if !is_configuration_1 && is_configuration_2 {
+                        map.insert(position, Track::TopToRight);
+                        continue;
+                    }
+
+                    assert!(
+                        false,
+                        format!("Invalid placement of track: \\ at {:?}", position)
+                    );
                 }
                 _ => {}
             }
