@@ -27,5 +27,7 @@ mod tests {
     #[test]
     fn test_generate_recipes_from_digits() {
         assert_eq!(generate_recipes_from_digits(1234), vec![1, 2, 3, 4]);
+        assert_eq!(generate_recipes_from_digits(0), vec![0]);
+        assert_eq!(generate_recipes_from_digits(1), vec![1]);
     }
 }
