@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-type Coordinate = (usize, usize);
+type Coordinate = (i32, i32);
 
 enum Track {
     // |
@@ -98,7 +98,7 @@ fn main() {
 
         for (y, line) in input_string.lines().enumerate() {
             for (x, cell) in line.chars().enumerate() {
-                let position: Coordinate = (x, y);
+                let position: Coordinate = (x as i32, y as i32);
                 // println!("{:?} {}", position, cell);
 
                 let cell = match cell {
@@ -139,14 +139,7 @@ fn main() {
                         Some(cell) => is_vertical(*cell),
                     };
 
-                    if valid_right_side && valid_bottom_side {
-                        map.insert(position, Track::TopToLeft);
-                        continue;
-                    }
-
-                    if x <= 0 && y <= 0 {
-                        continue;
-                    }
+                    let is_configuration_1 = valid_right_side && valid_bottom_side;
 
                     // match configuration:
                     //   |
@@ -161,7 +154,14 @@ fn main() {
                         Some(cell) => is_vertical(*cell),
                     };
 
-                    if valid_left_side && valid_top_side {
+                    let is_configuration_2 = valid_left_side && valid_top_side;
+
+                    if is_configuration_1 && !is_configuration_2 {
+                        map.insert(position, Track::TopToLeft);
+                        continue;
+                    }
+
+                    if !is_configuration_1 && is_configuration_2 {
                         map.insert(position, Track::BottomToRight);
                         continue;
                     }
