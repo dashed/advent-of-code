@@ -121,6 +121,19 @@ impl Cart {
             turning_option: TurningOption::Left,
         }
     }
+
+    fn tick(&mut self, map: &Map) {
+        let (x, y) = self.position;
+
+        let next_position = match self.orientation {
+            Orientation::Up => (x, y - 1),
+            Orientation::Down => (x, y + 1),
+            Orientation::Left => (x - 1, y),
+            Orientation::Right => (x + 1, y),
+        };
+
+        self.position = next_position;
+    }
 }
 
 type Carts = HashSet<Cart>;
@@ -271,4 +284,8 @@ fn main() {
 
         map
     };
+
+    for mut cart in carts {
+        cart.tick(&map);
+    }
 }
