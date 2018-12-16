@@ -65,7 +65,7 @@ fn part_1(part_1_input: usize) -> String {
 }
 
 fn main() {
-    let result = part_1(5);
+    let result = part_1(540391);
     println!("Part 1: {}", result);
 }
 
@@ -78,5 +78,13 @@ mod tests {
         assert_eq!(generate_recipes_from_digits(1234), vec![1, 2, 3, 4]);
         assert_eq!(generate_recipes_from_digits(0), vec![0]);
         assert_eq!(generate_recipes_from_digits(1), vec![1]);
+    }
+
+    #[test]
+    fn test_part_1() {
+        assert_eq!(part_1(9), "5158916779".to_string());
+        assert_eq!(part_1(5), "0124515891".to_string());
+        assert_eq!(part_1(18), "9251071085".to_string());
+        assert_eq!(part_1(2018), "5941429882".to_string());
     }
 }
