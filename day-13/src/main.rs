@@ -94,12 +94,41 @@ struct Cart {
     turning_option: TurningOption,
 }
 
+impl Cart {
+    fn is_cart(cell: char) -> bool {
+        match cell {
+            '^' | 'v' | '<' | '>' => true,
+            _ => false,
+        }
+    }
+
+    fn new(cell: char, position: Coordinate) -> Cart {
+        assert!(Cart::is_cart(cell));
+
+        let orientation = match cell {
+            '^' => Orientation::Up,
+            'v' => Orientation::Down,
+            '<' => Orientation::Left,
+            '>' => Orientation::Right,
+            _ => {
+                unreachable!();
+            }
+        };
+
+        Cart {
+            orientation,
+            position,
+            turning_option: TurningOption::Left,
+        }
+    }
+}
+
 type Carts = HashSet<Cart>;
 
 fn main() {
     let input_string = include_str!("input.txt");
 
-    let carts: Carts = HashSet::new();
+    let mut carts: Carts = HashSet::new();
 
     let map: Map = {
         let mut map: Map = HashMap::new();
@@ -110,6 +139,12 @@ fn main() {
             for (x, cell) in line.chars().enumerate() {
                 let position: Coordinate = (x as i32, y as i32);
                 // println!("{:?} {}", position, cell);
+
+                // add carts
+                if Cart::is_cart(cell) {
+                    let cart = Cart::new(cell, position);
+                    carts.insert(cart);
+                }
 
                 let cell = match cell {
                     'v' | '^' => '|',
