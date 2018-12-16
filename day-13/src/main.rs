@@ -258,7 +258,6 @@ impl Cart {
         }
 
         Cart {
-            id: self.id,
             orientation: next_orientation,
             position: next_position,
             turning_option: next_turning_option,
