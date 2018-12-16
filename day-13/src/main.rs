@@ -240,7 +240,22 @@ impl Cart {
                 next_orientation = self.orientation.turn(&self.turning_option);
                 next_turning_option = self.turning_option.next();
             }
-            _ => {}
+            Track::Vertical => {
+                match self.orientation {
+                    Orientation::Up | Orientation::Down => {}
+                    _ => {
+                        unreachable!("Unexpected orientation: {:?}", self.orientation);
+                    }
+                };
+            }
+            Track::Horizontal => {
+                match self.orientation {
+                    Orientation::Left | Orientation::Right => {}
+                    _ => {
+                        unreachable!("Unexpected orientation: {:?}", self.orientation);
+                    }
+                };
+            }
         }
 
         Cart {
@@ -548,14 +563,10 @@ mod tests {
 
         assert_eq!(part_1(input_string), (7, 3));
 
-        let input_string = r###"/---\
-| />+<--\
-| | ^   |
-\-+-/   |
-  \-----/
-        "###;
+        let input_string = r###"->+<-
+  ^  "###;
 
-        assert_eq!(part_1(input_string), (4, 1));
+        assert_eq!(part_1(input_string), (2, 0));
     }
 
 }
