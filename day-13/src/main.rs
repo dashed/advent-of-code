@@ -2,8 +2,8 @@
 
 // imports
 
-// use std::time::Duration;
-// use std::thread;
+use std::time::Duration;
+use std::thread;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
@@ -175,6 +175,8 @@ impl Cart {
     fn tick(&mut self, map: &Map) {
         let (x, y) = self.position;
 
+        println!("{:?}", self.position);
+
         // generate next position
 
         let next_position = match self.orientation {
@@ -235,7 +237,6 @@ impl Cart {
             }
             Track::Intersection => {
                 self.orientation = self.orientation.turn(&self.turning_option);
-
                 self.turning_option = self.turning_option.next();
             }
             _ => {}
@@ -277,11 +278,12 @@ impl Carts {
 
         for cart in next_carts_iter {
             if next_positions.contains(&cart.position) {
+                next_carts.remove(&cart.position);
                 crashed_carts.insert(cart.position);
+            } else {
+                next_positions.insert(cart.position);
+                next_carts.insert(cart.position, cart);
             }
-
-            next_positions.insert(cart.position);
-            next_carts.insert(cart.position, cart);
         }
 
         self.carts = next_carts;
@@ -318,8 +320,8 @@ fn print_map(map: &Map, carts: &Carts, max_x: i32, max_y: i32) {
     }
 }
 
-fn main() {
-    let input_string = include_str!("input.txt");
+fn part_1(input_string: &str) -> Coordinate {
+
 
     let num_of_lines = input_string.lines().into_iter().count() as i32;
     let num_of_cols = input_string
@@ -489,20 +491,67 @@ fn main() {
 
     let mut num_of_ticks = 0;
     loop {
-
         let crashed_carts = carts.tick(&map);
         num_of_ticks += 1;
-        // print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
+        print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
         // thread::sleep(Duration::from_millis(500));
 
         match crashed_carts {
-            None => {},
+            None => {}
             Some(crashed_carts) => {
+
                 // not: 29,104
                 println!("{:?}", crashed_carts);
                 println!("crashed at tick: {}", num_of_ticks);
-                break;
+
+                return crashed_carts.iter().next().unwrap().clone();
             }
         }
     }
+}
+
+fn main() {
+    let input_string = include_str!("input.txt");
+
+    let crashed_position = part_1(input_string);
+
+    println!("Part 1: {:?}", crashed_position);
+}
+
+
+// /---\
+// |   v
+// | /-+-\
+// | | | |
+// \-+-/ |
+//   |   |
+//   \---/
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part_1() {
+        let input_string = r###"/->-\
+|   |  /----\
+| /-+--+-\  |
+| | |  | v  |
+\-+-/  \-+--/
+  \------/
+        "###;
+
+        assert_eq!(part_1(input_string), (7,3));
+
+        let input_string = r###"/---\
+| />+<--\
+| | ^   |
+\-+-/   |
+  \-----/
+        "###;
+
+        assert_eq!(part_1(input_string), (4,1));
+    }
+
 }
