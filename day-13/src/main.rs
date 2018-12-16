@@ -10,12 +10,16 @@ enum Track {
     Horizontal,
     // +
     Intersection,
+
+    // curves
+    // invariant: Curves connect exactly two perpendicular pieces of track
+
     // top to left /
     TopToLeft,
-    // top to right \
-    TopToRight,
     // bottom to left /
     BottomToLeft,
+    // top to right \
+    TopToRight,
     // bottom to right \
     BottomToRight,
 }
