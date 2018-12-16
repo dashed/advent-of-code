@@ -24,6 +24,38 @@ enum Track {
     BottomToRight,
 }
 
+fn is_horizontal(cell: char) -> bool {
+    match cell {
+        '-' | '+' => true,
+        _ => false,
+    }
+}
+
+fn is_vertical(cell: char) -> bool {
+    match cell {
+        '|' | '+' => true,
+        _ => false,
+    }
+}
+
+impl Track {
+    fn has_horizontal(&self) -> bool {
+        match self {
+            Track::Horizontal => true,
+            Track::Intersection => true,
+            _ => false,
+        }
+    }
+
+    fn has_vertical(&self) -> bool {
+        match self {
+            Track::Vertical => true,
+            Track::Intersection => true,
+            _ => false,
+        }
+    }
+}
+
 type Map = HashMap<Coordinate, Track>;
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -60,7 +92,7 @@ fn main() {
 
     let carts: Carts = HashSet::new();
 
-    {
+    let map: Map = {
         let mut map: Map = HashMap::new();
 
         let mut cell_map: HashMap<Coordinate, char> = HashMap::new();
@@ -73,18 +105,38 @@ fn main() {
         }
 
         for (position, cell) in cell_map.iter() {
+            let (x, y) = position.clone();
+            let position = position.clone();
+
             match cell {
                 '|' => {
-                    map.insert(*position, Track::Vertical);
+                    map.insert(position, Track::Vertical);
                 }
                 '-' => {
-                    map.insert(*position, Track::Horizontal);
+                    map.insert(position, Track::Horizontal);
                 }
                 '+' => {
-                    map.insert(*position, Track::Intersection);
+                    map.insert(position, Track::Intersection);
                 }
                 '/' => {
-                    println!("found /");
+                    // match configuration:
+                    //   /-
+                    //   |
+                    let valid_right_side = match cell_map.get(&(x + 1, y)) {
+                        None => false,
+                        Some(cell) => is_horizontal(*cell),
+                    };
+
+                    let valid_bottom_side = match cell_map.get(&(x, y + 1)) {
+                        None => false,
+                        Some(cell) => is_vertical(*cell),
+                    };
+
+                    if valid_right_side && valid_bottom_side {
+                        map.insert(position, Track::TopToLeft);
+                        continue;
+                    }
+
                 }
                 '\\' => {
                     println!("found \\");
@@ -92,5 +144,7 @@ fn main() {
                 _ => {}
             }
         }
+
+        map
     };
 }
