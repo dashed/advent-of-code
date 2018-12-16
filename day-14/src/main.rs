@@ -1,9 +1,17 @@
+type Recipe = i32;
+
 struct Elf {
     position: usize,
 }
 
-fn generate_recipes_from_digits(sum: i32) -> Vec<i32> {
-    return sum
+impl Elf {
+    fn get_recipe(&self, receipes: &Vec<Recipe>) -> Recipe {
+        return *receipes.get(self.position).unwrap();
+    }
+}
+
+fn generate_recipes_from_digits(mixed_recipe: Recipe) -> Vec<Recipe> {
+    return mixed_recipe
         .to_string()
         .chars()
         .map(|x| -> i32 {
@@ -13,11 +21,25 @@ fn generate_recipes_from_digits(sum: i32) -> Vec<i32> {
 }
 
 fn main() {
-    let recipes = vec![3, 7];
+    let mut scoreboard = vec![3, 7];
 
     let first_elf = Elf { position: 0 };
-
     let second_elf = Elf { position: 1 };
+
+    // each elf gets a recipe from the scoreboard
+
+    let recipe_1 = first_elf.get_recipe(&scoreboard);
+    let recipe_2 = second_elf.get_recipe(&scoreboard);
+
+    // each elf combine their current recipes
+
+    let result = generate_recipes_from_digits(recipe_1 + recipe_2);
+
+    // the resulting recipes are added to the scoreboard
+
+    scoreboard.extend(result);
+
+    println!("{:?}", scoreboard);
 }
 
 #[cfg(test)]
