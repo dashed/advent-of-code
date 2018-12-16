@@ -189,9 +189,9 @@ mod tests {
 
     #[test]
     fn test_part_2() {
-        // assert_eq!(part_2("51589".to_string()), 9);
-        //     assert_eq!(part_2("01245".to_string()), 5);
-        //     assert_eq!(part_2("92510".to_string()), 18);
-        //     assert_eq!(part_2("59414".to_string()), 2018);
+        assert_eq!(part_2("51589".to_string()), 9);
+        assert_eq!(part_2("01245".to_string()), 5);
+        assert_eq!(part_2("92510".to_string()), 18);
+        assert_eq!(part_2("59414".to_string()), 2018);
     }
 }
