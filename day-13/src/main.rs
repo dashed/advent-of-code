@@ -1,3 +1,9 @@
+// https://adventofcode.com/2018/day/13
+
+// imports
+
+use std::time::Duration;
+use std::thread;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
@@ -35,6 +41,20 @@ enum Track {
     TopAndRight,
 }
 
+impl Track {
+    fn to_string(&self) -> String {
+        let result = match self {
+            Track::Vertical => "|",
+            Track::Horizontal => "-",
+            Track::Intersection => "+",
+            Track::BottomAndRight | Track::TopAndLeft => "/",
+            Track::BottomAndLeft | Track::TopAndRight => "\\",
+        };
+
+        return result.to_string();
+    }
+}
+
 fn is_horizontal(cell: char) -> bool {
     match cell {
         '-' | '+' => true,
@@ -49,27 +69,9 @@ fn is_vertical(cell: char) -> bool {
     }
 }
 
-// impl Track {
-//     fn has_horizontal(&self) -> bool {
-//         match self {
-//             Track::Horizontal => true,
-//             Track::Intersection => true,
-//             _ => false,
-//         }
-//     }
-
-//     fn has_vertical(&self) -> bool {
-//         match self {
-//             Track::Vertical => true,
-//             Track::Intersection => true,
-//             _ => false,
-//         }
-//     }
-// }
-
 type Map = HashMap<Coordinate, Track>;
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 enum TurningOption {
     Left,
     Straight,
@@ -121,7 +123,7 @@ impl Orientation {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Hash)]
+#[derive(Debug, Eq, PartialEq, Hash, Clone)]
 struct Cart {
     orientation: Orientation,
     // current position
@@ -157,6 +159,17 @@ impl Cart {
             position,
             turning_option: TurningOption::Left,
         }
+    }
+
+    fn to_string(&self) -> String {
+        let orientation = match self.orientation {
+            Orientation::Up => "^",
+            Orientation::Down => "v",
+            Orientation::Left => "<",
+            Orientation::Right => ">",
+        };
+
+        return orientation.to_string();
     }
 
     fn tick(&mut self, map: &Map) {
@@ -230,17 +243,93 @@ impl Cart {
     }
 }
 
-type Carts = HashSet<Cart>;
+struct Carts {
+    carts: HashMap<Coordinate, Cart>,
+}
+
+impl Carts {
+    fn new() -> Carts {
+        Carts {
+            carts: HashMap::new(),
+        }
+    }
+
+    fn add_cart(&mut self, cart: Cart) {
+        self.carts.insert(cart.position, cart);
+    }
+
+    fn get_cart(&self, position: &Coordinate) -> Option<&Cart> {
+        return self.carts.get(position).clone();
+    }
+
+    fn tick(&mut self, map: &Map) {
+        let mut crashed: HashSet<Coordinate> = HashSet::new();
+        let mut next_positions: HashSet<Coordinate> = HashSet::new();
+        let mut next_carts: HashMap<Coordinate, Cart> = HashMap::new();
+
+        let next_carts_iter = self.carts.iter().map(|(_position, cart)| -> Cart {
+            let mut cart: Cart = cart.clone();
+            cart.tick(&map);
+            return cart;
+        });
+
+        for cart in next_carts_iter {
+            if next_positions.contains(&cart.position) {
+                crashed.insert(cart.position);
+            }
+
+            next_positions.insert(cart.position);
+            next_carts.insert(cart.position, cart);
+        }
+
+        self.carts = next_carts;
+    }
+}
+
+fn print_map(map: &Map, carts: &Carts, max_x: i32, max_y: i32) {
+    for y in 0..=max_y {
+        for x in 0..=max_x {
+            let position = (x, y);
+
+            match carts.get_cart(&position) {
+                None => match map.get(&position) {
+                    None => {
+                        print!(" ");
+                    }
+                    Some(track) => {
+                        print!("{}", track.to_string());
+                    }
+                },
+                Some(cart) => {
+                    print!("{}", cart.to_string());
+                }
+            }
+        }
+
+        println!("");
+    }
+}
 
 fn main() {
     let input_string = include_str!("input.txt");
 
-    let mut carts: Carts = HashSet::new();
+    let num_of_lines = input_string.lines().into_iter().count() as i32;
+    let num_of_cols = input_string
+        .lines()
+        .into_iter()
+        .map(|x| x.len())
+        .max()
+        .unwrap() as i32;
+
+    let mut carts: Carts = Carts::new();
 
     let map: Map = {
         let mut map: Map = HashMap::new();
 
         let mut cell_map: HashMap<Coordinate, char> = HashMap::new();
+
+        println!("num_of_lines: {:?}", num_of_lines);
+        println!("num_of_cols: {:?}", num_of_cols);
 
         for (y, line) in input_string.lines().enumerate() {
             for (x, cell) in line.chars().enumerate() {
@@ -250,9 +339,10 @@ fn main() {
                 // add carts
                 if Cart::is_cart(cell) {
                     let cart = Cart::new(cell, position);
-                    carts.insert(cart);
+                    carts.add_cart(cart);
                 }
 
+                // convert cart to appropriate track
                 let cell = match cell {
                     'v' | '^' => '|',
                     '<' | '>' => '-',
@@ -387,7 +477,12 @@ fn main() {
         map
     };
 
-    for mut cart in carts {
-        cart.tick(&map);
+    print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
+
+    loop {
+
+        carts.tick(&map);
+        print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
+        thread::sleep(Duration::from_millis(1000));
     }
 }
