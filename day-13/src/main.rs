@@ -77,8 +77,18 @@ impl TurningOption {
 }
 
 #[derive(Debug, Eq, PartialEq, Hash)]
+enum Orientation {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+#[derive(Debug, Eq, PartialEq, Hash)]
 struct Cart {
-    current_position: Coordinate,
+    orientation: Orientation,
+    // current position
+    position: Coordinate,
     // when a cart arrives at an intersection, this rule determines the cart's
     // next destination
     turning_option: TurningOption,
