@@ -86,12 +86,39 @@ impl TurningOption {
     }
 }
 
-#[derive(Debug, Eq, PartialEq, Hash)]
+#[derive(Debug, Eq, PartialEq, Hash, Clone)]
 enum Orientation {
     Up,
     Down,
     Left,
     Right,
+}
+
+impl Orientation {
+    fn turn(&self, turning_option: &TurningOption) -> Orientation {
+        match self {
+            Orientation::Up => match turning_option {
+                TurningOption::Left => Orientation::Left,
+                TurningOption::Straight => self.clone(),
+                TurningOption::Right => Orientation::Right,
+            },
+            Orientation::Down => match turning_option {
+                TurningOption::Left => Orientation::Right,
+                TurningOption::Straight => self.clone(),
+                TurningOption::Right => Orientation::Left,
+            },
+            Orientation::Left => match turning_option {
+                TurningOption::Left => Orientation::Down,
+                TurningOption::Straight => self.clone(),
+                TurningOption::Right => Orientation::Up,
+            },
+            Orientation::Right => match turning_option {
+                TurningOption::Left => Orientation::Up,
+                TurningOption::Straight => self.clone(),
+                TurningOption::Right => Orientation::Down,
+            },
+        }
+    }
 }
 
 #[derive(Debug, Eq, PartialEq, Hash)]
@@ -165,7 +192,7 @@ impl Cart {
                         unreachable!("Unexpected orientation: {:?}", self.orientation);
                     }
                 }
-            },
+            }
             Track::TopAndLeft => {
                 self.orientation = match self.orientation {
                     Orientation::Down => Orientation::Left,
@@ -174,6 +201,29 @@ impl Cart {
                         unreachable!("Unexpected orientation: {:?}", self.orientation);
                     }
                 }
+            }
+            Track::BottomAndLeft => {
+                self.orientation = match self.orientation {
+                    Orientation::Up => Orientation::Left,
+                    Orientation::Right => Orientation::Down,
+                    _ => {
+                        unreachable!("Unexpected orientation: {:?}", self.orientation);
+                    }
+                }
+            }
+            Track::TopAndRight => {
+                self.orientation = match self.orientation {
+                    Orientation::Down => Orientation::Right,
+                    Orientation::Left => Orientation::Up,
+                    _ => {
+                        unreachable!("Unexpected orientation: {:?}", self.orientation);
+                    }
+                }
+            }
+            Track::Intersection => {
+                self.orientation = self.orientation.turn(&self.turning_option);
+
+                self.turning_option = self.turning_option.next();
             }
             _ => {}
         }
