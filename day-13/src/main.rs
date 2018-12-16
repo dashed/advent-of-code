@@ -89,8 +89,6 @@ type Carts = HashSet<Cart>;
 fn main() {
     let input_string = include_str!("input.txt");
 
-    println!("{:?}", input_string);
-
     let carts: Carts = HashSet::new();
 
     let map: Map = {
@@ -98,9 +96,10 @@ fn main() {
 
         let mut cell_map: HashMap<Coordinate, char> = HashMap::new();
 
-        for (x, line) in input_string.lines().enumerate() {
-            for (y, cell) in line.chars().enumerate() {
+        for (y, line) in input_string.lines().enumerate() {
+            for (x, cell) in line.chars().enumerate() {
                 let position: Coordinate = (x, y);
+                // println!("{:?} {}", position, cell);
                 cell_map.insert(position, cell);
             }
         }
@@ -160,8 +159,10 @@ fn main() {
                         continue;
                     }
 
-                    assert!(false, format!("Invalid placement of track: / at {:?}", position));
-
+                    assert!(
+                        false,
+                        format!("Invalid placement of track: / at {:?}", position)
+                    );
                 }
                 '\\' => {
                     println!("found \\");
