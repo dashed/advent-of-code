@@ -156,14 +156,27 @@ impl Cart {
             Some(track) => track.clone(),
         };
 
-        // match next_track {
-        //     Track::TopToLeft => {
-        //         match self.orientation {
-        //             Orientation::Up =>
-        //         }
-        //     },
-        //     _ => {}
-        // }
+        match next_track {
+            Track::BottomAndRight => {
+                self.orientation = match self.orientation {
+                    Orientation::Up => Orientation::Right,
+                    Orientation::Left => Orientation::Down,
+                    _ => {
+                        unreachable!("Unexpected orientation: {:?}", self.orientation);
+                    }
+                }
+            },
+            Track::TopAndLeft => {
+                self.orientation = match self.orientation {
+                    Orientation::Down => Orientation::Left,
+                    Orientation::Right => Orientation::Up,
+                    _ => {
+                        unreachable!("Unexpected orientation: {:?}", self.orientation);
+                    }
+                }
+            }
+            _ => {}
+        }
     }
 }
 
