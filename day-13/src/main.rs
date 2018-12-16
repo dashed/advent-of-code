@@ -2,8 +2,8 @@
 
 // imports
 
-use std::time::Duration;
-use std::thread;
+// use std::time::Duration;
+// use std::thread;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
@@ -243,6 +243,8 @@ impl Cart {
     }
 }
 
+type CrashedCarts = HashSet<Coordinate>;
+
 struct Carts {
     carts: HashMap<Coordinate, Cart>,
 }
@@ -262,8 +264,8 @@ impl Carts {
         return self.carts.get(position).clone();
     }
 
-    fn tick(&mut self, map: &Map) {
-        let mut crashed: HashSet<Coordinate> = HashSet::new();
+    fn tick(&mut self, map: &Map) -> Option<CrashedCarts> {
+        let mut crashed_carts: CrashedCarts = HashSet::new();
         let mut next_positions: HashSet<Coordinate> = HashSet::new();
         let mut next_carts: HashMap<Coordinate, Cart> = HashMap::new();
 
@@ -275,7 +277,7 @@ impl Carts {
 
         for cart in next_carts_iter {
             if next_positions.contains(&cart.position) {
-                crashed.insert(cart.position);
+                crashed_carts.insert(cart.position);
             }
 
             next_positions.insert(cart.position);
@@ -283,9 +285,15 @@ impl Carts {
         }
 
         self.carts = next_carts;
+
+        if crashed_carts.len() > 0 {
+            return Some(crashed_carts);
+        }
+        return None;
     }
 }
 
+#[allow(dead_code)]
 fn print_map(map: &Map, carts: &Carts, max_x: i32, max_y: i32) {
     for y in 0..=max_y {
         for x in 0..=max_x {
@@ -477,12 +485,24 @@ fn main() {
         map
     };
 
-    print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
+    // print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
 
+    let mut num_of_ticks = 0;
     loop {
 
-        carts.tick(&map);
-        print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
-        thread::sleep(Duration::from_millis(1000));
+        let crashed_carts = carts.tick(&map);
+        num_of_ticks += 1;
+        // print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
+        // thread::sleep(Duration::from_millis(500));
+
+        match crashed_carts {
+            None => {},
+            Some(crashed_carts) => {
+                // not: 29,104
+                println!("{:?}", crashed_carts);
+                println!("crashed at tick: {}", num_of_ticks);
+                break;
+            }
+        }
     }
 }
