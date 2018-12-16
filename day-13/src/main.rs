@@ -5,8 +5,6 @@
 use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::thread;
-use std::time::Duration;
 
 type Coordinate = (i32, i32);
 
@@ -337,7 +335,6 @@ impl Carts {
                 next_carts.insert(next_cart.position, next_cart);
 
                 return (prev_carts, next_carts);
-
             },
         );
 
@@ -377,7 +374,9 @@ fn print_map(map: &Map, carts: &Carts, max_x: i32, max_y: i32) {
 }
 
 fn part_1(input_string: &str) -> Coordinate {
+    #[allow(unused_variables)]
     let num_of_lines = input_string.lines().into_iter().count() as i32;
+    #[allow(unused_variables)]
     let num_of_cols = input_string
         .lines()
         .into_iter()
@@ -391,9 +390,6 @@ fn part_1(input_string: &str) -> Coordinate {
         let mut map: Map = HashMap::new();
 
         let mut cell_map: HashMap<Coordinate, char> = HashMap::new();
-
-        println!("num_of_lines: {:?}", num_of_lines);
-        println!("num_of_cols: {:?}", num_of_cols);
 
         for (y, line) in input_string.lines().enumerate() {
             for (x, cell) in line.chars().enumerate() {
@@ -543,12 +539,13 @@ fn part_1(input_string: &str) -> Coordinate {
 
     // print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
 
-    let mut num_of_ticks = 0;
     loop {
         let crashed_carts = carts.tick(&map);
-        num_of_ticks += 1;
+        // num_of_ticks += 1;
         // print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
         // println!("==========");
+        // use std::thread;
+        // use std::time::Duration;
         // thread::sleep(Duration::from_millis(100));
 
         match crashed_carts {
@@ -559,8 +556,8 @@ fn part_1(input_string: &str) -> Coordinate {
                 let mut crashed_carts: Vec<Coordinate> = crashed_carts.into_iter().collect();
                 crashed_carts.sort();
 
-                println!("{:?}", crashed_carts);
-                println!("crashed at tick: {}", num_of_ticks);
+                // println!("{:?}", crashed_carts);
+                // println!("crashed at tick: {}", num_of_ticks);
 
                 return *crashed_carts.first().unwrap();
             }
@@ -642,6 +639,10 @@ v
         let input_string = r###"-->>--"###;
 
         assert_eq!(part_1(input_string), (3, 0));
+
+        let input_string = include_str!("input.txt");
+
+        assert_eq!(part_1(input_string), (76, 108));
     }
 
 }
