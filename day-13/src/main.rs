@@ -124,7 +124,6 @@ impl Orientation {
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 struct Cart {
-    id: i32,
     orientation: Orientation,
     // current position
     position: Coordinate,
@@ -141,7 +140,7 @@ impl Cart {
         }
     }
 
-    fn new(id: i32, cell: char, position: Coordinate) -> Cart {
+    fn new(cell: char, position: Coordinate) -> Cart {
         assert!(Cart::is_cart(cell));
 
         let orientation = match cell {
@@ -155,7 +154,6 @@ impl Cart {
         };
 
         Cart {
-            id,
             orientation,
             position,
             turning_option: TurningOption::Left,
@@ -281,10 +279,6 @@ impl Carts {
         }
     }
 
-    fn len(&self) -> i32 {
-        return self.carts.len() as i32;
-    }
-
     fn add_cart(&mut self, cart: Cart) {
         self.carts.insert(cart.position, cart);
     }
@@ -294,7 +288,6 @@ impl Carts {
     }
 
     fn tick(&mut self, map: &Map) -> Option<CrashedCarts> {
-
         let mut crashed_positions: HashSet<Coordinate> = HashSet::new();
 
         let (_, next_carts) = self.carts.iter().fold(
@@ -333,6 +326,8 @@ impl Carts {
                 return (prev_carts, next_carts);
             },
         );
+
+        // invariant: by the end of this tick, next_carts contain carts that haven't crashed
 
         self.carts = next_carts;
 
@@ -394,7 +389,7 @@ fn part_1(input_string: &str) -> Coordinate {
 
                 // add carts
                 if Cart::is_cart(cell) {
-                    let cart = Cart::new(carts.len(), cell, position);
+                    let cart = Cart::new(cell, position);
                     carts.add_cart(cart);
                 }
 
