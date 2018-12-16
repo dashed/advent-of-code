@@ -175,7 +175,7 @@ impl Cart {
     fn tick(&mut self, map: &Map) {
         let (x, y) = self.position;
 
-        println!("{:?}", self.position);
+        // println!("{:?}", self.position);
 
         // generate next position
 
@@ -493,7 +493,7 @@ fn part_1(input_string: &str) -> Coordinate {
     loop {
         let crashed_carts = carts.tick(&map);
         num_of_ticks += 1;
-        print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
+        // print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
         // thread::sleep(Duration::from_millis(500));
 
         match crashed_carts {
