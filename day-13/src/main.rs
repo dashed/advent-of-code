@@ -2,6 +2,7 @@
 
 // imports
 
+use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::thread;
@@ -125,6 +126,7 @@ impl Orientation {
 
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 struct Cart {
+    id: i32,
     orientation: Orientation,
     // current position
     position: Coordinate,
@@ -141,7 +143,7 @@ impl Cart {
         }
     }
 
-    fn new(cell: char, position: Coordinate) -> Cart {
+    fn new(id: i32, cell: char, position: Coordinate) -> Cart {
         assert!(Cart::is_cart(cell));
 
         let orientation = match cell {
@@ -155,6 +157,7 @@ impl Cart {
         };
 
         Cart {
+            id,
             orientation,
             position,
             turning_option: TurningOption::Left,
@@ -259,6 +262,7 @@ impl Cart {
         }
 
         Cart {
+            id: self.id,
             orientation: next_orientation,
             position: next_position,
             turning_option: next_turning_option,
@@ -269,14 +273,18 @@ impl Cart {
 type CrashedCarts = HashSet<Coordinate>;
 
 struct Carts {
-    carts: HashMap<Coordinate, Cart>,
+    carts: BTreeMap<Coordinate, Cart>,
 }
 
 impl Carts {
     fn new() -> Carts {
         Carts {
-            carts: HashMap::new(),
+            carts: BTreeMap::new(),
         }
+    }
+
+    fn len(&self) -> i32 {
+        return self.carts.len() as i32;
     }
 
     fn add_cart(&mut self, cart: Cart) {
@@ -288,33 +296,57 @@ impl Carts {
     }
 
     fn tick(&mut self, map: &Map) -> Option<CrashedCarts> {
-        let mut crashed_carts: CrashedCarts = HashSet::new();
-        let mut next_positions: HashSet<Coordinate> = HashSet::new();
-        let mut next_carts: HashMap<Coordinate, Cart> = HashMap::new();
+        // let mut crashed_carts: CrashedCarts = HashSet::new();
+        // let mut next_positions: HashSet<Coordinate> = HashSet::new();
+        // let mut crashed_carts: Vec<Cart> = vec![];
+        // let mut next_carts: BTreeMap<Coordinate, Cart> = BTreeMap::new();
 
-        let next_carts_iter = self.carts.iter().map(|(_position, cart)| -> Cart {
-            let next_cart = cart.tick(&map);
-            return next_cart;
-        });
+        let mut crashed_positions: HashSet<Coordinate> = HashSet::new();
 
-        for cart in next_carts_iter {
-            if next_positions.contains(&cart.position) {
-                next_carts.remove(&cart.position);
-                crashed_carts.insert(cart.position);
-                if crashed_carts.len() > 0 {
-                    return Some(crashed_carts);
+        let (_, next_carts) = self.carts.iter().fold(
+            (self.carts.clone(), BTreeMap::new()),
+            |acc, (_current_position, current_cart)| {
+                let (mut prev_carts, mut next_carts): (
+                    BTreeMap<Coordinate, Cart>,
+                    BTreeMap<Coordinate, Cart>,
+                ) = acc;
+
+                // remove current cart from the current map state
+                prev_carts.remove(&current_cart.position);
+
+                if crashed_positions.contains(&current_cart.position) {
+                    // current cart was crashed by another cart that moved before itself.
+                    return (prev_carts, next_carts);
                 }
-            } else {
-                next_positions.insert(cart.position);
-                next_carts.insert(cart.position, cart);
-            }
-        }
+
+                let next_cart = current_cart.tick(&map);
+
+                // does the next cart collide with any other cart in the map state?
+                if prev_carts.contains_key(&next_cart.position) {
+                    crashed_positions.insert(next_cart.position);
+                    return (prev_carts, next_carts);
+                }
+
+                // does the next cart collide with carts that already have moved?
+                if next_carts.contains_key(&next_cart.position) {
+                    crashed_positions.insert(next_cart.position);
+                    next_carts.remove(&next_cart.position);
+                    return (prev_carts, next_carts);
+                }
+
+                next_carts.insert(next_cart.position, next_cart);
+
+                return (prev_carts, next_carts);
+
+            },
+        );
 
         self.carts = next_carts;
 
-        if crashed_carts.len() > 0 {
-            return Some(crashed_carts);
+        if crashed_positions.len() > 0 {
+            return Some(crashed_positions);
         }
+
         return None;
     }
 }
@@ -370,7 +402,7 @@ fn part_1(input_string: &str) -> Coordinate {
 
                 // add carts
                 if Cart::is_cart(cell) {
-                    let cart = Cart::new(cell, position);
+                    let cart = Cart::new(carts.len(), cell, position);
                     carts.add_cart(cart);
                 }
 
@@ -516,22 +548,32 @@ fn part_1(input_string: &str) -> Coordinate {
         let crashed_carts = carts.tick(&map);
         num_of_ticks += 1;
         // print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
+        // println!("==========");
         // thread::sleep(Duration::from_millis(100));
 
         match crashed_carts {
             None => {}
             Some(crashed_carts) => {
                 // not: 29,104
+
+                let mut crashed_carts: Vec<Coordinate> = crashed_carts.into_iter().collect();
+                crashed_carts.sort();
+
                 println!("{:?}", crashed_carts);
                 println!("crashed at tick: {}", num_of_ticks);
 
-                return crashed_carts.iter().next().unwrap().clone();
+                return *crashed_carts.first().unwrap();
             }
         }
     }
 }
 
 fn main() {
+    assert!((0, 0) < (1, 0));
+    assert!((0, 0) < (0, 1));
+    assert!((0, 0) < (1, 1));
+    assert!((1, 0) < (1, 1));
+
     let input_string = include_str!("input.txt");
 
     let crashed_position = part_1(input_string);
@@ -539,17 +581,24 @@ fn main() {
     println!("Part 1: {:?}", crashed_position);
 }
 
-// /---\
-// |   v
-// | /-+-\
-// | | | |
-// \-+-/ |
-//   |   |
-//   \---/
-
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    #[should_panic]
+    fn near_miss() {
+        let input_string = r###"
+   |
+   |
+->-+---
+   |
+   |
+   ^
+"###;
+
+        part_1(input_string);
+    }
 
     #[test]
     fn test_part_1() {
@@ -563,10 +612,36 @@ mod tests {
 
         assert_eq!(part_1(input_string), (7, 3));
 
+        // first crash occurs from left to right
+        let input_string = r###"->-<-->-<--"###;
+
+        assert_eq!(part_1(input_string), (2, 0));
+
+        // carts shouldn't pass through each other
+        let input_string = r###"--->--<---"###;
+
+        assert_eq!(part_1(input_string), (5, 0));
+
+        let input_string = r###"|
+|
+v
+|
+|
+^
+|
+|
+"###;
+
+        assert_eq!(part_1(input_string), (0, 4));
+
         let input_string = r###"->+<-
   ^  "###;
 
         assert_eq!(part_1(input_string), (2, 0));
+
+        let input_string = r###"-->>--"###;
+
+        assert_eq!(part_1(input_string), (3, 0));
     }
 
 }
