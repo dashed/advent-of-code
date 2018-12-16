@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-type Coordinate = (i32, i32);
+type Coordinate = (usize, usize);
 
 enum Track {
     // |
@@ -59,4 +59,38 @@ fn main() {
     println!("{:?}", input_string);
 
     let carts: Carts = HashSet::new();
+
+    {
+        let mut map: Map = HashMap::new();
+
+        let mut cell_map: HashMap<Coordinate, char> = HashMap::new();
+
+        for (x, line) in input_string.lines().enumerate() {
+            for (y, cell) in line.chars().enumerate() {
+                let position: Coordinate = (x, y);
+                cell_map.insert(position, cell);
+            }
+        }
+
+        for (position, cell) in cell_map.iter() {
+            match cell {
+                '|' => {
+                    map.insert(*position, Track::Vertical);
+                }
+                '-' => {
+                    map.insert(*position, Track::Horizontal);
+                }
+                '+' => {
+                    map.insert(*position, Track::Intersection);
+                }
+                '/' => {
+                    println!("found /");
+                }
+                '\\' => {
+                    println!("found \\");
+                }
+                _ => {}
+            }
+        }
+    };
 }
