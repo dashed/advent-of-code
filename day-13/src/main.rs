@@ -217,7 +217,10 @@ fn main() {
                         format!("Invalid placement of track: \\ at {:?}", position)
                     );
                 }
-                _ => {}
+                ' ' => {}
+                _ => {
+                    assert!(false, "Unknown cell at {:?}: {}", position, cell);
+                }
             }
         }
 
