@@ -4,6 +4,8 @@
 
 https://adventofcode.com/2018
 
+I'm solving the Advent of Code 2018 puzzles using the [Rust](https://www.rust-lang.org/) programming language.
+
 #### Btw, there are spoilers...
 
 ![](https://media.giphy.com/media/3bznFj6OB5381BEjDu/giphy.gif)
