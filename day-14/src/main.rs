@@ -15,16 +15,6 @@ impl Elf {
     }
 }
 
-fn generate_recipes_from_digits(mixed_recipe: Recipe) -> Vec<Recipe> {
-    return mixed_recipe
-        .to_string()
-        .chars()
-        .map(|x| -> i32 {
-            return x.to_string().parse().unwrap();
-        })
-        .collect();
-}
-
 fn part_1(part_1_input: usize) -> String {
     let part_1_guard = part_1_input + 10;
 
@@ -41,11 +31,17 @@ fn part_1(part_1_input: usize) -> String {
 
         // each elf combine their current recipes
 
-        let result = generate_recipes_from_digits(recipe_1 + recipe_2);
+        let recipe_result = recipe_1 + recipe_2;
+        assert!(recipe_result <= 18);
 
         // the resulting recipes are added to the scoreboard
 
-        scoreboard.extend(result);
+        if recipe_result >= 10 {
+            scoreboard.push(recipe_result / 10);
+            scoreboard.push(recipe_result % 10);
+        } else {
+            scoreboard.push(recipe_result);
+        }
 
         first_elf.move_to_new_position(recipe_1, &scoreboard);
         second_elf.move_to_new_position(recipe_2, &scoreboard);
@@ -121,11 +117,17 @@ fn part_2(part_1_input: String) -> usize {
 
         // each elf combine their current recipes
 
-        let result = generate_recipes_from_digits(recipe_1 + recipe_2);
+        let recipe_result = recipe_1 + recipe_2;
+        assert!(recipe_result <= 18);
 
         // the resulting recipes are added to the scoreboard
 
-        scoreboard.extend(result);
+        if recipe_result >= 10 {
+            scoreboard.push(recipe_result / 10);
+            scoreboard.push(recipe_result % 10);
+        } else {
+            scoreboard.push(recipe_result);
+        }
 
         first_elf.move_to_new_position(recipe_1, &scoreboard);
         second_elf.move_to_new_position(recipe_2, &scoreboard);
@@ -151,13 +153,6 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_generate_recipes_from_digits() {
-        assert_eq!(generate_recipes_from_digits(1234), vec![1, 2, 3, 4]);
-        assert_eq!(generate_recipes_from_digits(0), vec![0]);
-        assert_eq!(generate_recipes_from_digits(1), vec![1]);
-    }
 
     #[test]
     fn test_part_1() {
