@@ -3,6 +3,7 @@ use std::collections::HashSet;
 
 type Coordinate = (i32, i32);
 
+#[derive(Debug, Clone)]
 enum Track {
     // |
     Vertical,
@@ -14,15 +15,24 @@ enum Track {
     // curves
     // invariant: Curves connect exactly two perpendicular pieces of track
 
-    // top to left /
-    TopToLeft,
-    // bottom to right /
-    BottomToRight,
+    // match configuration:
+    //   /-
+    //   |
+    BottomAndRight,
 
-    // top to right \
-    TopToRight,
-    // bottom to right \
-    BottomToLeft,
+    // match configuration:
+    //    |
+    //   -/
+    TopAndLeft,
+
+    // match configuration:
+    //   -\
+    //    |
+    BottomAndLeft,
+    // match configuration:
+    //   |
+    //   \-
+    TopAndRight,
 }
 
 fn is_horizontal(cell: char) -> bool {
@@ -125,6 +135,8 @@ impl Cart {
     fn tick(&mut self, map: &Map) {
         let (x, y) = self.position;
 
+        // generate next position
+
         let next_position = match self.orientation {
             Orientation::Up => (x, y - 1),
             Orientation::Down => (x, y + 1),
@@ -133,6 +145,25 @@ impl Cart {
         };
 
         self.position = next_position;
+
+        // generate next orientation
+
+        let next_track: Track = match map.get(&next_position) {
+            None => {
+                assert!(false, "No track found at: {:?}", next_position);
+                unreachable!();
+            }
+            Some(track) => track.clone(),
+        };
+
+        // match next_track {
+        //     Track::TopToLeft => {
+        //         match self.orientation {
+        //             Orientation::Up =>
+        //         }
+        //     },
+        //     _ => {}
+        // }
     }
 }
 
@@ -187,40 +218,44 @@ fn main() {
                     // match configuration:
                     //   /-
                     //   |
-                    let valid_right_side = match cell_map.get(&(x + 1, y)) {
-                        None => false,
-                        Some(cell) => is_horizontal(*cell),
-                    };
+                    let is_configuration_1 = {
+                        let valid_right_side = match cell_map.get(&(x + 1, y)) {
+                            None => false,
+                            Some(cell) => is_horizontal(*cell),
+                        };
 
-                    let valid_bottom_side = match cell_map.get(&(x, y + 1)) {
-                        None => false,
-                        Some(cell) => is_vertical(*cell),
-                    };
+                        let valid_bottom_side = match cell_map.get(&(x, y + 1)) {
+                            None => false,
+                            Some(cell) => is_vertical(*cell),
+                        };
 
-                    let is_configuration_1 = valid_right_side && valid_bottom_side;
+                        valid_right_side && valid_bottom_side
+                    };
 
                     // match configuration:
                     //    |
                     //   -/
-                    let valid_left_side = match cell_map.get(&(x - 1, y)) {
-                        None => false,
-                        Some(cell) => is_horizontal(*cell),
-                    };
+                    let is_configuration_2 = {
+                        let valid_left_side = match cell_map.get(&(x - 1, y)) {
+                            None => false,
+                            Some(cell) => is_horizontal(*cell),
+                        };
 
-                    let valid_top_side = match cell_map.get(&(x, y - 1)) {
-                        None => false,
-                        Some(cell) => is_vertical(*cell),
-                    };
+                        let valid_top_side = match cell_map.get(&(x, y - 1)) {
+                            None => false,
+                            Some(cell) => is_vertical(*cell),
+                        };
 
-                    let is_configuration_2 = valid_left_side && valid_top_side;
+                        valid_left_side && valid_top_side
+                    };
 
                     if is_configuration_1 && !is_configuration_2 {
-                        map.insert(position, Track::TopToLeft);
+                        map.insert(position, Track::BottomAndRight);
                         continue;
                     }
 
                     if !is_configuration_1 && is_configuration_2 {
-                        map.insert(position, Track::BottomToRight);
+                        map.insert(position, Track::TopAndLeft);
                         continue;
                     }
 
@@ -233,40 +268,44 @@ fn main() {
                     // match configuration:
                     //   -\
                     //    |
-                    let valid_left_side = match cell_map.get(&(x - 1, y)) {
-                        None => false,
-                        Some(cell) => is_horizontal(*cell),
-                    };
+                    let is_configuration_1 = {
+                        let valid_left_side = match cell_map.get(&(x - 1, y)) {
+                            None => false,
+                            Some(cell) => is_horizontal(*cell),
+                        };
 
-                    let valid_bottom_side = match cell_map.get(&(x, y + 1)) {
-                        None => false,
-                        Some(cell) => is_vertical(*cell),
-                    };
+                        let valid_bottom_side = match cell_map.get(&(x, y + 1)) {
+                            None => false,
+                            Some(cell) => is_vertical(*cell),
+                        };
 
-                    let is_configuration_1 = valid_left_side && valid_bottom_side;
+                        valid_left_side && valid_bottom_side
+                    };
 
                     // match configuration:
                     //   |
                     //   \-
-                    let valid_top_side = match cell_map.get(&(x, y - 1)) {
-                        None => false,
-                        Some(cell) => is_vertical(*cell),
-                    };
+                    let is_configuration_2 = {
+                        let valid_top_side = match cell_map.get(&(x, y - 1)) {
+                            None => false,
+                            Some(cell) => is_vertical(*cell),
+                        };
 
-                    let valid_right_side = match cell_map.get(&(x + 1, y)) {
-                        None => false,
-                        Some(cell) => is_horizontal(*cell),
-                    };
+                        let valid_right_side = match cell_map.get(&(x + 1, y)) {
+                            None => false,
+                            Some(cell) => is_horizontal(*cell),
+                        };
 
-                    let is_configuration_2 = valid_top_side && valid_right_side;
+                        valid_top_side && valid_right_side
+                    };
 
                     if is_configuration_1 && !is_configuration_2 {
-                        map.insert(position, Track::BottomToLeft);
+                        map.insert(position, Track::BottomAndLeft);
                         continue;
                     }
 
                     if !is_configuration_1 && is_configuration_2 {
-                        map.insert(position, Track::TopToRight);
+                        map.insert(position, Track::TopAndRight);
                         continue;
                     }
 
