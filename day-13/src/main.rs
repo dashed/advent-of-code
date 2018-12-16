@@ -100,6 +100,13 @@ fn main() {
             for (x, cell) in line.chars().enumerate() {
                 let position: Coordinate = (x, y);
                 // println!("{:?} {}", position, cell);
+
+                let cell = match cell {
+                    'v' | '^' => '|',
+                    '<' | '>' => '-',
+                    _ => cell,
+                };
+
                 cell_map.insert(position, cell);
             }
         }
