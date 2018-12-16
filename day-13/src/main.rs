@@ -16,12 +16,13 @@ enum Track {
 
     // top to left /
     TopToLeft,
-    // bottom to left /
-    BottomToLeft,
+    // bottom to right /
+    BottomToRight,
+
     // top to right \
     TopToRight,
     // bottom to right \
-    BottomToRight,
+    BottomToLeft,
 }
 
 fn is_horizontal(cell: char) -> bool {
@@ -136,6 +137,30 @@ fn main() {
                         map.insert(position, Track::TopToLeft);
                         continue;
                     }
+
+                    if x <= 0 && y <= 0 {
+                        continue;
+                    }
+
+                    // match configuration:
+                    //   |
+                    //  -/
+                    let valid_left_side = match cell_map.get(&(x - 1, y)) {
+                        None => false,
+                        Some(cell) => is_horizontal(*cell),
+                    };
+
+                    let valid_top_side = match cell_map.get(&(x, y - 1)) {
+                        None => false,
+                        Some(cell) => is_vertical(*cell),
+                    };
+
+                    if valid_left_side && valid_top_side {
+                        map.insert(position, Track::BottomToRight);
+                        continue;
+                    }
+
+                    assert!(false, format!("Invalid placement of track: / at {:?}", position));
 
                 }
                 '\\' => {
