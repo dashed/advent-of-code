@@ -294,10 +294,6 @@ impl Carts {
     }
 
     fn tick(&mut self, map: &Map) -> Option<CrashedCarts> {
-        // let mut crashed_carts: CrashedCarts = HashSet::new();
-        // let mut next_positions: HashSet<Coordinate> = HashSet::new();
-        // let mut crashed_carts: Vec<Cart> = vec![];
-        // let mut next_carts: BTreeMap<Coordinate, Cart> = BTreeMap::new();
 
         let mut crashed_positions: HashSet<Coordinate> = HashSet::new();
 
