@@ -561,6 +561,31 @@ fn part_1(input_string: &str) -> Coordinate {
     }
 }
 
+fn part_2(input_string: &str) -> Option<Coordinate> {
+    let (map, mut carts) = parse_input(input_string);
+
+    // print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
+
+    loop {
+        carts.tick(&map);
+        // num_of_ticks += 1;
+        // print_map(&map, &carts, num_of_cols - 1, num_of_lines - 1);
+        // println!("==========");
+        // use std::thread;
+        // use std::time::Duration;
+        // thread::sleep(Duration::from_millis(100));
+
+        if carts.carts.len() <= 1 {
+            return carts
+                .carts
+                .iter()
+                .map(|(position, _cart)| *position)
+                .into_iter()
+                .next();
+        }
+    }
+}
+
 fn main() {
     assert!((0, 0) < (1, 0));
     assert!((0, 0) < (0, 1));
@@ -572,6 +597,9 @@ fn main() {
     let crashed_position = part_1(input_string);
 
     println!("Part 1: {:?}", crashed_position);
+
+    let survivor = part_2(input_string);
+    println!("Part 2: {:?}", survivor);
 }
 
 #[cfg(test)]
@@ -639,6 +667,20 @@ v
         let input_string = include_str!("input.txt");
 
         assert_eq!(part_1(input_string), (76, 108));
+    }
+
+    #[test]
+    fn test_part_2() {
+        let input_string = r###"/>-<\
+|   |
+| /<+-\
+| | | v
+\>+</ |
+  |   ^
+  \<->/
+        "###;
+
+        assert_eq!(part_2(input_string), Some((6, 4)));
     }
 
 }
