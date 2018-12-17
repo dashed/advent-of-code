@@ -18,6 +18,13 @@ fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> i32 {
     return (a - c).abs() + (b - d).abs();
 }
 
+// pick a coordinate from a vector of coordinates according to the reading order rules
+fn pick_coord(mut coords: Vec<Coordinate>) -> Coordinate {
+    assert!(coords.len() > 0);
+    coords.sort();
+    return coords.first().unwrap().clone();
+}
+
 enum MapState {
     Wall,
     Cavern,
@@ -58,4 +65,14 @@ fn main() {
     }
 
     // println!("{:?}", input_string);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_pick_coord() {
+        assert_eq!(pick_coord(vec![(1, 1), (0, 0), (1, 0)]), (0, 0));
+    }
 }
