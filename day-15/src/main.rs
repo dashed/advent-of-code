@@ -9,5 +9,12 @@ fn main() {
 
     let input_string = include_str!("input.txt");
 
-    println!("{:?}", input_string);
+    for (y, line) in input_string.lines().enumerate() {
+        for (x, map_state_as_char) in line.chars().enumerate() {
+            print!("{}", map_state_as_char);
+        }
+        println!("");
+    }
+
+    // println!("{:?}", input_string);
 }
