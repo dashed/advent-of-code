@@ -1,3 +1,20 @@
+// https://adventofcode.com/2018/day/15
+
+// imports
+
+use std::collections::HashMap;
+
+// code
+
+type Coordinate = (i32, i32);
+
+enum MapState {
+    Wall,
+    Cavern,
+}
+
+type Map = HashMap<Coordinate, MapState>;
+
 fn main() {
 
     // ensures reading order is satisfied
