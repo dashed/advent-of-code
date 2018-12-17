@@ -2,18 +2,29 @@
 
 // imports
 
+use std::collections::BTreeMap;
 use std::collections::HashMap;
 
 // code
 
 type Coordinate = (i32, i32);
 
-enum MapState {
-    Wall,
-    Cavern,
+// adapted from day 6
+// https://math.stackexchange.com/a/139604/10247
+fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> i32 {
+    let (a, b) = start;
+    let (c, d) = end;
+
+    return (a - c).abs() + (b - d).abs();
 }
 
-type Map = HashMap<Coordinate, MapState>;
+enum MapState {
+    Wall,
+    Cavern
+}
+
+type Terrain = HashMap<Coordinate, MapState>;
+type UnitPlacement = BTreeMap<Coordinate, Unit>;
 
 enum Unit {
     Goblin,
@@ -22,8 +33,13 @@ enum Unit {
 
 // combat begins in a series of rounds
 // in each round, a unit takes a turn, resolving all of its actions before completing their turn
-// On each unit's turn, it tries to move into range of an enemy (if it isn't already) and then attack (if it is in range).
 // invariant: units cannot attack nor move diagonally
+
+// invariant: Units cannot move into walls or other units.
+
+// Rules for units
+// On each unit's turn, it tries to move into range of an enemy (if it isn't already) and then attack (if it is in range).
+
 
 fn main() {
 
