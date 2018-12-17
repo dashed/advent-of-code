@@ -20,7 +20,7 @@ fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> i32 {
 
 enum MapState {
     Wall,
-    Cavern
+    Cavern,
 }
 
 type Terrain = HashMap<Coordinate, MapState>;
@@ -28,7 +28,7 @@ type UnitPlacement = BTreeMap<Coordinate, Unit>;
 
 enum Unit {
     Goblin,
-    Elf
+    Elf,
 }
 
 // combat begins in a series of rounds
@@ -40,9 +40,7 @@ enum Unit {
 // Rules for units
 // On each unit's turn, it tries to move into range of an enemy (if it isn't already) and then attack (if it is in range).
 
-
 fn main() {
-
     // ensures reading order is satisfied
     assert!((0, 0) < (1, 0));
     assert!((0, 0) < (0, 1));
