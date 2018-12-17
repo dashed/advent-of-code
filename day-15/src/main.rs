@@ -33,9 +33,39 @@ enum MapState {
 type Terrain = HashMap<Coordinate, MapState>;
 type UnitPlacement = BTreeMap<Coordinate, Unit>;
 
-enum Unit {
+enum UnitType {
     Goblin,
     Elf,
+}
+
+struct Unit {
+    unit_type: UnitType,
+    hit_points: i32,
+    attack_power: i32,
+}
+
+impl Unit {
+    fn new(unit_type: UnitType) -> Unit {
+        Unit {
+            unit_type,
+            hit_points: 200,
+            attack_power: 3,
+        }
+    }
+
+    fn new_elf() -> Unit {
+        Unit::new(UnitType::Elf)
+    }
+
+    fn new_goblin() -> Unit {
+        Unit::new(UnitType::Goblin)
+    }
+}
+
+fn is_reachable(start: Coordinate, end: Coordinate) -> bool {
+    // TODO: apply shortest path algorithm
+
+    return false;
 }
 
 // combat begins in a series of rounds
@@ -46,6 +76,8 @@ enum Unit {
 
 // Rules for units
 // On each unit's turn, it tries to move into range of an enemy (if it isn't already) and then attack (if it is in range).
+// If the unit is already in range of a target, it does not move, but continues its turn with an attack.
+// Otherwise, since it is not in range of a target, it moves.
 
 fn main() {
     // ensures reading order is satisfied
