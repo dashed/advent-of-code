@@ -11,7 +11,7 @@ use std::collections::HashMap;
 
 enum RoundState {
     Incomplete,
-    Complete
+    Complete,
 }
 
 trait Transitions {
@@ -165,6 +165,65 @@ impl Map {
                         }
                     }
                 }
+            }
+
+            map_string.push(row_string);
+        }
+
+        return map_string.join("\n");
+    }
+
+    fn to_string_with_health(&self) -> String {
+        let max_x = self
+            .terrain
+            .iter()
+            .map(|((x, _y), _map_state)| x)
+            .max()
+            .unwrap();
+        let max_y = self
+            .terrain
+            .iter()
+            .map(|((_x, y), _map_state)| y)
+            .max()
+            .unwrap();
+
+        let mut map_string: Vec<String> = vec![];
+
+        for y in 0..=*max_y {
+            let mut row_string = String::from("");
+            let mut visited_units = vec![];
+
+            for x in 0..=*max_x {
+                let position = (x, y);
+
+                match self.terrain.get(&position) {
+                    None => {
+                        row_string.push_str("#");
+                    }
+                    Some(map_state) => {
+                        match map_state {
+                            MapState::Wall => {
+                                // invariant: a unit cannot be within a wall
+                                assert!(!self.units.contains_key(&position));
+                                row_string.push_str("#");
+                            }
+                            MapState::Cavern => match self.units.get(&position) {
+                                None => {
+                                    row_string.push_str(".");
+                                }
+                                Some(unit) => {
+                                    visited_units.push(unit.to_health_string());
+                                    row_string.push_str(&unit.to_string());
+                                }
+                            },
+                        }
+                    }
+                }
+            }
+
+            if visited_units.len() >= 1 {
+                let foo = visited_units.join(", ");
+                row_string.push_str(&format!("  {}", foo));
             }
 
             map_string.push(row_string);
@@ -493,6 +552,10 @@ impl Unit {
         }
     }
 
+    fn to_health_string(&self) -> String {
+        return format!("{}({})", self.to_string(), self.hit_points);
+    }
+
     fn is_alive(&self) -> bool {
         return self.hit_points > 0;
     }
@@ -627,28 +690,12 @@ fn parse_input(input_string: &str) -> Map {
     return map;
 }
 
-fn main() {
-    // ensures reading order is satisfied
-    assert!((0, 0) < (1, 0));
-    assert!((0, 0) < (0, 1));
-    assert!((0, 0) < (1, 1));
-    assert!((1, 0) < (1, 1));
-    assert!((0, 0) < (1, 1));
-
-    let input_string = include_str!("input.txt");
-
+fn part_1(input_string: &str) -> i32 {
     let mut map = parse_input(input_string);
-
-
-    println!("{}", map.to_string());
-
-    let mut idx = 1;
 
     let mut num_of_rounds_completed = 0;
     loop {
-
         let round_state = map.execute_round();
-        // println!("{}", map.to_string());
         match round_state {
             RoundState::Complete => {
                 num_of_rounds_completed += 1;
@@ -659,13 +706,29 @@ fn main() {
         }
     }
 
-    let sum_hit_points: i32 = map.units.iter().map(|(key, unit)| unit) .fold(0, |acc, unit| {
-        return unit.hit_points;
-    });
+    let sum_hit_points: i32 = map
+        .units
+        .iter()
+        .map(|(_key, unit)| unit)
+        .fold(0, |acc, unit| {
+            println!("unit.hit_points {}", unit.hit_points);
+            return acc + unit.hit_points;
+        });
+
+    println!("{}", map.to_string());
 
     println!("num_of_rounds_completed: {}", num_of_rounds_completed);
     println!("sum_hit_points: {}", sum_hit_points);
-    println!("Part 1: {}", num_of_rounds_completed * sum_hit_points);
+
+    let result = num_of_rounds_completed * sum_hit_points;
+
+    return result;
+}
+
+fn main() {
+    let input_string = include_str!("input.txt");
+
+    println!("Part 1: {}", part_1(input_string));
 
     // println!("{:?}", input_string);
 }
@@ -786,7 +849,9 @@ mod tests {
 
         // round 1
         map.execute_round();
-        assert_eq!(map.to_string(), r###"
+        assert_eq!(
+            map.to_string(),
+            r###"
 #########
 #.G...G.#
 #...G...#
@@ -797,11 +862,14 @@ mod tests {
 #.......#
 #########
         "###
-        .trim());
+            .trim()
+        );
 
         // round 2
         map.execute_round();
-        assert_eq!(map.to_string(), r###"
+        assert_eq!(
+            map.to_string(),
+            r###"
 #########
 #..G.G..#
 #...G...#
@@ -812,11 +880,14 @@ mod tests {
 #.......#
 #########
         "###
-        .trim());
+            .trim()
+        );
 
         // round 3
         map.execute_round();
-        assert_eq!(map.to_string(), r###"
+        assert_eq!(
+            map.to_string(),
+            r###"
 #########
 #.......#
 #..GGG..#
@@ -827,7 +898,35 @@ mod tests {
 #.......#
 #########
         "###
-        .trim());
+            .trim()
+        );
     }
 
+    #[test]
+    fn test_part_1() {
+        let input_string = r###"
+#######
+#.G...#
+#...EG#
+#.#.#G#
+#..G#E#
+#.....#
+#######
+        "###
+        .trim();
+
+        let mut map = parse_input(input_string);
+
+        let mut rounds = 1;
+
+        while rounds <= 2 {
+            map.execute_round();
+            println!("After {} round:", rounds);
+            println!("{}", map.to_string_with_health());
+            rounds += 1;
+        }
+
+        assert!(false);
+        // assert_eq!(part_1(input_string), 1);
+    }
 }
