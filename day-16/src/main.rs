@@ -1,5 +1,9 @@
 // https://adventofcode.com/2018/day/15
 
+// imports
+
+use std::collections::HashSet;
+
 fn substring(this: &str, start: usize, len: usize) -> String {
     this.chars().skip(start).take(len).collect()
 }
@@ -83,11 +87,22 @@ impl OpcodeInstruction {
     }
 }
 
+#[derive(Debug, Hash, PartialEq, Eq)]
 enum Opcode {
     Addr,
+    Addi
 }
 
 impl Opcode {
+    fn all_opcodes() -> HashSet<Opcode> {
+        let mut set = HashSet::new();
+
+        set.insert(Opcode::Addr);
+        set.insert(Opcode::Addi);
+
+        return set;
+    }
+
     fn matches(
         &self,
         mut registers_before: Registers,
@@ -113,6 +128,22 @@ impl Opcode {
                 let register_c = instruction.output_register();
 
                 let result = value_a + value_b;
+                registers_before.set(register_c, result);
+            }
+            Opcode::Addi => {
+                // addi (add immediate) stores into register C the result of adding register A and value B.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return false;
+                }
+
+                let value_a = registers_before.get(register_a.unwrap());
+                let value_b = instruction.input_b();
+
+                let result = value_a + value_b;
+
+                let register_c = instruction.output_register();
                 registers_before.set(register_c, result);
             }
         }
@@ -197,7 +228,29 @@ fn part_1(input_string: &str) {
         candidates.push((before_register, opcode_instruction, after_register));
     }
 
-    println!("{:?}", candidates);
+    let candidates = candidates;
+
+    let remaining: Vec<(Registers, OpcodeInstruction, Registers)> = candidates
+        .into_iter()
+        .filter(|(before_register, opcode_instruction, after_register)| {
+            let opcodes = Opcode::all_opcodes();
+
+            let matched_opcodes: Vec<Opcode> = opcodes
+                .into_iter()
+                .filter(|opcode| {
+                    return opcode.matches(
+                        before_register.clone(),
+                        opcode_instruction.clone(),
+                        after_register.clone(),
+                    );
+                })
+                .collect();
+
+            return matched_opcodes.len() >= 3;
+        })
+        .collect();
+
+    println!("Part 1: {}", remaining.len());
 }
 
 fn main() {
