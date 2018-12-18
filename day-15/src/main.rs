@@ -9,6 +9,7 @@ use std::collections::HashMap;
 
 // code
 
+#[derive(Debug)]
 enum RoundState {
     Incomplete,
     Complete,
@@ -243,11 +244,12 @@ impl Map {
             }
             'G' => {
                 self.terrain.insert(position, MapState::Cavern);
-                self.units.insert(position, Unit::new_goblin());
+                self.units
+                    .insert(position, Unit::new_goblin(self.units.len()));
             }
             'E' => {
                 self.terrain.insert(position, MapState::Cavern);
-                self.units.insert(position, Unit::new_elf());
+                self.units.insert(position, Unit::new_elf(self.units.len()));
             }
             _ => {
                 assert!(false, "Unknown cell: {}", cell);
@@ -324,7 +326,19 @@ impl Map {
             return false;
         }
 
-        let (_position, unit) = self.units.iter().next().unwrap();
+        let units: Vec<(Coordinate, Unit)> = {
+            let mut units: Vec<(Coordinate, Unit)> = self.units.clone().into_iter().collect();
+
+            units.sort_by(|item_1, item_2| {
+                let (pos_1, _) = item_1;
+                let (pos_2, _) = item_2;
+
+                return reading_order(pos_1, pos_2);
+            });
+            units
+        };
+
+        let (_position, unit) = units.iter().next().unwrap();
 
         if unit.is_elf() {
             return self.has_goblins();
@@ -368,7 +382,6 @@ impl Map {
         position_of_unit: &Coordinate,
         attacking_unit: &Unit,
     ) -> Option<(Coordinate, Unit)> {
-
         // check if this unit is still alive.
         if !self.units.contains_key(&position_of_unit) {
             return None;
@@ -386,8 +399,6 @@ impl Map {
                     return get_manhattan_distance(*position_of_unit, *position_of_target) <= 1;
                 })
                 .collect();
-
-
 
             adjacent_targets.sort_by(|item_1, item_2| {
                 let (position_of_target_1, target_1) = item_1;
@@ -423,22 +434,42 @@ impl Map {
         // an action is either a movement or an attack
         let mut num_of_actions_performed = 0;
 
-        let position_of_units: Vec<Coordinate> = {
+        let position_of_units: Vec<(Coordinate, Unit)> = {
             let mut units = vec![];
-            for (position_of_unit, _unit) in self.units.clone().into_iter() {
-                units.push(position_of_unit);
+            for (position_of_unit, expected_unit) in self.units.clone().into_iter() {
+                units.push((position_of_unit, expected_unit));
             }
-            units.sort_by(reading_order);
+
+            units.sort_by(|item_1, item_2| {
+                let (pos_1, _) = item_1;
+                let (pos_2, _) = item_2;
+
+                return reading_order(pos_1, pos_2);
+            });
+
             units
         };
 
-        for position_of_unit in position_of_units {
-            // check if this unit is still alive.
-            if !self.units.contains_key(&position_of_unit) {
-                continue;
-            }
+        for (position_of_unit, expected_unit) in position_of_units {
+            let unit = match self.units.get(&position_of_unit) {
+                None => {
+                    // no unit here; it probably died
+                    continue;
+                }
+                Some(actual_unit) => {
+                    if expected_unit.id != actual_unit.id {
+                        // the unit we were expecting to be here probably died,
+                        // and another unit moved into its place
+                        continue;
+                    }
 
-            let unit: Unit = self.units.get(&position_of_unit).unwrap().clone();
+                    if actual_unit.is_dead() {
+                        continue;
+                    }
+
+                    actual_unit.clone()
+                }
+            };
 
             assert!(unit.is_alive());
 
@@ -452,8 +483,9 @@ impl Map {
 
             // If the unit is already in range of a target,
             // it does not move, but continues its turn with an attack.
-            if let Some((position_of_target, chosen_target)) = self.get_attackable_target(&position_of_unit, &unit) {
-
+            if let Some((position_of_target, chosen_target)) =
+                self.get_attackable_target(&position_of_unit, &unit)
+            {
                 num_of_actions_performed += 1;
 
                 assert!(self.units.contains_key(&position_of_target));
@@ -530,8 +562,9 @@ impl Map {
                 num_of_actions_performed += 1;
 
                 // After moving (or if the unit began its turn in range of a target), the unit attacks.
-                if let Some((position_of_target, chosen_target)) = self.get_attackable_target(&next_move, &unit) {
-
+                if let Some((position_of_target, chosen_target)) =
+                    self.get_attackable_target(&next_move, &unit)
+                {
                     num_of_actions_performed += 1;
 
                     assert!(self.units.contains_key(&position_of_target));
@@ -545,7 +578,6 @@ impl Map {
                     } else {
                         self.units.insert(position_of_target, chosen_target);
                     }
-
                 }
             }
         }
@@ -566,14 +598,16 @@ enum UnitType {
 
 #[derive(Debug, Clone)]
 struct Unit {
+    id: usize,
     unit_type: UnitType,
     hit_points: i32,
     attack_power: i32,
 }
 
 impl Unit {
-    fn new(unit_type: UnitType) -> Unit {
+    fn new(unit_type: UnitType, id: usize) -> Unit {
         Unit {
+            id,
             unit_type,
             hit_points: 200,
             attack_power: 3,
@@ -584,12 +618,12 @@ impl Unit {
         other_unit.hit_points = other_unit.hit_points - self.attack_power;
     }
 
-    fn new_elf() -> Unit {
-        Unit::new(UnitType::Elf)
+    fn new_elf(id: usize) -> Unit {
+        Unit::new(UnitType::Elf, id)
     }
 
-    fn new_goblin() -> Unit {
-        Unit::new(UnitType::Goblin)
+    fn new_goblin(id: usize) -> Unit {
+        Unit::new(UnitType::Goblin, id)
     }
 
     fn to_string(&self) -> String {
@@ -608,7 +642,7 @@ impl Unit {
     }
 
     fn is_dead(&self) -> bool {
-        return !self.is_alive();
+        return self.hit_points <= 0;
     }
 
     fn is_elf(&self) -> bool {
@@ -758,7 +792,6 @@ fn part_1(input_string: &str) -> i32 {
         .iter()
         .map(|(_key, unit)| unit)
         .fold(0, |acc, unit| {
-            println!("unit.hit_points {}", unit.hit_points);
             return acc + unit.hit_points;
         });
 
@@ -767,15 +800,36 @@ fn part_1(input_string: &str) -> i32 {
     println!("num_of_rounds_completed: {}", num_of_rounds_completed);
     println!("sum_hit_points: {}", sum_hit_points);
 
+    // not: 217840
     let result = num_of_rounds_completed * sum_hit_points;
 
     return result;
 }
 
 fn main() {
-    let input_string = include_str!("input.txt");
+    let input_string = r###"
+####
+##E#
+#GG#
+####
+        "###
+    .trim();
 
-    println!("Part 1: {}", part_1(input_string));
+    let mut map = parse_input(input_string);
+
+    let mut rounds = 1;
+
+    while rounds <= 68 {
+        let result = map.execute_round();
+        println!("After {} round:", rounds);
+        println!("{:?}", result);
+        println!("{}", map.to_string_with_health());
+        rounds += 1;
+    }
+
+    // let input_string = include_str!("input.txt");
+
+    // println!("Part 1: {}", part_1(input_string));
 
     // println!("{:?}", input_string);
 }
@@ -962,18 +1016,6 @@ mod tests {
         "###
         .trim();
 
-        // let mut map = parse_input(input_string);
-
-        // let mut rounds = 1;
-
-        // while rounds <= 23 {
-        //     map.execute_round();
-        //     println!("After {} round:", rounds);
-        //     println!("{}", map.to_string_with_health());
-        //     rounds += 1;
-        // }
-
-        // assert!(false);
         assert_eq!(part_1(input_string), 27730);
 
         let input_string = r###"
@@ -1001,7 +1043,6 @@ mod tests {
         .trim();
 
         assert_eq!(part_1(input_string), 39514);
-
 
         let input_string = r###"
 #######
@@ -1043,5 +1084,15 @@ mod tests {
         .trim();
 
         assert_eq!(part_1(input_string), 18740);
+
+        let input_string = r###"
+####
+##E#
+#GG#
+####
+        "###
+        .trim();
+
+        assert_eq!(part_1(input_string), 67 * 200);
     }
 }
