@@ -836,6 +836,7 @@ fn part_1(input_string: &str) -> i32 {
 fn part_2(input_string: &str) -> i32 {
     let original_map = parse_input(input_string);
 
+    // interesting hint from: https://www.reddit.com/r/adventofcode/comments/a6nw3b/2018_day_15_part_2_optimisation_ideas/ebxkt28/
     let powers = vec![
         4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20, 23, 25, 29, 34, 40, 50, 67, 100,
         200,
@@ -889,6 +890,8 @@ fn main() {
     let input_string = include_str!("input.txt");
 
     println!("Part 1: {}", part_1(input_string));
+
+    println!("Part 2: {}", part_2(input_string));
 }
 
 #[cfg(test)]
