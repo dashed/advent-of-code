@@ -425,5 +425,10 @@ mod tests {
 
         assert_eq!(map.is_wall((2, 1)), false);
         assert_eq!(map.is_occupied((2, 1)), false);
+
+        assert_eq!(map.get_elves().len(), 1);
+        assert_eq!(map.has_elves(), true);
+        assert_eq!(map.get_goblins().len(), 8);
+        assert_eq!(map.has_goblins(), true);
     }
 }
