@@ -6,9 +6,13 @@ use core::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::collections::BinaryHeap;
 use std::collections::HashMap;
-use std::collections::HashSet;
 
 // code
+
+enum RoundState {
+    Incomplete,
+    Complete
+}
 
 trait Transitions {
     fn up(&self) -> Coordinate;
@@ -288,9 +292,9 @@ impl Map {
     }
 
     // returns true if combat has ended (i.e. round didn't run)
-    fn execute_round(&mut self) -> bool {
+    fn execute_round(&mut self) -> RoundState {
         if !self.can_run_round() {
-            return true;
+            return RoundState::Incomplete;
         }
 
         // track number of actions performed this round by each unit.
@@ -302,6 +306,7 @@ impl Map {
             for (position_of_unit, _unit) in self.units.clone().into_iter() {
                 units.push(position_of_unit);
             }
+            units.sort_by(reading_order);
             units
         };
 
@@ -328,7 +333,7 @@ impl Map {
 
             // If no targets remain, combat ends.
             if targets.len() <= 0 {
-                return true;
+                return RoundState::Incomplete;
             }
 
             let adjacent_targets: Vec<(Coordinate, Unit)> = {
@@ -440,7 +445,10 @@ impl Map {
         }
 
         // combat has ended if no action was performed
-        return num_of_actions_performed <= 0;
+        if num_of_actions_performed <= 0 {
+            return RoundState::Incomplete;
+        }
+        return RoundState::Complete;
     }
 }
 
@@ -631,7 +639,33 @@ fn main() {
 
     let mut map = parse_input(input_string);
 
-    map.execute_round();
+
+    println!("{}", map.to_string());
+
+    let mut idx = 1;
+
+    let mut num_of_rounds_completed = 0;
+    loop {
+
+        let round_state = map.execute_round();
+        // println!("{}", map.to_string());
+        match round_state {
+            RoundState::Complete => {
+                num_of_rounds_completed += 1;
+            }
+            RoundState::Incomplete => {
+                break;
+            }
+        }
+    }
+
+    let sum_hit_points: i32 = map.units.iter().map(|(key, unit)| unit) .fold(0, |acc, unit| {
+        return unit.hit_points;
+    });
+
+    println!("num_of_rounds_completed: {}", num_of_rounds_completed);
+    println!("sum_hit_points: {}", sum_hit_points);
+    println!("Part 1: {}", num_of_rounds_completed * sum_hit_points);
 
     // println!("{:?}", input_string);
 }
@@ -731,6 +765,69 @@ mod tests {
             .map(|path| path.len()),
             Some(29)
         );
+    }
+
+    #[test]
+    fn test_scenario() {
+        let input_string = r###"
+#########
+#G..G..G#
+#.......#
+#.......#
+#G..E..G#
+#.......#
+#.......#
+#G..G..G#
+#########
+        "###
+        .trim();
+
+        let mut map = parse_input(input_string);
+
+        // round 1
+        map.execute_round();
+        assert_eq!(map.to_string(), r###"
+#########
+#.G...G.#
+#...G...#
+#...E..G#
+#.G.....#
+#.......#
+#G..G..G#
+#.......#
+#########
+        "###
+        .trim());
+
+        // round 2
+        map.execute_round();
+        assert_eq!(map.to_string(), r###"
+#########
+#..G.G..#
+#...G...#
+#.G.E.G.#
+#.......#
+#G..G..G#
+#.......#
+#.......#
+#########
+        "###
+        .trim());
+
+        // round 3
+        map.execute_round();
+        assert_eq!(map.to_string(), r###"
+#########
+#.......#
+#..GGG..#
+#..GEG..#
+#G..G...#
+#......G#
+#.......#
+#.......#
+#########
+        "###
+        .trim());
     }
 
 }
