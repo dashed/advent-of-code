@@ -523,11 +523,15 @@ fn part_1(input_string: &str) -> OpCodeMap {
     let candidates = candidates;
 
     let mut opcode_map: OpCodeMap = HashMap::new();
+    let mut found_opcodes: HashSet<Opcode> = HashSet::new();
+    let mut opcode_map_maybe: Vec<(i32, Vec<Opcode>)> = vec![];
 
     let remaining: Vec<(Registers, OpcodeInstruction, Registers)> = candidates
         .into_iter()
         .filter(|(before_register, opcode_instruction, after_register)| {
             let opcodes = Opcode::all_opcodes();
+
+            assert!(opcodes.len() == 16);
 
             let matched_opcodes: Vec<Opcode> = opcodes
                 .into_iter()
@@ -542,8 +546,17 @@ fn part_1(input_string: &str) -> OpCodeMap {
 
             if matched_opcodes.len() <= 1 {
                 let opcode: Opcode = matched_opcodes.iter().next().map(|x| (*x).clone()).unwrap();
-                println!("{} {:?}", opcode_instruction.input_opcode_number(), opcode);
+
+                found_opcodes.insert(opcode.clone());
                 opcode_map.insert(opcode_instruction.input_opcode_number(), opcode);
+            }
+
+            if matched_opcodes.len() > 1 {
+                opcode_map_maybe.push((
+                    opcode_instruction.input_opcode_number(),
+                    matched_opcodes.clone(),
+                ));
+                // println!("{} {:?}", opcode_instruction.input_opcode_number(), matched_opcodes);
             }
 
             return matched_opcodes.len() >= 3;
@@ -551,6 +564,34 @@ fn part_1(input_string: &str) -> OpCodeMap {
         .collect();
 
     println!("Part 1: {}", remaining.len());
+
+    // construct opcode_map
+
+    while opcode_map_maybe.len() > 0 {
+        opcode_map_maybe = opcode_map_maybe
+            .into_iter()
+            .map(|(input_opcode_number, opcodes)| {
+                let opcodes: Vec<Opcode> = opcodes
+                    .into_iter()
+                    .filter(|x| {
+                        // filter out opcodes that are already found
+                        return !found_opcodes.contains(x);
+                    })
+                    .collect();
+
+                if opcodes.len() == 1 {
+                    let opcode: Opcode = opcodes.first().map(|x| (*x).clone()).unwrap();
+                    found_opcodes.insert(opcode.clone());
+                    opcode_map.insert(input_opcode_number, opcode);
+                }
+
+                return (input_opcode_number, opcodes);
+            })
+            .filter(|(_input_opcode_number, opcodes)| {
+                return opcodes.len() >= 2;
+            })
+            .collect();
+    }
 
     return opcode_map;
 }
@@ -564,6 +605,7 @@ fn part_2(input_string: &str, opcode_map: OpCodeMap) {
     while inputs.peek().is_some() {
         let input_line = inputs.next().unwrap().trim();
 
+        // skip part 1 inputs
         if input_line.starts_with("Before: ") {
             // skip next two lines
             inputs.next();
@@ -594,13 +636,19 @@ fn part_2(input_string: &str, opcode_map: OpCodeMap) {
             )
         };
 
-        println!("opcode_instruction.input_opcode_number() {}", opcode_instruction.input_opcode_number());
-        let opcode = opcode_map.get(&opcode_instruction.input_opcode_number()).unwrap();
+        let opcode = opcode_map
+            .get(&opcode_instruction.input_opcode_number())
+            .unwrap();
 
-        registers = opcode.execute(registers.clone(), opcode_instruction.clone()).unwrap();
+        registers = opcode
+            .execute(registers.clone(), opcode_instruction.clone())
+            .unwrap();
 
-        println!("{:?}", registers);
+
     }
+
+    println!("Part 2 registers: {:?}", registers);
+    println!("Part 2: {}", registers.0);
 }
 
 fn main() {
