@@ -396,27 +396,6 @@ impl Unit {
     }
 }
 
-fn generate_distance_coords(
-    map: &Map,
-    start: Coordinate,
-    visited_squares: &HashSet<Coordinate>,
-    current_position: Coordinate,
-) -> Vec<DistanceCoordinate> {
-    return map
-        .get_adjacent_open_squares(current_position)
-        .into_iter()
-        .filter(|current_square| {
-            return !visited_squares.contains(&current_square);
-        })
-        .map(|current_square: Coordinate| {
-            // get manhattan distance from current_square towards the start
-            let distance = get_manhattan_distance(current_square, start);
-            assert!(distance >= 1);
-            return DistanceCoordinate(distance, current_square);
-        })
-        .collect();
-}
-
 // checks if there is an open path between start and end
 // an open path means a set of coordinates which are not either a wall or occupied by a unit
 // if a path exists, then the number of steps is returned
@@ -463,28 +442,6 @@ fn get_reachable_path(map: &Map, start: Coordinate, end: Coordinate) -> Option<i
     }
 
     return None;
-
-    // available_squares.extend(generate_distance_coords(map, start, &visited_squares, end));
-
-    // while let Some(current_square) = available_squares.pop() {
-    //     let current_position: Coordinate = current_square.into();
-
-    //     if get_manhattan_distance(current_position, start) <= 1 {
-    //         return true;
-    //     }
-
-    //     // invariant: manhattan distance between current_square and start is at least 2
-    //     visited_squares.insert(current_position);
-
-    //     available_squares.extend(generate_distance_coords(
-    //         map,
-    //         start,
-    //         &visited_squares,
-    //         current_position,
-    //     ));
-    // }
-
-    // return false;
 }
 
 // combat begins in a series of rounds
