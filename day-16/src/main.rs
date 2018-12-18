@@ -542,6 +542,7 @@ fn part_1(input_string: &str) -> OpCodeMap {
 
             if matched_opcodes.len() <= 1 {
                 let opcode: Opcode = matched_opcodes.iter().next().map(|x| (*x).clone()).unwrap();
+                println!("{} {:?}", opcode_instruction.input_opcode_number(), opcode);
                 opcode_map.insert(opcode_instruction.input_opcode_number(), opcode);
             }
 
@@ -558,7 +559,7 @@ fn part_2(input_string: &str, opcode_map: OpCodeMap) {
     let mut inputs = input_string.trim().lines().peekable();
 
     // The registers start with the value 0.
-    let registers = Registers(0, 0, 0, 0);
+    let mut registers = Registers(0, 0, 0, 0);
 
     while inputs.peek().is_some() {
         let input_line = inputs.next().unwrap().trim();
@@ -593,7 +594,12 @@ fn part_2(input_string: &str, opcode_map: OpCodeMap) {
             )
         };
 
-        println!("{:?}", opcode_instruction);
+        println!("opcode_instruction.input_opcode_number() {}", opcode_instruction.input_opcode_number());
+        let opcode = opcode_map.get(&opcode_instruction.input_opcode_number()).unwrap();
+
+        registers = opcode.execute(registers.clone(), opcode_instruction.clone()).unwrap();
+
+        println!("{:?}", registers);
     }
 }
 
