@@ -122,73 +122,82 @@ impl Opcode {
 }
 
 fn part_1(input_string: &str) {
-    let mut inputs = input_string.trim().lines();
+    let mut candidates: Vec<(Registers, OpcodeInstruction, Registers)> = vec![];
 
-    let before_register = {
-        let before_line = inputs.next().unwrap().trim();
-        assert!(before_line.starts_with("Before: "));
+    let mut inputs = input_string.trim().lines().peekable();
 
-        let mut splitted = before_line.split("Before: ");
-        splitted.next();
-        let array_like_str: &str = splitted.next().unwrap().trim();
+    while inputs.peek().is_some() {
+        let before_register = {
+            let before_line = inputs.next().unwrap().trim();
 
-        // remove [ and ] on both ends
-        let array_like_str = substring(array_like_str, 1, array_like_str.len() - 2);
+            if !before_line.starts_with("Before: ") {
+                continue;
+            }
 
-        // split and parse i32
-        let arr: Vec<i32> = array_like_str
-            .split(",")
-            .map(|x| x.trim())
-            .map(|x| -> i32 { x.parse().unwrap() })
-            .collect();
+            let mut splitted = before_line.split("Before: ");
+            splitted.next();
+            let array_like_str: &str = splitted.next().unwrap().trim();
 
-        Registers(arr[0], arr[1], arr[2], arr[3])
-    };
+            // remove [ and ] on both ends
+            let array_like_str = substring(array_like_str, 1, array_like_str.len() - 2);
 
-    let opcode_instruction = {
-        let opcode_instruction_line = inputs.next().unwrap().trim();
+            // split and parse i32
+            let arr: Vec<i32> = array_like_str
+                .split(",")
+                .map(|x| x.trim())
+                .map(|x| -> i32 { x.parse().unwrap() })
+                .collect();
 
-        let arr: Vec<i32> = opcode_instruction_line
-            .split_whitespace()
-            .map(|x| x.trim())
-            .map(|x| -> i32 {
-                return x.parse().unwrap();
-            })
-            .collect();
+            Registers(arr[0], arr[1], arr[2], arr[3])
+        };
 
-        OpcodeInstruction(
-            arr[1],
-            arr[2],
-            RegisterID::into_register_id(arr[3]).unwrap(),
-        )
-    };
+        let opcode_instruction = {
+            let opcode_instruction_line = inputs.next().unwrap().trim();
 
-    let after_register = {
-        let after_line = inputs.next().unwrap().trim();
-        assert!(after_line.starts_with("After: "));
+            let arr: Vec<i32> = opcode_instruction_line
+                .split_whitespace()
+                .map(|x| x.trim())
+                .map(|x| -> i32 {
+                    return x.parse().unwrap();
+                })
+                .collect();
 
-        let mut splitted = after_line.split("After: ");
-        splitted.next();
-        let array_like_str: &str = splitted.next().unwrap().trim();
+            OpcodeInstruction(
+                arr[1],
+                arr[2],
+                RegisterID::into_register_id(arr[3]).unwrap(),
+            )
+        };
 
-        // remove [ and ] on both ends
-        let array_like_str = substring(array_like_str, 1, array_like_str.len() - 2);
+        let after_register = {
+            let after_line = inputs.next().unwrap().trim();
+            assert!(after_line.starts_with("After: "));
 
-        // split and parse i32
-        let arr: Vec<i32> = array_like_str
-            .split(",")
-            .map(|x| x.trim())
-            .map(|x| -> i32 { x.parse().unwrap() })
-            .collect();
+            let mut splitted = after_line.split("After: ");
+            splitted.next();
+            let array_like_str: &str = splitted.next().unwrap().trim();
 
-        Registers(arr[0], arr[1], arr[2], arr[3])
-    };
+            // remove [ and ] on both ends
+            let array_like_str = substring(array_like_str, 1, array_like_str.len() - 2);
 
-    // let v: Vec<&str> = "".split('X').collect();
+            // split and parse i32
+            let arr: Vec<i32> = array_like_str
+                .split(",")
+                .map(|x| x.trim())
+                .map(|x| -> i32 { x.parse().unwrap() })
+                .collect();
 
-    println!("{:?}", before_register);
-    println!("{:?}", opcode_instruction);
-    println!("{:?}", after_register);
+            Registers(arr[0], arr[1], arr[2], arr[3])
+        };
+
+        // println!("{:?}", before_register);
+        // println!("{:?}", opcode_instruction);
+        // println!("{:?}", after_register);
+
+        candidates.push((before_register, opcode_instruction, after_register));
+    }
+
+    println!("{:?}", candidates);
 }
 
 fn main() {
