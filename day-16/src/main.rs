@@ -27,7 +27,7 @@ impl RegisterID {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 struct Registers(i32, i32, i32, i32);
 
 impl Registers {
@@ -58,6 +58,7 @@ impl Registers {
     }
 }
 
+#[derive(Debug, Clone)]
 struct OpcodeInstruction(
     i32,        /* input A */
     i32,        /* input B */
@@ -120,4 +121,41 @@ fn main() {
     let input_string = include_str!("input.txt");
 
     println!("{}", input_string);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_opcode_matches() {
+        {
+            let opcode = Opcode::Addr;
+
+            // valid
+
+            let registers_before = Registers(1, 2, 3, 4);
+            let instruction = OpcodeInstruction(0, 1, RegisterID::Zero);
+            let registers_after = Registers(3, 2, 3, 4);
+            let result = opcode.matches(
+                registers_before.clone(),
+                instruction.clone(),
+                registers_after,
+            );
+
+            assert_eq!(result, true);
+
+            // invalid
+
+            let registers_after = Registers(0, 2, 3, 4);
+            let result = opcode.matches(
+                registers_before.clone(),
+                instruction.clone(),
+                registers_after,
+            );
+
+            assert_eq!(result, false);
+        }
+    }
+
 }
