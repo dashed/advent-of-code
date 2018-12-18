@@ -46,6 +46,28 @@ impl Map {
         }
     }
 
+    fn insert(&mut self, position: Coordinate, cell: char) {
+        match cell {
+            '#' => {
+                self.terrain.insert(position, MapState::Wall);
+            }
+            '.' => {
+                self.terrain.insert(position, MapState::Cavern);
+            }
+            'G' => {
+                self.terrain.insert(position, MapState::Cavern);
+                self.units.insert(position, Unit::new_goblin());
+            }
+            'E' => {
+                self.terrain.insert(position, MapState::Cavern);
+                self.units.insert(position, Unit::new_elf());
+            }
+            _ => {
+                assert!(false, "Unknown cell: {}", cell);
+            }
+        }
+    }
+
     fn is_wall(&self, position: &Coordinate) -> bool {
         match self.terrain.get(position) {
             None => true,
@@ -128,12 +150,13 @@ fn is_reachable(map: Map, start: Coordinate, end: Coordinate) -> bool {
 // Otherwise, since it is not in range of a target, it moves.
 
 fn parse_input(input_string: &str) {
-    let map = Map::new();
+    let mut map = Map::new();
 
     for (y, line) in input_string.lines().enumerate() {
         for (x, map_state_as_char) in line.chars().enumerate() {
             let position: Coordinate = (x as i32, y as i32);
 
+            map.insert(position, map_state_as_char);
             print!("{}", map_state_as_char);
         }
         println!("");
