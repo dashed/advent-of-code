@@ -8,6 +8,15 @@ enum RegisterID {
     Three,
 }
 
+impl RegisterID {
+    fn is_valid_register_id(input: i32) -> bool {
+        match input {
+            0 | 1 | 2 | 3 => true,
+            _ => false,
+        }
+    }
+}
+
 struct Registers(i32, i32, i32, i32);
 
 struct OpcodeInstruction(
