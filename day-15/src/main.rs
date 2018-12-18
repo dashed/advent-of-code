@@ -39,11 +39,10 @@ struct Map {
 }
 
 impl Map {
-
     fn new() -> Map {
         Map {
             terrain: HashMap::new(),
-            units: BTreeMap::new()
+            units: BTreeMap::new(),
         }
     }
 
@@ -129,14 +128,11 @@ fn is_reachable(map: Map, start: Coordinate, end: Coordinate) -> bool {
 // Otherwise, since it is not in range of a target, it moves.
 
 fn parse_input(input_string: &str) {
-
     let map = Map::new();
 
     for (y, line) in input_string.lines().enumerate() {
         for (x, map_state_as_char) in line.chars().enumerate() {
-
             let position: Coordinate = (x as i32, y as i32);
-
 
             print!("{}", map_state_as_char);
         }
@@ -155,7 +151,6 @@ fn main() {
     let input_string = include_str!("input.txt");
 
     parse_input(input_string);
-
 
     // println!("{:?}", input_string);
 }
