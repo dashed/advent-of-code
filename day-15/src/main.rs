@@ -46,10 +46,10 @@ struct DistanceCoordinate(Distance, Coordinate);
 
 impl PartialOrd for DistanceCoordinate {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        if self.0 != other.0 {
-            return Some(self.0.cmp(&other.0));
-        }
         // reversed for the binary heap which is a max-heap
+        if self.0 != other.0 {
+            return Some(other.0.cmp(&self.0));
+        }
         return Some(reading_order(&other.1, &self.1));
     }
 }
@@ -332,10 +332,10 @@ impl Map {
                     // for each target, identify open squares adjacent to position_of_target
                     let adjacent_open_squares = self.get_adjacent_open_squares(*position_of_target);
 
-                    let reachable_squares: Vec<Coordinate> = adjacent_open_squares
-                        .into_iter()
-                        .filter(|end_coord| is_reachable(self, *position_of_unit, *end_coord))
-                        .collect();
+                    // let reachable_squares: Vec<Coordinate> = adjacent_open_squares
+                    //     .into_iter()
+                    //     .filter(|end_coord| is_reachable(self, *position_of_unit, *end_coord))
+                    //     .collect();
                 }
             }
         }
@@ -419,17 +419,18 @@ fn generate_distance_coords(
 
 // checks if there is an open path between start and end
 // an open path means a set of coordinates which are not either a wall or occupied by a unit
-fn is_reachable(map: &Map, start: Coordinate, end: Coordinate) -> bool {
+// if a path exists, then the number of steps is returned
+fn get_reachable_path(map: &Map, start: Coordinate, end: Coordinate) -> Option<i32> {
     if start == end {
-        return true;
+        return Some(0);
     }
 
     if map.is_wall(start) || map.is_wall(end) {
-        return false;
+        return None;
     }
 
     if map.is_occupied(end) {
-        return false;
+        return None;
     }
 
     let mut visited_squares: HashSet<Coordinate> = HashSet::new();
@@ -442,7 +443,7 @@ fn is_reachable(map: &Map, start: Coordinate, end: Coordinate) -> bool {
         let DistanceCoordinate(current_distance, current_position) = current_square;
 
         if current_position == start {
-            return true;
+            return Some(current_distance);
         }
 
         visited_squares.insert(current_position);
@@ -460,6 +461,8 @@ fn is_reachable(map: &Map, start: Coordinate, end: Coordinate) -> bool {
 
         available_squares.extend(foo);
     }
+
+    return None;
 
     // available_squares.extend(generate_distance_coords(map, start, &visited_squares, end));
 
@@ -481,7 +484,7 @@ fn is_reachable(map: &Map, start: Coordinate, end: Coordinate) -> bool {
     //     ));
     // }
 
-    return false;
+    // return false;
 }
 
 // combat begins in a series of rounds
@@ -616,7 +619,14 @@ mod tests {
 
         let map = parse_input(input_string);
 
-        assert_eq!(is_reachable(&map, (3, 1), (5, 3)), true);
+        assert_eq!(
+            get_reachable_path(
+                &map,
+                (3, 1), /* position of the elf */
+                (5, 3)  /* position of square adjacent to goblin */
+            ),
+            Some(28)
+        );
     }
 
 }
