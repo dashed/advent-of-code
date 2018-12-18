@@ -441,6 +441,10 @@ fn get_reachable_path(map: &Map, start: Coordinate, end: Coordinate) -> Option<V
     distances.insert(end, 0);
 
     while let Some(current_square) = available_squares.pop() {
+
+        // invariant: current_square has the lowest cost
+        // in case of a tie, positions are sorted according to the reading order
+
         let DistanceCoordinate(current_distance, current_position) = current_square;
 
         if get_manhattan_distance(start, current_position) <= 1 {
@@ -476,6 +480,10 @@ fn get_reachable_path(map: &Map, start: Coordinate, end: Coordinate) -> Option<V
                     available_squares.push(DistanceCoordinate(adjacent_distance, adjacent_square));
                 }
                 Some(best_distance) => {
+
+                    // NOTE: this potentially adds duplicates to the available_squares min-heap;
+                    // but that's fine :P
+
                     if adjacent_distance < *best_distance {
                         distances.insert(adjacent_square, adjacent_distance);
                         available_squares
