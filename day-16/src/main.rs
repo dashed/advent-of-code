@@ -1,5 +1,9 @@
 // https://adventofcode.com/2018/day/15
 
+fn substring(this: &str, start: usize, len: usize) -> String {
+    this.chars().skip(start).take(len).collect()
+}
+
 #[derive(Debug, Clone)]
 enum RegisterID {
     Zero,
@@ -117,10 +121,80 @@ impl Opcode {
     }
 }
 
+fn part_1(input_string: &str) {
+    let mut inputs = input_string.trim().lines();
+
+    let before_register = {
+        let before_line = inputs.next().unwrap().trim();
+        assert!(before_line.starts_with("Before: "));
+
+        let mut splitted = before_line.split("Before: ");
+        splitted.next();
+        let array_like_str: &str = splitted.next().unwrap().trim();
+
+        // remove [ and ] on both ends
+        let array_like_str = substring(array_like_str, 1, array_like_str.len() - 2);
+
+        // split and parse i32
+        let arr: Vec<i32> = array_like_str
+            .split(",")
+            .map(|x| x.trim())
+            .map(|x| -> i32 { x.parse().unwrap() })
+            .collect();
+
+        Registers(arr[0], arr[1], arr[2], arr[3])
+    };
+
+    let opcode_instruction = {
+        let opcode_instruction_line = inputs.next().unwrap().trim();
+
+        let arr: Vec<i32> = opcode_instruction_line
+            .split_whitespace()
+            .map(|x| x.trim())
+            .map(|x| -> i32 {
+                return x.parse().unwrap();
+            })
+            .collect();
+
+        OpcodeInstruction(
+            arr[1],
+            arr[2],
+            RegisterID::into_register_id(arr[3]).unwrap(),
+        )
+    };
+
+    let after_register = {
+        let after_line = inputs.next().unwrap().trim();
+        assert!(after_line.starts_with("After: "));
+
+        let mut splitted = after_line.split("After: ");
+        splitted.next();
+        let array_like_str: &str = splitted.next().unwrap().trim();
+
+        // remove [ and ] on both ends
+        let array_like_str = substring(array_like_str, 1, array_like_str.len() - 2);
+
+        // split and parse i32
+        let arr: Vec<i32> = array_like_str
+            .split(",")
+            .map(|x| x.trim())
+            .map(|x| -> i32 { x.parse().unwrap() })
+            .collect();
+
+        Registers(arr[0], arr[1], arr[2], arr[3])
+    };
+
+    // let v: Vec<&str> = "".split('X').collect();
+
+    println!("{:?}", before_register);
+    println!("{:?}", opcode_instruction);
+    println!("{:?}", after_register);
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
-    println!("{}", input_string);
+    part_1(input_string);
 }
 
 #[cfg(test)]
