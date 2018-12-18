@@ -84,13 +84,6 @@ fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> Distance {
     return (a - c).abs() + (b - d).abs();
 }
 
-// pick a coordinate from a vector of coordinates according to the reading order rules
-fn pick_coord(mut coords: Vec<Coordinate>) -> Coordinate {
-    assert!(coords.len() > 0);
-    coords.sort();
-    return coords.first().unwrap().clone();
-}
-
 // sort coordinates according to their reading order
 fn reading_order(first_coord: &Coordinate, second_coord: &Coordinate) -> Ordering {
     let (x1, y1) = first_coord;
@@ -325,10 +318,10 @@ impl Map {
 
             let adjacent_targets: Vec<Unit> = targets
                 .iter()
-                .filter(|(position_of_target, target)| {
+                .filter(|(position_of_target, _target)| {
                     return get_manhattan_distance(position_of_unit, **position_of_target) <= 1;
                 })
-                .map(|(position_of_target, target)| (*target).clone())
+                .map(|(_position_of_target, target)| (*target).clone())
                 .collect();
 
             if adjacent_targets.len() >= 1 {
@@ -591,11 +584,6 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_pick_coord() {
-        assert_eq!(pick_coord(vec![(1, 1), (0, 0), (1, 0)]), (0, 0));
-    }
 
     #[test]
     fn test_coord_reading_order() {
