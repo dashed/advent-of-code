@@ -643,8 +643,6 @@ fn part_2(input_string: &str, opcode_map: OpCodeMap) {
         registers = opcode
             .execute(registers.clone(), opcode_instruction.clone())
             .unwrap();
-
-
     }
 
     println!("Part 2 registers: {:?}", registers);
