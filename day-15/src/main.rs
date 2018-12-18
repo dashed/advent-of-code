@@ -46,7 +46,7 @@ struct DistanceCoordinate(Distance, Coordinate);
 
 impl DistanceCoordinate {
     fn new(start: Coordinate, end: Coordinate) -> Self {
-        let distance = get_manhattan_distance(start,end);
+        let distance = get_manhattan_distance(start, end);
         return DistanceCoordinate(distance, end);
     }
 }
@@ -385,6 +385,27 @@ impl Unit {
     }
 }
 
+fn generate_distance_coords(
+    map: &Map,
+    start: Coordinate,
+    visited_squares: &HashSet<Coordinate>,
+    current_position: Coordinate,
+) -> Vec<DistanceCoordinate> {
+    return map
+        .get_adjacent_open_squares(current_position)
+        .into_iter()
+        .filter(|current_square| {
+            return visited_squares.contains(&current_square);
+        })
+        .map(|current_square: Coordinate| {
+            // get manhattan distance from current_square towards the start
+            let distance = get_manhattan_distance(current_square, start);
+            assert!(distance >= 1);
+            return DistanceCoordinate(distance, current_square);
+        })
+        .collect();
+}
+
 // checks if there is an open path between start and end
 // an open path means a set of coordinates which are not either a wall or occupied by a unit
 fn is_reachable(map: &Map, start: Coordinate, end: Coordinate) -> bool {
@@ -400,88 +421,32 @@ fn is_reachable(map: &Map, start: Coordinate, end: Coordinate) -> bool {
         return false;
     }
 
-    let generate_distance_coords_iter = |current_position: Coordinate| {
-        let distance_coords_iter = map.get_adjacent_open_squares(current_position)
-            .into_iter()
-            .map(|current_square: Coordinate| {
-                // get manhattan distance from current_square towards the start
-                let distance = get_manhattan_distance(current_square, start);
-                assert!(distance >= 1);
-                return DistanceCoordinate(distance, current_square);
-            }).into_iter();
-
-        return distance_coords_iter;
-    };
-
     let mut visited_squares: HashSet<Coordinate> = HashSet::new();
     let mut available_squares: BinaryHeap<DistanceCoordinate> = BinaryHeap::new();
 
     // backtrack from end towards start
-    available_squares.extend(generate_distance_coords_iter(end));
+    available_squares.extend(generate_distance_coords(map, start, &visited_squares, end));
 
     while let Some(current_square) = available_squares.pop() {
-
         let current_position: Coordinate = current_square.into();
 
         if get_manhattan_distance(current_position, start) <= 1 {
             return true;
         }
 
+        // invariant: manhattan distance between current_square and start is at least 2
         visited_squares.insert(current_position);
 
-        // invariant: manhattan distance between current_square and start is at least 2
-        let distance_coords_iter = generate_distance_coords_iter(current_position);
 
-        available_squares.extend(distance_coords_iter);
-
+        available_squares.extend(generate_distance_coords(
+            map,
+            start,
+            &visited_squares,
+            current_position,
+        ));
     }
 
     return false;
-    // loop {
-    //     println!("{:?} {:?} {:?} {}", start, end, current_position, get_manhattan_distance(current_position, start));
-    //     assert!(current_position != start);
-    //     if get_manhattan_distance(current_position, start) <= 1 {
-    //         return true;
-    //     }
-
-    //     // invariant: manhattan distance between current_position and start is at least 2
-
-    //     let mut adjacent_open_squares: Vec<(Coordinate, Distance)> = map
-    //         .get_adjacent_open_squares(current_position)
-    //         .into_iter()
-    //         .map(|current_square| {
-    //             // get manhattan distance from current_square towards the start
-    //             let distance = get_manhattan_distance(current_square, start);
-    //             // invariant: distance >= 1
-    //             assert!(distance >= 1);
-    //             (current_square, distance)
-    //         })
-    //         .collect();
-
-    //     if adjacent_open_squares.is_empty() {
-    //         return false;
-    //     }
-
-    //     // sort by distance from smallest distance to largest, then by reading order
-    //     adjacent_open_squares.sort_by(|item_1, item_2| {
-
-    //         let (coord_1, distance_1) = item_1;
-    //         let (coord_2, distance_2) = item_2;
-
-    //         if distance_1 != distance_2 {
-    //             return distance_1.cmp(distance_2);
-    //         }
-
-    //         // distances are equal, break the tie by sorting the coordinate according to the reading order
-    //         return reading_order(coord_1, coord_2);
-    //     });
-
-    //     println!("{:?}", adjacent_open_squares);
-
-    //     let (next_position, _distance) = adjacent_open_squares.first().unwrap();
-
-    //     current_position = next_position.clone();
-    // }
 }
 
 // combat begins in a series of rounds
@@ -562,7 +527,6 @@ mod tests {
 
             let mut actual: Vec<Coordinate> = vec![];
             while let Some(item) = available_squares.pop() {
-                println!("{:?}", item);
                 actual.push(item.into());
             }
 
