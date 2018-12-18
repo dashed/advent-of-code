@@ -330,27 +330,64 @@ impl Map {
                 // TODO: implement
             } else {
                 // Otherwise, since it is not in range of a target, it moves.
-                for (position_of_target, target) in targets {
-                    // for each target, identify open squares adjacent to position_of_target
-                    let adjacent_open_squares = self.get_adjacent_open_squares(*position_of_target);
 
-                    let reachable_squares: Vec<(Coordinate, Path)> = adjacent_open_squares
-                        .into_iter()
-                        .map(|adjacent_coord| {
-                            (
-                                adjacent_coord,
-                                get_reachable_path(self, *position_of_unit, adjacent_coord),
-                            )
-                        })
-                        .filter(|(adjacent_coord, reachable)| {
-                            return reachable.is_some();
-                        })
-                        .map(|(adjacent_coord, reachable)| {
-                            return (adjacent_coord, reachable.unwrap());
-                        })
-                        .collect();
+                let mut reachable_paths: Vec<Path> = targets
+                    .into_iter()
+                    .map(|(position_of_target, _target)| {
+                        // for each target, identify open squares adjacent to position_of_target
+                        let adjacent_open_squares =
+                            self.get_adjacent_open_squares(*position_of_target);
 
-                    // println!("{:?}", reachable_squares);
+                        let reachable_paths: Vec<Path> = adjacent_open_squares
+                            .into_iter()
+                            .map(|adjacent_coord| {
+                                return get_reachable_path(self, *position_of_unit, adjacent_coord);
+                            })
+                            .filter(|reachable| {
+                                // filter out un-reachable adjacent coords
+                                return reachable.is_some();
+                            })
+                            .map(|reachable| {
+                                return reachable.unwrap();
+                            })
+                            .filter(|reachable| {
+                                // only consider non-empty paths
+                                return reachable.len() >= 1;
+                            })
+                            .collect();
+                        return reachable_paths;
+                    })
+                    .fold(
+                        vec![],
+                        |mut acc: Vec<Path>, reachable_paths: Vec<Path>| -> Vec<Path> {
+                            acc.extend(reachable_paths);
+                            return acc;
+                        },
+                    );
+
+                reachable_paths.sort_by(|path_1, path_2| {
+                    let len_1 = path_1.len();
+                    let len_2 = path_2.len();
+
+                    if len_1 != len_2 {
+                        return len_1.cmp(&len_2);
+                    }
+
+                    let coord_1 = path_1.first().unwrap();
+                    let coord_2 = path_2.first().unwrap();
+
+                    return reading_order(coord_1, coord_2);
+                });
+
+                if reachable_paths.len() >= 1 {
+                    let path: &Path = reachable_paths.first().unwrap();
+                    let next_move: Coordinate = *path.first().unwrap();
+                    println!(
+                        "{} at {:?} next_move: {:?}",
+                        unit.to_string(),
+                        position_of_unit,
+                        next_move
+                    );
                 }
             }
         }
@@ -441,7 +478,6 @@ fn get_reachable_path(map: &Map, start: Coordinate, end: Coordinate) -> Option<V
     distances.insert(end, 0);
 
     while let Some(current_square) = available_squares.pop() {
-
         // invariant: current_square has the lowest cost
         // in case of a tie, positions are sorted according to the reading order
 
@@ -480,7 +516,6 @@ fn get_reachable_path(map: &Map, start: Coordinate, end: Coordinate) -> Option<V
                     available_squares.push(DistanceCoordinate(adjacent_distance, adjacent_square));
                 }
                 Some(best_distance) => {
-
                     // NOTE: this potentially adds duplicates to the available_squares min-heap;
                     // but that's fine :P
                     // see: https://www3.cs.stonybrook.edu/~rezaul/papers/TR-07-54.pdf
