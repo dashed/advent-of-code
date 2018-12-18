@@ -97,6 +97,8 @@ enum Opcode {
     Bani,
     Borr,
     Bori,
+    Setr,
+    Seti,
 }
 
 impl Opcode {
@@ -114,6 +116,9 @@ impl Opcode {
 
         set.insert(Opcode::Borr);
         set.insert(Opcode::Bori);
+
+        set.insert(Opcode::Setr);
+        set.insert(Opcode::Seti);
 
         return set;
     }
@@ -272,6 +277,27 @@ impl Opcode {
 
                 let register_c = instruction.output_register();
                 registers_before.set(register_c, result);
+            }
+            Opcode::Setr => {
+                // setr (set register) copies the contents of register A into register C. (Input B is ignored.)
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return false;
+                }
+
+                let value_a = registers_before.get(register_a.unwrap());
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, value_a);
+            }
+            Opcode::Seti => {
+                // seti (set immediate) stores value A into register C. (Input B is ignored.)
+
+                let value_a = instruction.input_a();
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, value_a);
             }
         }
 
