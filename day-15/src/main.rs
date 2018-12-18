@@ -33,6 +33,40 @@ enum MapState {
 type Terrain = HashMap<Coordinate, MapState>;
 type UnitPlacement = BTreeMap<Coordinate, Unit>;
 
+struct Map {
+    terrain: Terrain,
+    units: UnitPlacement,
+}
+
+impl Map {
+
+    fn new() -> Map {
+        Map {
+            terrain: HashMap::new(),
+            units: BTreeMap::new()
+        }
+    }
+
+    fn is_wall(&self, position: &Coordinate) -> bool {
+        match self.terrain.get(position) {
+            None => true,
+            Some(map_state) => match map_state {
+                MapState::Wall => true,
+                MapState::Cavern => false,
+            },
+        }
+    }
+
+    fn is_occupied(&self, position: &Coordinate) -> bool {
+        if self.is_wall(position) {
+            return true;
+        }
+
+        // check if the position is occupied by a unit
+        return self.units.contains_key(position);
+    }
+}
+
 enum UnitType {
     Goblin,
     Elf,
@@ -62,8 +96,23 @@ impl Unit {
     }
 }
 
-fn is_reachable(start: Coordinate, end: Coordinate) -> bool {
+fn is_reachable(map: Map, start: Coordinate, end: Coordinate) -> bool {
     // TODO: apply shortest path algorithm
+
+    if map.is_wall(&start) || map.is_wall(&end) {
+        return false;
+    }
+
+    if map.is_occupied(&end) {
+        return false;
+    }
+
+    // backtrack from end towards start
+    let current_position = end;
+
+    while current_position != start {
+        // TODO: implement
+    }
 
     return false;
 }
@@ -79,6 +128,22 @@ fn is_reachable(start: Coordinate, end: Coordinate) -> bool {
 // If the unit is already in range of a target, it does not move, but continues its turn with an attack.
 // Otherwise, since it is not in range of a target, it moves.
 
+fn parse_input(input_string: &str) {
+
+    let map = Map::new();
+
+    for (y, line) in input_string.lines().enumerate() {
+        for (x, map_state_as_char) in line.chars().enumerate() {
+
+            let position: Coordinate = (x as i32, y as i32);
+
+
+            print!("{}", map_state_as_char);
+        }
+        println!("");
+    }
+}
+
 fn main() {
     // ensures reading order is satisfied
     assert!((0, 0) < (1, 0));
@@ -89,12 +154,8 @@ fn main() {
 
     let input_string = include_str!("input.txt");
 
-    for (y, line) in input_string.lines().enumerate() {
-        for (x, map_state_as_char) in line.chars().enumerate() {
-            print!("{}", map_state_as_char);
-        }
-        println!("");
-    }
+    parse_input(input_string);
+
 
     // println!("{:?}", input_string);
 }
