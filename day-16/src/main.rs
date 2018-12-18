@@ -102,6 +102,9 @@ enum Opcode {
     Gtir,
     Gtri,
     Gtrr,
+    Eqir,
+    Eqri,
+    Eqrr,
 }
 
 impl Opcode {
@@ -126,6 +129,10 @@ impl Opcode {
         set.insert(Opcode::Gtir);
         set.insert(Opcode::Gtri);
         set.insert(Opcode::Gtrr);
+
+        set.insert(Opcode::Eqir);
+        set.insert(Opcode::Eqri);
+        set.insert(Opcode::Eqrr);
 
         return set;
     }
@@ -357,6 +364,61 @@ impl Opcode {
                 let value_b = registers_before.get(register_b.unwrap());
 
                 let result = if value_a > value_b { 1 } else { 0 };
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+            Opcode::Eqir => {
+                // eqir (equal immediate/register) sets register C to 1 if value A is equal to register B.
+                // Otherwise, register C is set to 0.
+
+                let value_a = instruction.input_a();
+
+                let register_b = RegisterID::into_register_id(instruction.input_b());
+                if register_b.is_none() {
+                    return false;
+                }
+                let value_b = registers_before.get(register_b.unwrap());
+
+                let result = if value_a == value_b { 1 } else { 0 };
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+            Opcode::Eqri => {
+                // eqri (equal register/immediate) sets register C to 1 if register A is equal to value B.
+                // Otherwise, register C is set to 0.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return false;
+                }
+                let value_a = registers_before.get(register_a.unwrap());
+
+                let value_b = instruction.input_b();
+
+                let result = if value_a == value_b { 1 } else { 0 };
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+            Opcode::Eqrr => {
+                // eqrr (equal register/register) sets register C to 1 if register A is equal to register B.
+                // Otherwise, register C is set to 0.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return false;
+                }
+                let value_a = registers_before.get(register_a.unwrap());
+
+                let register_b = RegisterID::into_register_id(instruction.input_b());
+                if register_b.is_none() {
+                    return false;
+                }
+                let value_b = registers_before.get(register_b.unwrap());
+
+                let result = if value_a == value_b { 1 } else { 0 };
 
                 let register_c = instruction.output_register();
                 registers_before.set(register_c, result);
