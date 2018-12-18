@@ -1,5 +1,9 @@
 // https://adventofcode.com/2018/day/17
 
+// imports
+
+use std::collections::HashMap;
+
 // code
 
 type Coordinate = (i32, i32);
@@ -37,6 +41,8 @@ enum MapState {
     Sand,
     Water(Water),
 }
+
+type Terrain = HashMap<Coordinate, MapState>;
 
 fn main() {
     let input_string = include_str!("input.txt");
