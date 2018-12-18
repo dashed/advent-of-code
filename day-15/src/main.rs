@@ -113,6 +113,7 @@ type UnitPlacement = BTreeMap<Coordinate, Unit>;
 struct Map {
     terrain: Terrain,
     units: UnitPlacement,
+    num_of_elves_died: usize,
 }
 
 impl Map {
@@ -120,6 +121,15 @@ impl Map {
         Map {
             terrain: HashMap::new(),
             units: BTreeMap::new(),
+            num_of_elves_died: 0,
+        }
+    }
+
+    fn with_elf_attack_power(&mut self, elf_attack_power: i32) {
+        for (_, unit) in self.units.iter_mut() {
+            if unit.is_elf() {
+                unit.attack_power = elf_attack_power;
+            }
         }
     }
 
@@ -497,6 +507,9 @@ impl Map {
 
                 if chosen_target.is_dead() {
                     self.units.remove(&position_of_target);
+                    if chosen_target.is_elf() {
+                        self.num_of_elves_died += 1;
+                    }
                 } else {
                     self.units.insert(position_of_target, chosen_target);
                 }
@@ -534,14 +547,15 @@ impl Map {
                 })
                 .reduce(
                     || vec![],
-                    |mut acc: Vec<(Coordinate, Path)>, reachable_paths: Vec<(Coordinate, Path)>| -> Vec<(Coordinate, Path)> {
+                    |mut acc: Vec<(Coordinate, Path)>,
+                     reachable_paths: Vec<(Coordinate, Path)>|
+                     -> Vec<(Coordinate, Path)> {
                         acc.extend(reachable_paths);
                         return acc;
                     },
                 );
 
             reachable_paths.sort_by(|item_1, item_2| {
-
                 let (reachable_square_1, path_1) = item_1;
                 let (reachable_square_2, path_2) = item_2;
 
@@ -556,7 +570,10 @@ impl Map {
             });
 
             if reachable_paths.len() >= 1 {
-                let path: &Path = reachable_paths.first().map(|(_reachable_square, path)| path).unwrap();
+                let path: &Path = reachable_paths
+                    .first()
+                    .map(|(_reachable_square, path)| path)
+                    .unwrap();
                 let next_move: Coordinate = *path.first().unwrap();
 
                 self.units.remove(&position_of_unit);
@@ -578,6 +595,9 @@ impl Map {
 
                     if chosen_target.is_dead() {
                         self.units.remove(&position_of_target);
+                        if chosen_target.is_elf() {
+                            self.num_of_elves_died += 1;
+                        }
                     } else {
                         self.units.insert(position_of_target, chosen_target);
                     }
@@ -589,6 +609,7 @@ impl Map {
         if num_of_actions_performed <= 0 {
             return RoundState::Incomplete;
         }
+
         return RoundState::Complete;
     }
 }
@@ -774,9 +795,7 @@ fn parse_input(input_string: &str) -> Map {
     return map;
 }
 
-fn part_1(input_string: &str) -> i32 {
-    let mut map = parse_input(input_string);
-
+fn process_map(mut map: Map) -> i32 {
     let mut num_of_rounds_completed = 0;
     loop {
         let round_state = map.execute_round();
@@ -803,41 +822,25 @@ fn part_1(input_string: &str) -> i32 {
     println!("num_of_rounds_completed: {}", num_of_rounds_completed);
     println!("sum_hit_points: {}", sum_hit_points);
 
-    // not: 217840
     let result = num_of_rounds_completed * sum_hit_points;
 
     return result;
 }
 
+fn part_1(input_string: &str) -> i32 {
+    return process_map(parse_input(input_string));
+}
+
+fn part_1_with_elf_attack(input_string: &str, elf_attack_power: i32) -> i32 {
+    let mut map = parse_input(input_string);
+    map.with_elf_attack_power(elf_attack_power);
+    return process_map(map);
+}
+
 fn main() {
-//     let input_string = r###"
-// #######
-// #.E..G#
-// #.#####
-// #G#####
-// #######
-//         "###
-//     .trim();
-
-//     let mut map = parse_input(input_string);
-
-//     let mut rounds = 1;
-
-//     println!("{}", map.to_string_with_health());
-
-//     while rounds <= 1 {
-//         let result = map.execute_round();
-//         println!("After {} round:", rounds);
-//         println!("{:?}", result);
-//         println!("{}", map.to_string_with_health());
-//         println!("-----");
-//         rounds += 1;
-//     }
-
     let input_string = include_str!("input.txt");
 
     println!("Part 1: {}", part_1(input_string));
-
 }
 
 #[cfg(test)]
@@ -1117,7 +1120,6 @@ mod tests {
         assert_eq!(part_1(input_string), 71 * 197);
     }
 
-
     #[test]
     fn test_edge_case_1() {
         let input_string = r###"
@@ -1146,5 +1148,5 @@ mod tests {
         "###
             .trim()
         );
-}
+    }
 }
