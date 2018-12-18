@@ -7,7 +7,36 @@ use std::collections::HashMap;
 
 // code
 
+trait Transitions {
+    fn up(&self) -> Coordinate;
+    fn down(&self) -> Coordinate;
+    fn left(&self) -> Coordinate;
+    fn right(&self) -> Coordinate;
+}
+
 type Coordinate = (i32, i32);
+
+impl Transitions for Coordinate {
+    fn up(&self) -> Coordinate {
+        let (x, y) = self;
+        return (*x, y - 1);
+    }
+
+    fn down(&self) -> Coordinate {
+        let (x, y) = self;
+        return (*x, y + 1);
+    }
+
+    fn left(&self) -> Coordinate {
+        let (x, y) = self;
+        return (x - 1, *y);
+    }
+
+    fn right(&self) -> Coordinate {
+        let (x, y) = self;
+        return (x + 1, *y);
+    }
+}
 
 // adapted from day 6
 // https://math.stackexchange.com/a/139604/10247
@@ -139,14 +168,13 @@ impl Map {
         return self.units.contains_key(position);
     }
 
-    fn get_elves(&self) -> Vec<&Unit> {
+    fn get_elves(&self) -> Vec<(&Coordinate, &Unit)> {
         return self
             .units
             .iter()
             .filter(|(_position, unit)| {
                 return unit.is_elf();
             })
-            .map(|(_position, unit)| unit)
             .collect();
     }
 
@@ -161,14 +189,13 @@ impl Map {
             .is_some();
     }
 
-    fn get_goblins(&self) -> Vec<&Unit> {
+    fn get_goblins(&self) -> Vec<(&Coordinate, &Unit)> {
         return self
             .units
             .iter()
             .filter(|(_position, unit)| {
                 return unit.is_goblin();
             })
-            .map(|(_position, unit)| unit)
             .collect();
     }
 
@@ -201,6 +228,22 @@ impl Map {
 
         unreachable!();
     }
+    // get open squares adjacent to position
+    fn get_adjacent_open_squares(&self, position: Coordinate) -> Vec<Coordinate> {
+        let coords = vec![
+            position.up(),
+            position.down(),
+            position.left(),
+            position.right(),
+        ];
+
+        return coords
+            .into_iter()
+            .filter(|coord| {
+                return !self.is_occupied(coord);
+            })
+            .collect();
+    }
 
     // returns true if combat has ended (i.e. round didn't run)
     fn execute_round(&mut self) -> bool {
@@ -208,7 +251,7 @@ impl Map {
             return true;
         }
 
-        for (position, unit) in self.units.iter() {
+        for (position_of_unit, unit) in self.units.iter() {
             // Each unit begins its turn by identifying all possible targets (enemy units).
             let targets = if unit.is_elf() {
                 self.get_goblins()
@@ -223,6 +266,10 @@ impl Map {
                 return true;
             }
 
+            for (position_of_target, target) in targets {
+                // for each target, identify open squares adjacent to position_of_target
+                let adjacent_open_squares = self.get_adjacent_open_squares(*position_of_target);
+            }
         }
 
         return false;
