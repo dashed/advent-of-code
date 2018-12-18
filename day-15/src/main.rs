@@ -807,31 +807,33 @@ fn part_1(input_string: &str) -> i32 {
 }
 
 fn main() {
-    let input_string = r###"
-####
-##E#
-#GG#
-####
-        "###
-    .trim();
+//     let input_string = r###"
+// #####
+// #GG##
+// #.###
+// #..E#
+// #.#G#
+// #.E##
+// #####
+//         "###
+//     .trim();
 
-    let mut map = parse_input(input_string);
+//     let mut map = parse_input(input_string);
 
-    let mut rounds = 1;
+//     let mut rounds = 1;
 
-    while rounds <= 68 {
-        let result = map.execute_round();
-        println!("After {} round:", rounds);
-        println!("{:?}", result);
-        println!("{}", map.to_string_with_health());
-        rounds += 1;
-    }
+//     while rounds <= 68 {
+//         let result = map.execute_round();
+//         println!("After {} round:", rounds);
+//         println!("{:?}", result);
+//         println!("{}", map.to_string_with_health());
+//         rounds += 1;
+//     }
 
-    // let input_string = include_str!("input.txt");
+    let input_string = include_str!("input.txt");
 
-    // println!("Part 1: {}", part_1(input_string));
+    println!("Part 1: {}", part_1(input_string));
 
-    // println!("{:?}", input_string);
 }
 
 #[cfg(test)]
@@ -1085,6 +1087,8 @@ mod tests {
 
         assert_eq!(part_1(input_string), 18740);
 
+        // from: https://www.reddit.com/r/adventofcode/comments/a6f100/day_15_details_easy_to_be_wrong_on/
+
         let input_string = r###"
 ####
 ##E#
@@ -1094,5 +1098,18 @@ mod tests {
         .trim();
 
         assert_eq!(part_1(input_string), 67 * 200);
+
+        let input_string = r###"
+#####
+#GG##
+#.###
+#..E#
+#.#G#
+#.E##
+#####
+        "###
+        .trim();
+
+        assert_eq!(part_1(input_string), 71 * 197);
     }
 }
