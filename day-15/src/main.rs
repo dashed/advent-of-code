@@ -389,15 +389,19 @@ fn is_reachable(map: &Map, start: Coordinate, end: Coordinate) -> bool {
             return false;
         }
 
-        // sort by distance from smallest distance to largest
-        adjacent_open_squares.sort_by_key(|&(_coord, distance)| {
-            return distance;
-        });
+        // sort by distance from smallest distance to largest, then by reading order
+        adjacent_open_squares.sort_by(|item_1, item_2| {
 
-        // sort by coordinate reading order
-        // adjacent_open_squares.sort_by(|a, b| {
-        //     return coord;
-        // });
+            let (coord_1, distance_1) = item_1;
+            let (coord_2, distance_2) = item_2;
+
+            if distance_1 != distance_2 {
+                return distance_1.cmp(distance_2);
+            }
+
+            // distances are equal, break the tie by sorting the coordinate according to the reading order
+            return reading_order(coord_1, coord_2);
+        });
 
         println!("{:?}", adjacent_open_squares);
 
