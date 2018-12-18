@@ -102,6 +102,7 @@ fn reading_order(first_coord: &Coordinate, second_coord: &Coordinate) -> Orderin
     return x1.cmp(x2);
 }
 
+#[derive(Debug, Clone)]
 enum MapState {
     Wall,
     Cavern,
@@ -110,6 +111,7 @@ enum MapState {
 type Terrain = HashMap<Coordinate, MapState>;
 type UnitPlacement = BTreeMap<Coordinate, Unit>;
 
+#[derive(Debug, Clone)]
 struct Map {
     terrain: Terrain,
     units: UnitPlacement,
@@ -831,10 +833,56 @@ fn part_1(input_string: &str) -> i32 {
     return process_map(parse_input(input_string));
 }
 
-fn part_1_with_elf_attack(input_string: &str, elf_attack_power: i32) -> i32 {
-    let mut map = parse_input(input_string);
-    map.with_elf_attack_power(elf_attack_power);
-    return process_map(map);
+fn part_2(input_string: &str) -> i32 {
+    let original_map = parse_input(input_string);
+
+    let powers = vec![
+        4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20, 23, 25, 29, 34, 40, 50, 67, 100,
+        200,
+    ];
+
+    'attack_power_loop: for elf_attack_power in powers {
+        let mut map = original_map.clone();
+
+        map.with_elf_attack_power(elf_attack_power as i32);
+
+        let mut num_of_rounds_completed = 0;
+        loop {
+            let round_state = map.execute_round();
+
+            if map.num_of_elves_died > 0 {
+                continue 'attack_power_loop;
+            }
+
+            match round_state {
+                RoundState::Complete => {
+                    num_of_rounds_completed += 1;
+                }
+                RoundState::Incomplete => {
+                    break;
+                }
+            }
+        }
+
+        let sum_hit_points: i32 = map
+            .units
+            .iter()
+            .map(|(_key, unit)| unit)
+            .fold(0, |acc, unit| {
+                return acc + unit.hit_points;
+            });
+
+        println!("{}", map.to_string());
+
+        println!("num_of_rounds_completed: {}", num_of_rounds_completed);
+        println!("sum_hit_points: {}", sum_hit_points);
+
+        let result = num_of_rounds_completed * sum_hit_points;
+
+        return result;
+    }
+
+    return 0;
 }
 
 fn main() {
@@ -1151,7 +1199,13 @@ mod tests {
     }
 
     #[test]
-    fn test_part_1_with_elf_attack() {
+    fn test_part_2_with_elf_attack() {
+        fn part_2_with_elf_attack(input_string: &str, elf_attack_power: i32) -> i32 {
+            let mut map = parse_input(input_string);
+            map.with_elf_attack_power(elf_attack_power);
+            return process_map(map);
+        }
+
         let input_string = r###"
 #######
 #.G...#
@@ -1163,7 +1217,7 @@ mod tests {
         "###
         .trim();
 
-        assert_eq!(part_1_with_elf_attack(input_string, 15), 4988);
+        assert_eq!(part_2_with_elf_attack(input_string, 15), 4988);
 
         let input_string = r###"
 #######
@@ -1176,7 +1230,7 @@ mod tests {
         "###
         .trim();
 
-        assert_eq!(part_1_with_elf_attack(input_string, 4), 31284);
+        assert_eq!(part_2_with_elf_attack(input_string, 4), 31284);
 
         let input_string = r###"
 #######
@@ -1189,7 +1243,7 @@ mod tests {
         "###
         .trim();
 
-        assert_eq!(part_1_with_elf_attack(input_string, 15), 3478);
+        assert_eq!(part_2_with_elf_attack(input_string, 15), 3478);
 
         let input_string = r###"
 #######
@@ -1202,7 +1256,7 @@ mod tests {
         "###
         .trim();
 
-        assert_eq!(part_1_with_elf_attack(input_string, 12), 6474);
+        assert_eq!(part_2_with_elf_attack(input_string, 12), 6474);
 
         let input_string = r###"
 #########
@@ -1217,6 +1271,77 @@ mod tests {
         "###
         .trim();
 
-        assert_eq!(part_1_with_elf_attack(input_string, 34), 1140);
+        assert_eq!(part_2_with_elf_attack(input_string, 34), 1140);
     }
+
+    #[test]
+    fn test_part_2() {
+        let input_string = r###"
+#######
+#.G...#
+#...EG#
+#.#.#G#
+#..G#E#
+#.....#
+#######
+        "###
+        .trim();
+
+        assert_eq!(part_2(input_string), 4988);
+
+        let input_string = r###"
+#######
+#E..EG#
+#.#G.E#
+#E.##E#
+#G..#.#
+#..E#.#
+#######
+        "###
+        .trim();
+
+        assert_eq!(part_2(input_string), 31284);
+
+        let input_string = r###"
+#######
+#E.G#.#
+#.#G..#
+#G.#.G#
+#G..#.#
+#...E.#
+#######
+        "###
+        .trim();
+
+        assert_eq!(part_2(input_string), 3478);
+
+        let input_string = r###"
+#######
+#.E...#
+#.#..G#
+#.###.#
+#E#G#G#
+#...#G#
+#######
+        "###
+        .trim();
+
+        assert_eq!(part_2(input_string), 6474);
+
+        let input_string = r###"
+#########
+#G......#
+#.E.#...#
+#..##..G#
+#...##..#
+#...#...#
+#.G...G.#
+#.....G.#
+#########
+        "###
+        .trim();
+
+        assert_eq!(part_2(input_string), 1140);
+    }
+
 }
