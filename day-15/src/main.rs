@@ -2,6 +2,7 @@
 
 // imports
 
+use core::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::collections::HashMap;
 
@@ -40,7 +41,8 @@ impl Transitions for Coordinate {
 
 // adapted from day 6
 // https://math.stackexchange.com/a/139604/10247
-fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> i32 {
+type Distance = i32;
+fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> Distance {
     let (a, b) = start;
     let (c, d) = end;
 
@@ -52,6 +54,18 @@ fn pick_coord(mut coords: Vec<Coordinate>) -> Coordinate {
     assert!(coords.len() > 0);
     coords.sort();
     return coords.first().unwrap().clone();
+}
+
+// sort coordinates according to their reading order
+fn reading_order(first_coord: &Coordinate, second_coord: &Coordinate) -> Ordering {
+    let (x1, y1) = first_coord;
+    let (x2, y2) = second_coord;
+
+    if y1 != y2 {
+        return y1.cmp(y2);
+    }
+
+    return x1.cmp(x2);
 }
 
 enum MapState {
@@ -269,6 +283,12 @@ impl Map {
             for (position_of_target, target) in targets {
                 // for each target, identify open squares adjacent to position_of_target
                 let adjacent_open_squares = self.get_adjacent_open_squares(*position_of_target);
+
+                let reachable_squares: Vec<Coordinate> = adjacent_open_squares
+                    .into_iter()
+                    .filter(|end_coord| is_reachable(self, *position_of_unit, *end_coord))
+                    .collect();
+                println!("{:?}", reachable_squares);
             }
         }
 
@@ -326,8 +346,12 @@ impl Unit {
     }
 }
 
-fn is_reachable(map: Map, start: Coordinate, end: Coordinate) -> bool {
-    // TODO: apply shortest path algorithm
+// checks if there is an open path between start and end
+// an open path means a set of coordinates which are not either a wall or occupied by a unit
+fn is_reachable(map: &Map, start: Coordinate, end: Coordinate) -> bool {
+    if start == end {
+        return true;
+    }
 
     if map.is_wall(start) || map.is_wall(end) {
         return false;
@@ -338,13 +362,49 @@ fn is_reachable(map: Map, start: Coordinate, end: Coordinate) -> bool {
     }
 
     // backtrack from end towards start
-    let current_position = end;
+    let mut current_position = end;
 
-    while current_position != start {
-        // TODO: implement
+    loop {
+        println!("{:?} {:?} {:?} {}", start, end, current_position, get_manhattan_distance(current_position, start));
+        assert!(current_position != start);
+        if get_manhattan_distance(current_position, start) <= 1 {
+            return true;
+        }
+
+        // invariant: manhattan distance between current_position and start is at least 2
+
+        let mut adjacent_open_squares: Vec<(Coordinate, Distance)> = map
+            .get_adjacent_open_squares(current_position)
+            .into_iter()
+            .map(|current_square| {
+                // get manhattan distance from current_square towards the start
+                let distance = get_manhattan_distance(current_square, start);
+                // invariant: distance >= 1
+                assert!(distance >= 1);
+                (current_square, distance)
+            })
+            .collect();
+
+        if adjacent_open_squares.is_empty() {
+            return false;
+        }
+
+        // sort by distance from smallest distance to largest
+        adjacent_open_squares.sort_by_key(|&(_coord, distance)| {
+            return distance;
+        });
+
+        // sort by coordinate reading order
+        // adjacent_open_squares.sort_by(|a, b| {
+        //     return coord;
+        // });
+
+        println!("{:?}", adjacent_open_squares);
+
+        let (next_position, _distance) = adjacent_open_squares.first().unwrap();
+
+        current_position = next_position.clone();
     }
-
-    return false;
 }
 
 // combat begins in a series of rounds
@@ -396,6 +456,22 @@ mod tests {
     #[test]
     fn test_pick_coord() {
         assert_eq!(pick_coord(vec![(1, 1), (0, 0), (1, 0)]), (0, 0));
+    }
+
+    #[test]
+    fn test_coord_reading_order() {
+
+        let test: Vec<Coordinate> = vec![(2,27), (3,26), (2,26), (1,26), (2,25)];
+        let expected = {
+            let mut x = test.clone();
+            x.reverse();
+            x
+        };
+
+        let mut test = test;
+        test.sort_by(reading_order);
+
+        assert_eq!(test, expected);
     }
 
     #[test]
