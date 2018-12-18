@@ -44,19 +44,12 @@ impl Transitions for Coordinate {
 #[derive(PartialEq, Hash, Eq, Clone, Debug)]
 struct DistanceCoordinate(Distance, Coordinate);
 
-impl DistanceCoordinate {
-    fn new(start: Coordinate, end: Coordinate) -> Self {
-        let distance = get_manhattan_distance(start, end);
-        return DistanceCoordinate(distance, end);
-    }
-}
-
 impl PartialOrd for DistanceCoordinate {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        // reversed for the binary heap which is a max-heap
         if self.0 != other.0 {
-            return Some(other.0.cmp(&self.0));
+            return Some(self.0.cmp(&other.0));
         }
+        // reversed for the binary heap which is a max-heap
         return Some(reading_order(&other.1, &self.1));
     }
 }
@@ -64,11 +57,12 @@ impl PartialOrd for DistanceCoordinate {
 impl Ord for DistanceCoordinate {
     fn cmp(&self, other: &Self) -> Ordering {
         let ord = self.partial_cmp(other).unwrap();
-        match ord {
-            Ordering::Greater => Ordering::Less,
-            Ordering::Less => Ordering::Greater,
-            Ordering::Equal => ord,
-        }
+        return ord;
+        // match ord {
+        //     Ordering::Greater => Ordering::Less,
+        //     Ordering::Less => Ordering::Greater,
+        //     Ordering::Equal => ord,
+        // }
     }
 }
 
@@ -442,25 +436,50 @@ fn is_reachable(map: &Map, start: Coordinate, end: Coordinate) -> bool {
     let mut available_squares: BinaryHeap<DistanceCoordinate> = BinaryHeap::new();
 
     // backtrack from end towards start
-    available_squares.extend(generate_distance_coords(map, start, &visited_squares, end));
+    available_squares.push(DistanceCoordinate(0, end));
 
     while let Some(current_square) = available_squares.pop() {
-        let current_position: Coordinate = current_square.into();
+        let DistanceCoordinate(current_distance, current_position) = current_square;
 
-        if get_manhattan_distance(current_position, start) <= 1 {
+        if current_position == start {
             return true;
         }
 
-        // invariant: manhattan distance between current_square and start is at least 2
         visited_squares.insert(current_position);
 
-        available_squares.extend(generate_distance_coords(
-            map,
-            start,
-            &visited_squares,
-            current_position,
-        ));
+        let foo = map
+            .get_adjacent_open_squares(current_position)
+            .into_iter()
+            .filter(|current_square| {
+                // filter out visited squares
+                return !visited_squares.contains(&current_square);
+            })
+            .map(|current_square: Coordinate| {
+                return DistanceCoordinate(current_distance + 1, current_square);
+            });
+
+        available_squares.extend(foo);
     }
+
+    // available_squares.extend(generate_distance_coords(map, start, &visited_squares, end));
+
+    // while let Some(current_square) = available_squares.pop() {
+    //     let current_position: Coordinate = current_square.into();
+
+    //     if get_manhattan_distance(current_position, start) <= 1 {
+    //         return true;
+    //     }
+
+    //     // invariant: manhattan distance between current_square and start is at least 2
+    //     visited_squares.insert(current_position);
+
+    //     available_squares.extend(generate_distance_coords(
+    //         map,
+    //         start,
+    //         &visited_squares,
+    //         current_position,
+    //     ));
+    // }
 
     return false;
 }
