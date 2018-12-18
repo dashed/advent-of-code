@@ -149,7 +149,7 @@ fn is_reachable(map: Map, start: Coordinate, end: Coordinate) -> bool {
 // If the unit is already in range of a target, it does not move, but continues its turn with an attack.
 // Otherwise, since it is not in range of a target, it moves.
 
-fn parse_input(input_string: &str) {
+fn parse_input(input_string: &str) -> Map {
     let mut map = Map::new();
 
     for (y, line) in input_string.lines().enumerate() {
@@ -157,10 +157,12 @@ fn parse_input(input_string: &str) {
             let position: Coordinate = (x as i32, y as i32);
 
             map.insert(position, map_state_as_char);
-            print!("{}", map_state_as_char);
+            // print!("{}", map_state_as_char);
         }
-        println!("");
+        // println!("");
     }
+
+    return map;
 }
 
 fn main() {
@@ -173,7 +175,7 @@ fn main() {
 
     let input_string = include_str!("input.txt");
 
-    parse_input(input_string);
+    let map = parse_input(input_string);
 
     // println!("{:?}", input_string);
 }
