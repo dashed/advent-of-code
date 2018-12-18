@@ -332,10 +332,23 @@ impl Map {
                     // for each target, identify open squares adjacent to position_of_target
                     let adjacent_open_squares = self.get_adjacent_open_squares(*position_of_target);
 
-                    // let reachable_squares: Vec<Coordinate> = adjacent_open_squares
-                    //     .into_iter()
-                    //     .filter(|end_coord| is_reachable(self, *position_of_unit, *end_coord))
-                    //     .collect();
+                    let reachable_squares: Vec<(Coordinate, Distance)> = adjacent_open_squares
+                        .into_iter()
+                        .map(|adjacent_coord| {
+                            (
+                                adjacent_coord,
+                                get_reachable_path(self, *position_of_unit, adjacent_coord),
+                            )
+                        })
+                        .filter(|(adjacent_coord, reachable)| {
+                            return reachable.is_some();
+                        })
+                        .map(|(adjacent_coord, reachable)| {
+                            return (adjacent_coord, reachable.unwrap());
+                        })
+                        .collect();
+
+                    println!("{:?}", reachable_squares);
                 }
             }
         }
@@ -412,6 +425,8 @@ fn get_reachable_path(map: &Map, start: Coordinate, end: Coordinate) -> Option<i
         return None;
     }
 
+    // NOTE: start could be occupied
+
     let mut visited_squares: HashSet<Coordinate> = HashSet::new();
     let mut available_squares: BinaryHeap<DistanceCoordinate> = BinaryHeap::new();
 
@@ -421,7 +436,7 @@ fn get_reachable_path(map: &Map, start: Coordinate, end: Coordinate) -> Option<i
     while let Some(current_square) = available_squares.pop() {
         let DistanceCoordinate(current_distance, current_position) = current_square;
 
-        if current_position == start {
+        if get_manhattan_distance(start, current_position) <= 1 {
             return Some(current_distance);
         }
 
@@ -458,7 +473,7 @@ fn get_reachable_path(map: &Map, start: Coordinate, end: Coordinate) -> Option<i
 fn parse_input(input_string: &str) -> Map {
     let mut map = Map::new();
 
-    for (y, line) in input_string.lines().enumerate() {
+    for (y, line) in input_string.trim().lines().enumerate() {
         for (x, map_state_as_char) in line.chars().enumerate() {
             let position: Coordinate = (x as i32, y as i32);
 
@@ -579,7 +594,7 @@ mod tests {
         assert_eq!(
             get_reachable_path(
                 &map,
-                (3, 1), /* position of the elf */
+                (2, 1), /* position of the elf */
                 (5, 3)  /* position of square adjacent to goblin */
             ),
             Some(28)
