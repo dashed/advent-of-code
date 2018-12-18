@@ -99,6 +99,9 @@ enum Opcode {
     Bori,
     Setr,
     Seti,
+    Gtir,
+    Gtri,
+    Gtrr,
 }
 
 impl Opcode {
@@ -119,6 +122,10 @@ impl Opcode {
 
         set.insert(Opcode::Setr);
         set.insert(Opcode::Seti);
+
+        set.insert(Opcode::Gtir);
+        set.insert(Opcode::Gtri);
+        set.insert(Opcode::Gtrr);
 
         return set;
     }
@@ -298,6 +305,61 @@ impl Opcode {
 
                 let register_c = instruction.output_register();
                 registers_before.set(register_c, value_a);
+            }
+            Opcode::Gtir => {
+                // gtir (greater-than immediate/register) sets register C to 1 if value A is greater than register B.
+                // Otherwise, register C is set to 0.
+
+                let value_a = instruction.input_a();
+
+                let register_b = RegisterID::into_register_id(instruction.input_b());
+                if register_b.is_none() {
+                    return false;
+                }
+                let value_b = registers_before.get(register_b.unwrap());
+
+                let result = if value_a > value_b { 1 } else { 0 };
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+            Opcode::Gtri => {
+                // gtri (greater-than register/immediate) sets register C to 1 if register A is greater than value B.
+                // Otherwise, register C is set to 0.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return false;
+                }
+                let value_a = registers_before.get(register_a.unwrap());
+
+                let value_b = instruction.input_b();
+
+                let result = if value_a > value_b { 1 } else { 0 };
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+            Opcode::Gtrr => {
+                // gtrr (greater-than register/register) sets register C to 1 if register A is greater than register B.
+                // Otherwise, register C is set to 0.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return false;
+                }
+                let value_a = registers_before.get(register_a.unwrap());
+
+                let register_b = RegisterID::into_register_id(instruction.input_b());
+                if register_b.is_none() {
+                    return false;
+                }
+                let value_b = registers_before.get(register_b.unwrap());
+
+                let result = if value_a > value_b { 1 } else { 0 };
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
             }
         }
 
