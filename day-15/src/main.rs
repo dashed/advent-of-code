@@ -46,6 +46,58 @@ impl Map {
         }
     }
 
+    fn to_string(&self) -> String {
+        let max_x = self
+            .terrain
+            .iter()
+            .map(|((x, _y), _map_state)| x)
+            .max()
+            .unwrap();
+        let max_y = self
+            .terrain
+            .iter()
+            .map(|((_x, y), _map_state)| y)
+            .max()
+            .unwrap();
+
+        let mut map_string: Vec<String> = vec![];
+
+        for y in 0..=*max_y {
+            let mut row_string = String::from("");
+
+            for x in 0..=*max_x {
+                let position = (x, y);
+
+                match self.terrain.get(&position) {
+                    None => {
+                        row_string.push_str("#");
+                    }
+                    Some(map_state) => {
+                        match map_state {
+                            MapState::Wall => {
+                                // invariant: a unit cannot be within a wall
+                                assert!(!self.units.contains_key(&position));
+                                row_string.push_str("#");
+                            }
+                            MapState::Cavern => match self.units.get(&position) {
+                                None => {
+                                    row_string.push_str(".");
+                                }
+                                Some(unit) => {
+                                    row_string.push_str(&unit.to_string());
+                                }
+                            },
+                        }
+                    }
+                }
+            }
+
+            map_string.push(row_string);
+        }
+
+        return map_string.join("\n");
+    }
+
     fn insert(&mut self, position: Coordinate, cell: char) {
         match cell {
             '#' => {
@@ -114,6 +166,13 @@ impl Unit {
 
     fn new_goblin() -> Unit {
         Unit::new(UnitType::Goblin)
+    }
+
+    fn to_string(&self) -> String {
+        match self.unit_type {
+            UnitType::Goblin => "G".to_string(),
+            UnitType::Elf => "E".to_string(),
+        }
     }
 }
 
@@ -187,5 +246,23 @@ mod tests {
     #[test]
     fn test_pick_coord() {
         assert_eq!(pick_coord(vec![(1, 1), (0, 0), (1, 0)]), (0, 0));
+    }
+
+    #[test]
+    fn test_map() {
+        let input_string = r###"
+#########
+#G..G..G#
+#.......#
+#.......#
+#G..E..G#
+#.......#
+#.......#
+#G..G..G#
+#########
+        "###
+        .trim();
+
+        assert_eq!(parse_input(input_string).to_string(), input_string);
     }
 }
