@@ -208,6 +208,23 @@ impl Map {
             return true;
         }
 
+        for (position, unit) in self.units.iter() {
+            // Each unit begins its turn by identifying all possible targets (enemy units).
+            let targets = if unit.is_elf() {
+                self.get_goblins()
+            } else if unit.is_goblin() {
+                self.get_elves()
+            } else {
+                unreachable!();
+            };
+
+            // If no targets remain, combat ends.
+            if targets.len() <= 0 {
+                return true;
+            }
+
+        }
+
         return false;
     }
 }
@@ -302,9 +319,7 @@ fn parse_input(input_string: &str) -> Map {
             let position: Coordinate = (x as i32, y as i32);
 
             map.insert(position, map_state_as_char);
-            // print!("{}", map_state_as_char);
         }
-        // println!("");
     }
 
     return map;
