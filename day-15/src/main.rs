@@ -173,6 +173,7 @@ impl Map {
         return map_string.join("\n");
     }
 
+    #[allow(dead_code)]
     fn to_string_with_health(&self) -> String {
         let max_x = self
             .terrain
@@ -386,9 +387,18 @@ impl Map {
                 })
                 .collect();
 
+
+
             adjacent_targets.sort_by(|item_1, item_2| {
-                let (position_of_target_1, _target_1) = item_1;
-                let (position_of_target_2, _target_2) = item_2;
+                let (position_of_target_1, target_1) = item_1;
+                let (position_of_target_2, target_2) = item_2;
+
+                // the adjacent target with the fewest hit points is selected;
+                if target_1.hit_points != target_2.hit_points {
+                    return target_1.hit_points.cmp(&target_2.hit_points);
+                }
+
+                // in a tie, the adjacent target with the fewest hit points which is first in reading order is selected.
                 return reading_order(position_of_target_1, position_of_target_2);
             });
 
@@ -952,18 +962,86 @@ mod tests {
         "###
         .trim();
 
-        let mut map = parse_input(input_string);
+        // let mut map = parse_input(input_string);
 
-        let mut rounds = 1;
+        // let mut rounds = 1;
 
-        while rounds <= 23 {
-            map.execute_round();
-            println!("After {} round:", rounds);
-            println!("{}", map.to_string_with_health());
-            rounds += 1;
-        }
+        // while rounds <= 23 {
+        //     map.execute_round();
+        //     println!("After {} round:", rounds);
+        //     println!("{}", map.to_string_with_health());
+        //     rounds += 1;
+        // }
 
-        assert!(false);
-        // assert_eq!(part_1(input_string), 1);
+        // assert!(false);
+        assert_eq!(part_1(input_string), 27730);
+
+        let input_string = r###"
+#######
+#G..#E#
+#E#E.E#
+#G.##.#
+#...#E#
+#...E.#
+#######
+        "###
+        .trim();
+
+        assert_eq!(part_1(input_string), 36334);
+
+        let input_string = r###"
+#######
+#E..EG#
+#.#G.E#
+#E.##E#
+#G..#.#
+#..E#.#
+#######
+        "###
+        .trim();
+
+        assert_eq!(part_1(input_string), 39514);
+
+
+        let input_string = r###"
+#######
+#E.G#.#
+#.#G..#
+#G.#.G#
+#G..#.#
+#...E.#
+#######
+        "###
+        .trim();
+
+        assert_eq!(part_1(input_string), 27755);
+
+        let input_string = r###"
+#######
+#.E...#
+#.#..G#
+#.###.#
+#E#G#G#
+#...#G#
+#######
+        "###
+        .trim();
+
+        assert_eq!(part_1(input_string), 28944);
+
+        let input_string = r###"
+#########
+#G......#
+#.E.#...#
+#..##..G#
+#...##..#
+#...#...#
+#.G...G.#
+#.....G.#
+#########
+        "###
+        .trim();
+
+        assert_eq!(part_1(input_string), 18740);
     }
 }
