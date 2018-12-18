@@ -505,40 +505,45 @@ impl Map {
 
             // Otherwise, since it is not in range of a target, it moves.
 
-            let mut reachable_paths: Vec<Path> = targets
+            let mut reachable_paths: Vec<(Coordinate, Path)> = targets
                 .into_iter()
                 .map(|(position_of_target, _target)| {
                     // for each target, identify open squares adjacent to position_of_target
                     let adjacent_open_squares = self.get_adjacent_open_squares(position_of_target);
 
-                    let reachable_paths: Vec<Path> = adjacent_open_squares
+                    let reachable_paths: Vec<(Coordinate, Path)> = adjacent_open_squares
                         .into_iter()
-                        .map(|adjacent_coord| {
-                            return get_reachable_path(self, position_of_unit, adjacent_coord);
+                        .map(|reachable_square| {
+                            let path = get_reachable_path(self, position_of_unit, reachable_square);
+                            return (reachable_square, path);
                         })
-                        .filter(|reachable| {
-                            // filter out un-reachable adjacent coords
-                            return reachable.is_some();
+                        .filter(|(_reachable_square, path)| {
+                            // filter out un-reachable squares
+                            return path.is_some();
                         })
-                        .map(|reachable| {
-                            return reachable.unwrap();
+                        .map(|(reachable_square, path)| {
+                            return (reachable_square, path.unwrap());
                         })
-                        .filter(|reachable| {
+                        .filter(|(_reachable_square, path)| {
                             // only consider non-empty paths
-                            return reachable.len() >= 1;
+                            return path.len() >= 1;
                         })
                         .collect();
                     return reachable_paths;
                 })
                 .fold(
                     vec![],
-                    |mut acc: Vec<Path>, reachable_paths: Vec<Path>| -> Vec<Path> {
+                    |mut acc: Vec<(Coordinate, Path)>, reachable_paths: Vec<(Coordinate, Path)>| -> Vec<(Coordinate, Path)> {
                         acc.extend(reachable_paths);
                         return acc;
                     },
                 );
 
-            reachable_paths.sort_by(|path_1, path_2| {
+            reachable_paths.sort_by(|item_1, item_2| {
+
+                let (reachable_square_1, path_1) = item_1;
+                let (reachable_square_2, path_2) = item_2;
+
                 let len_1 = path_1.len();
                 let len_2 = path_2.len();
 
@@ -546,14 +551,15 @@ impl Map {
                     return len_1.cmp(&len_2);
                 }
 
-                let coord_1 = path_1.first().unwrap();
-                let coord_2 = path_2.first().unwrap();
-
-                return reading_order(coord_1, coord_2);
+                return reading_order(reachable_square_1, reachable_square_2);
             });
 
+            println!("{}", unit.to_health_string());
+            println!("{:?}", reachable_paths);
+            println!("----");
+
             if reachable_paths.len() >= 1 {
-                let path: &Path = reachable_paths.first().unwrap();
+                let path: &Path = reachable_paths.first().map(|(_reachable_square, path)| path).unwrap();
                 let next_move: Coordinate = *path.first().unwrap();
 
                 self.units.remove(&position_of_unit);
@@ -807,32 +813,33 @@ fn part_1(input_string: &str) -> i32 {
 }
 
 fn main() {
-//     let input_string = r###"
-// #####
-// #GG##
-// #.###
-// #..E#
-// #.#G#
-// #.E##
-// #####
-//         "###
-//     .trim();
+    let input_string = r###"
+#######
+#.E..G#
+#.#####
+#G#####
+#######
+        "###
+    .trim();
 
-//     let mut map = parse_input(input_string);
+    let mut map = parse_input(input_string);
 
-//     let mut rounds = 1;
+    let mut rounds = 1;
 
-//     while rounds <= 68 {
-//         let result = map.execute_round();
-//         println!("After {} round:", rounds);
-//         println!("{:?}", result);
-//         println!("{}", map.to_string_with_health());
-//         rounds += 1;
-//     }
+    println!("{}", map.to_string_with_health());
 
-    let input_string = include_str!("input.txt");
+    while rounds <= 1 {
+        let result = map.execute_round();
+        println!("After {} round:", rounds);
+        println!("{:?}", result);
+        println!("{}", map.to_string_with_health());
+        println!("-----");
+        rounds += 1;
+    }
 
-    println!("Part 1: {}", part_1(input_string));
+    // let input_string = include_str!("input.txt");
+
+    // println!("Part 1: {}", part_1(input_string));
 
 }
 
@@ -1112,4 +1119,35 @@ mod tests {
 
         assert_eq!(part_1(input_string), 71 * 197);
     }
+
+
+    #[test]
+    fn test_edge_case_1() {
+        let input_string = r###"
+#######
+#.E..G#
+#.#####
+#G#####
+#######
+        "###
+        .trim();
+
+        let mut map = parse_input(input_string);
+
+        // round 1
+        // after round 1, the elf should be going left
+        // src: https://www.reddit.com/r/adventofcode/comments/a6f100/day_15_details_easy_to_be_wrong_on/ebvkuxr/
+        map.execute_round();
+        assert_eq!(
+            map.to_string(),
+            r###"
+#######
+#..EG.#
+#G#####
+#.#####
+#######
+        "###
+            .trim()
+        );
+}
 }
