@@ -273,13 +273,14 @@ impl Map {
         return self.units.contains_key(&position);
     }
 
-    fn get_elves(&self) -> Vec<(&Coordinate, &Unit)> {
+    fn get_elves(&self) -> Vec<(Coordinate, Unit)> {
         return self
             .units
             .iter()
             .filter(|(_position, unit)| {
                 return unit.is_elf();
             })
+            .map(|(position, unit)| (position.clone(), unit.clone()))
             .collect();
     }
 
@@ -294,13 +295,14 @@ impl Map {
             .is_some();
     }
 
-    fn get_goblins(&self) -> Vec<(&Coordinate, &Unit)> {
+    fn get_goblins(&self) -> Vec<(Coordinate, Unit)> {
         return self
             .units
             .iter()
             .filter(|(_position, unit)| {
                 return unit.is_goblin();
             })
+            .map(|(position, unit)| (position.clone(), unit.clone()))
             .collect();
     }
 
@@ -350,6 +352,57 @@ impl Map {
             .collect();
     }
 
+    fn get_targets(&self, unit: &Unit) -> Vec<(Coordinate, Unit)> {
+        if unit.is_elf() {
+            return self.get_goblins();
+        } else if unit.is_goblin() {
+            return self.get_elves();
+        } else {
+            unreachable!();
+        };
+    }
+
+    fn get_attackable_target(
+        &self,
+        position_of_unit: &Coordinate,
+        attacking_unit: &Unit,
+    ) -> Option<(Coordinate, Unit)> {
+
+        // check if this unit is still alive.
+        if !self.units.contains_key(&position_of_unit) {
+            return None;
+        }
+
+        let targets = self.get_targets(attacking_unit);
+
+        let adjacent_targets: Vec<(Coordinate, Unit)> = {
+            let mut adjacent_targets: Vec<(Coordinate, Unit)> = targets
+                .iter()
+                .map(|(position_of_target, target)| -> (Coordinate, Unit) {
+                    (position_of_target.clone(), (*target).clone())
+                })
+                .filter(|(position_of_target, _target)| {
+                    return get_manhattan_distance(*position_of_unit, *position_of_target) <= 1;
+                })
+                .collect();
+
+            adjacent_targets.sort_by(|item_1, item_2| {
+                let (position_of_target_1, _target_1) = item_1;
+                let (position_of_target_2, _target_2) = item_2;
+                return reading_order(position_of_target_1, position_of_target_2);
+            });
+
+            adjacent_targets
+        };
+
+        if adjacent_targets.len() >= 1 {
+            let (position_of_target, chosen_target) = adjacent_targets.first().unwrap();
+            return Some((*position_of_target, chosen_target.clone()));
+        }
+
+        return None;
+    }
+
     // returns true if combat has ended (i.e. round didn't run)
     fn execute_round(&mut self) -> RoundState {
         if !self.can_run_round() {
@@ -380,57 +433,29 @@ impl Map {
             assert!(unit.is_alive());
 
             // Each unit begins its turn by identifying all possible targets (enemy units).
-            let targets = if unit.is_elf() {
-                self.get_goblins()
-            } else if unit.is_goblin() {
-                self.get_elves()
-            } else {
-                unreachable!();
-            };
-
-            let targets = targets.clone();
+            let targets = self.get_targets(&unit);
 
             // If no targets remain, combat ends.
             if targets.len() <= 0 {
                 return RoundState::Incomplete;
             }
 
-            let adjacent_targets: Vec<(Coordinate, Unit)> = {
-                let mut adjacent_targets: Vec<(Coordinate, Unit)> = targets
-                    .iter()
-                    .map(|(position_of_target, target)| -> (Coordinate, Unit) {
-                        (*position_of_target.clone(), (*target).clone())
-                    })
-                    .filter(|(position_of_target, _target)| {
-                        return get_manhattan_distance(position_of_unit, *position_of_target) <= 1;
-                    })
-                    .collect();
-
-                adjacent_targets.sort_by(|item_1, item_2| {
-                    let (position_of_target_1, _target_1) = item_1;
-                    let (position_of_target_2, _target_2) = item_2;
-                    return reading_order(position_of_target_1, position_of_target_2);
-                });
-
-                adjacent_targets
-            };
-
-            if adjacent_targets.len() >= 1 {
-                // If the unit is already in range of a target,
-                // it does not move, but continues its turn with an attack.
+            // If the unit is already in range of a target,
+            // it does not move, but continues its turn with an attack.
+            if let Some((position_of_target, chosen_target)) = self.get_attackable_target(&position_of_unit, &unit) {
 
                 num_of_actions_performed += 1;
 
-                let (position_of_target, chosen_target) = adjacent_targets.first().clone().unwrap();
+                assert!(self.units.contains_key(&position_of_target));
 
-                let mut chosen_target: Unit = (*chosen_target).clone();
+                let mut chosen_target: Unit = (chosen_target).clone();
 
                 unit.attack(&mut chosen_target);
 
                 if chosen_target.is_dead() {
                     self.units.remove(&position_of_target);
                 } else {
-                    self.units.insert(*position_of_target, chosen_target);
+                    self.units.insert(position_of_target, chosen_target);
                 }
 
                 continue;
@@ -442,7 +467,7 @@ impl Map {
                 .into_iter()
                 .map(|(position_of_target, _target)| {
                     // for each target, identify open squares adjacent to position_of_target
-                    let adjacent_open_squares = self.get_adjacent_open_squares(*position_of_target);
+                    let adjacent_open_squares = self.get_adjacent_open_squares(position_of_target);
 
                     let reachable_paths: Vec<Path> = adjacent_open_squares
                         .into_iter()
@@ -489,17 +514,29 @@ impl Map {
                 let path: &Path = reachable_paths.first().unwrap();
                 let next_move: Coordinate = *path.first().unwrap();
 
-                // println!(
-                //     "{} at {:?} next_move: {:?}",
-                //     unit.to_string(),
-                //     position_of_unit,
-                //     next_move
-                // );
-
                 self.units.remove(&position_of_unit);
-                self.units.insert(next_move, unit);
+                self.units.insert(next_move, unit.clone());
 
                 num_of_actions_performed += 1;
+
+                // After moving (or if the unit began its turn in range of a target), the unit attacks.
+                if let Some((position_of_target, chosen_target)) = self.get_attackable_target(&next_move, &unit) {
+
+                    num_of_actions_performed += 1;
+
+                    assert!(self.units.contains_key(&position_of_target));
+
+                    let mut chosen_target: Unit = (chosen_target).clone();
+
+                    unit.attack(&mut chosen_target);
+
+                    if chosen_target.is_dead() {
+                        self.units.remove(&position_of_target);
+                    } else {
+                        self.units.insert(position_of_target, chosen_target);
+                    }
+
+                }
             }
         }
 
@@ -919,7 +956,7 @@ mod tests {
 
         let mut rounds = 1;
 
-        while rounds <= 2 {
+        while rounds <= 23 {
             map.execute_round();
             println!("After {} round:", rounds);
             println!("{}", map.to_string_with_health());
