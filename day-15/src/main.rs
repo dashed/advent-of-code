@@ -483,6 +483,7 @@ fn get_reachable_path(map: &Map, start: Coordinate, end: Coordinate) -> Option<V
 
                     // NOTE: this potentially adds duplicates to the available_squares min-heap;
                     // but that's fine :P
+                    // see: https://www3.cs.stonybrook.edu/~rezaul/papers/TR-07-54.pdf
 
                     if adjacent_distance < *best_distance {
                         distances.insert(adjacent_square, adjacent_distance);
