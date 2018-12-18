@@ -554,10 +554,6 @@ impl Map {
                 return reading_order(reachable_square_1, reachable_square_2);
             });
 
-            println!("{}", unit.to_health_string());
-            println!("{:?}", reachable_paths);
-            println!("----");
-
             if reachable_paths.len() >= 1 {
                 let path: &Path = reachable_paths.first().map(|(_reachable_square, path)| path).unwrap();
                 let next_move: Coordinate = *path.first().unwrap();
@@ -813,33 +809,33 @@ fn part_1(input_string: &str) -> i32 {
 }
 
 fn main() {
-    let input_string = r###"
-#######
-#.E..G#
-#.#####
-#G#####
-#######
-        "###
-    .trim();
+//     let input_string = r###"
+// #######
+// #.E..G#
+// #.#####
+// #G#####
+// #######
+//         "###
+//     .trim();
 
-    let mut map = parse_input(input_string);
+//     let mut map = parse_input(input_string);
 
-    let mut rounds = 1;
+//     let mut rounds = 1;
 
-    println!("{}", map.to_string_with_health());
+//     println!("{}", map.to_string_with_health());
 
-    while rounds <= 1 {
-        let result = map.execute_round();
-        println!("After {} round:", rounds);
-        println!("{:?}", result);
-        println!("{}", map.to_string_with_health());
-        println!("-----");
-        rounds += 1;
-    }
+//     while rounds <= 1 {
+//         let result = map.execute_round();
+//         println!("After {} round:", rounds);
+//         println!("{:?}", result);
+//         println!("{}", map.to_string_with_health());
+//         println!("-----");
+//         rounds += 1;
+//     }
 
-    // let input_string = include_str!("input.txt");
+    let input_string = include_str!("input.txt");
 
-    // println!("Part 1: {}", part_1(input_string));
+    println!("Part 1: {}", part_1(input_string));
 
 }
 
