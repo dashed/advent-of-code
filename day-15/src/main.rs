@@ -300,7 +300,15 @@ impl Map {
             return true;
         }
 
-        for (position_of_unit, unit) in self.units.iter() {
+        let units: Vec<(Coordinate, Unit)> = {
+            let mut units = vec![];
+            for (position_of_unit, unit) in self.units.clone().into_iter() {
+                units.push((position_of_unit, unit));
+            }
+            units
+        };
+
+        for (position_of_unit, unit) in units {
             // Each unit begins its turn by identifying all possible targets (enemy units).
             let targets = if unit.is_elf() {
                 self.get_goblins()
@@ -318,7 +326,7 @@ impl Map {
             let adjacent_targets: Vec<Unit> = targets
                 .iter()
                 .filter(|(position_of_target, target)| {
-                    return get_manhattan_distance(*position_of_unit, **position_of_target) <= 1;
+                    return get_manhattan_distance(position_of_unit, **position_of_target) <= 1;
                 })
                 .map(|(position_of_target, target)| (*target).clone())
                 .collect();
@@ -341,7 +349,7 @@ impl Map {
                         let reachable_paths: Vec<Path> = adjacent_open_squares
                             .into_iter()
                             .map(|adjacent_coord| {
-                                return get_reachable_path(self, *position_of_unit, adjacent_coord);
+                                return get_reachable_path(self, position_of_unit, adjacent_coord);
                             })
                             .filter(|reachable| {
                                 // filter out un-reachable adjacent coords
@@ -382,6 +390,10 @@ impl Map {
                 if reachable_paths.len() >= 1 {
                     let path: &Path = reachable_paths.first().unwrap();
                     let next_move: Coordinate = *path.first().unwrap();
+
+                    self.units.remove(&position_of_unit);
+                    self.units.insert(next_move, unit.clone());
+
                     println!(
                         "{} at {:?} next_move: {:?}",
                         unit.to_string(),
