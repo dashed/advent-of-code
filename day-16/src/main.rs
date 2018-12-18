@@ -68,6 +68,7 @@ impl Registers {
 
 #[derive(Debug, Clone)]
 struct OpcodeInstruction(
+    i32, /* opcode number */
     i32,        /* input A */
     i32,        /* input B */
     RegisterID, /* output register */
@@ -75,15 +76,19 @@ struct OpcodeInstruction(
 
 impl OpcodeInstruction {
     fn output_register(&self) -> RegisterID {
-        return self.2.clone();
+        return self.3.clone();
     }
 
     fn input_a(&self) -> i32 {
-        return self.0;
+        return self.1;
     }
 
     fn input_b(&self) -> i32 {
-        return self.1;
+        return self.2;
+    }
+
+    fn input_opcode_number(&self) -> i32 {
+        return self.0;
     }
 }
 
@@ -471,6 +476,7 @@ fn part_1(input_string: &str) {
                 .collect();
 
             OpcodeInstruction(
+                arr[0],
                 arr[1],
                 arr[2],
                 RegisterID::into_register_id(arr[3]).unwrap(),
