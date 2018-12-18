@@ -293,6 +293,10 @@ impl Map {
             return true;
         }
 
+        // track number of actions performed this round by each unit.
+        // an action is either a movement or an attack
+        let mut num_of_actions_performed = 0;
+
         let units: Vec<(Coordinate, Unit)> = {
             let mut units = vec![];
             for (position_of_unit, unit) in self.units.clone().into_iter() {
@@ -327,6 +331,8 @@ impl Map {
             if adjacent_targets.len() >= 1 {
                 // If the unit is already in range of a target,
                 // it does not move, but continues its turn with an attack.
+
+                num_of_actions_performed += 1;
 
                 // TODO: implement
             } else {
@@ -387,6 +393,8 @@ impl Map {
                     self.units.remove(&position_of_unit);
                     self.units.insert(next_move, unit.clone());
 
+                    num_of_actions_performed += 1;
+
                     println!(
                         "{} at {:?} next_move: {:?}",
                         unit.to_string(),
@@ -397,7 +405,8 @@ impl Map {
             }
         }
 
-        return false;
+        // combat has ended if no action was performed
+        return num_of_actions_performed <= 0;
     }
 }
 
