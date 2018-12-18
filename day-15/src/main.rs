@@ -1149,4 +1149,74 @@ mod tests {
             .trim()
         );
     }
+
+    #[test]
+    fn test_part_1_with_elf_attack() {
+        let input_string = r###"
+#######
+#.G...#
+#...EG#
+#.#.#G#
+#..G#E#
+#.....#
+#######
+        "###
+        .trim();
+
+        assert_eq!(part_1_with_elf_attack(input_string, 15), 4988);
+
+        let input_string = r###"
+#######
+#E..EG#
+#.#G.E#
+#E.##E#
+#G..#.#
+#..E#.#
+#######
+        "###
+        .trim();
+
+        assert_eq!(part_1_with_elf_attack(input_string, 4), 31284);
+
+        let input_string = r###"
+#######
+#E.G#.#
+#.#G..#
+#G.#.G#
+#G..#.#
+#...E.#
+#######
+        "###
+        .trim();
+
+        assert_eq!(part_1_with_elf_attack(input_string, 15), 3478);
+
+        let input_string = r###"
+#######
+#.E...#
+#.#..G#
+#.###.#
+#E#G#G#
+#...#G#
+#######
+        "###
+        .trim();
+
+        assert_eq!(part_1_with_elf_attack(input_string, 12), 6474);
+
+        let input_string = r###"
+#########
+#G......#
+#.E.#...#
+#..##..G#
+#...##..#
+#...#...#
+#.G...G.#
+#.....G.#
+#########
+        "###
+        .trim();
+
+        assert_eq!(part_1_with_elf_attack(input_string, 34), 1140);
+    }
 }
