@@ -554,7 +554,7 @@ mod tests {
             // valid
 
             let registers_before = Registers(1, 2, 3, 4);
-            let instruction = OpcodeInstruction(0, 1, RegisterID::Zero);
+            let instruction = OpcodeInstruction(99, 0, 1, RegisterID::Zero);
             let registers_after = Registers(3, 2, 3, 4);
             let result = opcode.matches(
                 registers_before.clone(),
