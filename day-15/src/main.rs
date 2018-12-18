@@ -319,16 +319,30 @@ impl Map {
                 return true;
             }
 
-            for (position_of_target, target) in targets {
-                // for each target, identify open squares adjacent to position_of_target
-                let adjacent_open_squares = self.get_adjacent_open_squares(*position_of_target);
+            let adjacent_targets: Vec<Unit> = targets
+                .iter()
+                .filter(|(position_of_target, target)| {
+                    return get_manhattan_distance(*position_of_unit, **position_of_target) <= 1;
+                })
+                .map(|(position_of_target, target)| (*target).clone())
+                .collect();
 
-                let reachable_squares: Vec<Coordinate> = adjacent_open_squares
-                    .into_iter()
-                    .filter(|end_coord| is_reachable(self, *position_of_unit, *end_coord))
-                    .collect();
+            if adjacent_targets.len() >= 1 {
+                // If the unit is already in range of a target,
+                // it does not move, but continues its turn with an attack.
 
+                // TODO: implement
+            } else {
+                // Otherwise, since it is not in range of a target, it moves.
+                for (position_of_target, target) in targets {
+                    // for each target, identify open squares adjacent to position_of_target
+                    let adjacent_open_squares = self.get_adjacent_open_squares(*position_of_target);
 
+                    let reachable_squares: Vec<Coordinate> = adjacent_open_squares
+                        .into_iter()
+                        .filter(|end_coord| is_reachable(self, *position_of_unit, *end_coord))
+                        .collect();
+                }
             }
         }
 
@@ -336,11 +350,13 @@ impl Map {
     }
 }
 
+#[derive(Debug, Clone)]
 enum UnitType {
     Goblin,
     Elf,
 }
 
+#[derive(Debug, Clone)]
 struct Unit {
     unit_type: UnitType,
     hit_points: i32,
