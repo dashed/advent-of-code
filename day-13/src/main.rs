@@ -26,6 +26,12 @@ fn reading_order(first_coord: &Coordinate, second_coord: &Coordinate) -> Orderin
 #[derive(PartialEq, Hash, Eq, Clone, Debug)]
 struct OrderedCoordinate(Coordinate);
 
+impl OrderedCoordinate {
+    fn coordinate(&self) -> Coordinate {
+        return self.0.clone();
+    }
+}
+
 impl PartialOrd for OrderedCoordinate {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         return Some(reading_order(&self.0, &other.0));
@@ -305,7 +311,7 @@ impl Cart {
 type CrashedCarts = HashSet<Coordinate>;
 
 struct Carts {
-    carts: BTreeMap<Coordinate, Cart>,
+    carts: BTreeMap<OrderedCoordinate, Cart>,
 }
 
 impl Carts {
@@ -316,11 +322,12 @@ impl Carts {
     }
 
     fn add_cart(&mut self, cart: Cart) {
-        self.carts.insert(cart.position, cart);
+        self.carts.insert(cart.position.into(), cart);
     }
 
     fn get_cart(&self, position: &Coordinate) -> Option<&Cart> {
-        return self.carts.get(position).clone();
+        let position: Coordinate = position.clone();
+        return self.carts.get(&position.into()).clone();
     }
 
     fn tick(&mut self, map: &Map) -> Option<CrashedCarts> {
@@ -330,12 +337,12 @@ impl Carts {
             (self.carts.clone(), BTreeMap::new()),
             |acc, (_current_position, current_cart)| {
                 let (mut prev_carts, mut next_carts): (
-                    BTreeMap<Coordinate, Cart>,
-                    BTreeMap<Coordinate, Cart>,
+                    BTreeMap<OrderedCoordinate, Cart>,
+                    BTreeMap<OrderedCoordinate, Cart>,
                 ) = acc;
 
                 // remove current cart from the current map state
-                prev_carts.remove(&current_cart.position);
+                prev_carts.remove(&current_cart.position.into());
 
                 if crashed_positions.contains(&current_cart.position) {
                     // current cart was crashed by another cart that moved before itself.
@@ -345,19 +352,19 @@ impl Carts {
                 let next_cart = current_cart.tick(&map);
 
                 // does the next cart collide with any other cart in the map state?
-                if prev_carts.contains_key(&next_cart.position) {
+                if prev_carts.contains_key(&next_cart.position.into()) {
                     crashed_positions.insert(next_cart.position);
                     return (prev_carts, next_carts);
                 }
 
                 // does the next cart collide with carts that already have moved?
-                if next_carts.contains_key(&next_cart.position) {
+                if next_carts.contains_key(&next_cart.position.into()) {
                     crashed_positions.insert(next_cart.position);
-                    next_carts.remove(&next_cart.position);
+                    next_carts.remove(&next_cart.position.into());
                     return (prev_carts, next_carts);
                 }
 
-                next_carts.insert(next_cart.position, next_cart);
+                next_carts.insert(next_cart.position.into(), next_cart);
 
                 return (prev_carts, next_carts);
             },
@@ -616,7 +623,9 @@ fn part_2(input_string: &str) -> Option<Coordinate> {
             return carts
                 .carts
                 .iter()
-                .map(|(position, _cart)| *position)
+                .map(|(position, _cart)| -> Coordinate {
+                    return position.coordinate();
+                })
                 .into_iter()
                 .next();
         }
@@ -624,10 +633,6 @@ fn part_2(input_string: &str) -> Option<Coordinate> {
 }
 
 fn main() {
-    assert!((0, 0) < (1, 0));
-    assert!((0, 0) < (0, 1));
-    assert!((0, 0) < (1, 1));
-    assert!((1, 0) < (1, 1));
 
     let input_string = include_str!("input.txt");
 
