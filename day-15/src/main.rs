@@ -19,6 +19,8 @@ trait Transitions {
 
 type Coordinate = (i32, i32);
 
+type Path = Vec<Coordinate>;
+
 impl Transitions for Coordinate {
     fn up(&self) -> Coordinate {
         let (x, y) = self;
@@ -332,7 +334,7 @@ impl Map {
                     // for each target, identify open squares adjacent to position_of_target
                     let adjacent_open_squares = self.get_adjacent_open_squares(*position_of_target);
 
-                    let reachable_squares: Vec<(Coordinate, Distance)> = adjacent_open_squares
+                    let reachable_squares: Vec<(Coordinate, Path)> = adjacent_open_squares
                         .into_iter()
                         .map(|adjacent_coord| {
                             (
@@ -348,7 +350,7 @@ impl Map {
                         })
                         .collect();
 
-                    println!("{:?}", reachable_squares);
+                    // println!("{:?}", reachable_squares);
                 }
             }
         }
@@ -411,11 +413,13 @@ impl Unit {
 
 // checks if there is an open path between start and end
 // an open path means a set of coordinates which are not either a wall or occupied by a unit
-// if a path exists, then the number of steps is returned
-fn get_reachable_path(map: &Map, start: Coordinate, end: Coordinate) -> Option<i32> {
+// if a path exists, then the vector containing the coordinates from start to end is returned
+fn get_reachable_path(map: &Map, start: Coordinate, end: Coordinate) -> Option<Vec<Coordinate>> {
     if start == end {
-        return Some(0);
+        return Some(vec![]);
     }
+
+    // invariant: manhattan distance between start and end is at least 1
 
     if map.is_wall(start) || map.is_wall(end) {
         return None;
@@ -427,33 +431,60 @@ fn get_reachable_path(map: &Map, start: Coordinate, end: Coordinate) -> Option<i
 
     // NOTE: start could be occupied
 
-    let mut visited_squares: HashSet<Coordinate> = HashSet::new();
     let mut available_squares: BinaryHeap<DistanceCoordinate> = BinaryHeap::new();
+    // keep track of the best minimum distances for a coordinate
+    let mut distances: HashMap<Coordinate, Distance> = HashMap::new();
+    let mut best_edges: HashMap<Coordinate, Coordinate> = HashMap::new();
 
     // backtrack from end towards start
     available_squares.push(DistanceCoordinate(0, end));
+    distances.insert(end, 0);
 
     while let Some(current_square) = available_squares.pop() {
         let DistanceCoordinate(current_distance, current_position) = current_square;
 
         if get_manhattan_distance(start, current_position) <= 1 {
-            return Some(current_distance);
+            let mut path = vec![current_position];
+            let mut current = current_position;
+            while current != end {
+                let nearest_edge = best_edges.get(&current).unwrap();
+                path.push(*nearest_edge);
+                current = *nearest_edge;
+            }
+
+            return Some(path);
         }
 
-        visited_squares.insert(current_position);
+        match distances.get(&current_position) {
+            None => {
+                unreachable!();
+            }
+            Some(best_distance) => {
+                if current_distance > *best_distance {
+                    continue;
+                }
+            }
+        }
 
-        let foo = map
-            .get_adjacent_open_squares(current_position)
-            .into_iter()
-            .filter(|current_square| {
-                // filter out visited squares
-                return !visited_squares.contains(&current_square);
-            })
-            .map(|current_square: Coordinate| {
-                return DistanceCoordinate(current_distance + 1, current_square);
-            });
+        for adjacent_square in map.get_adjacent_open_squares(current_position) {
+            let adjacent_distance = current_distance + 1;
 
-        available_squares.extend(foo);
+            match distances.get(&adjacent_square) {
+                None => {
+                    best_edges.insert(adjacent_square, current_position);
+                    distances.insert(adjacent_square, adjacent_distance);
+                    available_squares.push(DistanceCoordinate(adjacent_distance, adjacent_square));
+                }
+                Some(best_distance) => {
+                    if adjacent_distance < *best_distance {
+                        distances.insert(adjacent_square, adjacent_distance);
+                        available_squares
+                            .push(DistanceCoordinate(adjacent_distance, adjacent_square));
+                        best_edges.insert(adjacent_square, current_position);
+                    }
+                }
+            }
+        }
     }
 
     return None;
@@ -532,6 +563,7 @@ mod tests {
             let items = vec![
                 DistanceCoordinate(5, (1, 26)),
                 DistanceCoordinate(5, (2, 25)),
+                DistanceCoordinate(4, (2, 30)),
             ];
             available_squares.extend(items);
 
@@ -540,7 +572,7 @@ mod tests {
                 actual.push(item.into());
             }
 
-            assert_eq!(actual, vec![(2, 25), (1, 26)]);
+            assert_eq!(actual, vec![(2, 30), (2, 25), (1, 26)]);
         }
     }
 
@@ -596,8 +628,9 @@ mod tests {
                 &map,
                 (2, 1), /* position of the elf */
                 (5, 3)  /* position of square adjacent to goblin */
-            ),
-            Some(28)
+            )
+            .map(|path| path.len()),
+            Some(29)
         );
     }
 
