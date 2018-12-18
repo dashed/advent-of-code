@@ -2,11 +2,48 @@
 
 // imports
 
+use core::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
+// code
+
 type Coordinate = (i32, i32);
+
+// sort coordinates according to their reading order
+fn reading_order(first_coord: &Coordinate, second_coord: &Coordinate) -> Ordering {
+    let (x1, y1) = first_coord;
+    let (x2, y2) = second_coord;
+
+    if y1 != y2 {
+        return y1.cmp(y2);
+    }
+
+    return x1.cmp(x2);
+}
+
+#[derive(PartialEq, Hash, Eq, Clone, Debug)]
+struct OrderedCoordinate(Coordinate);
+
+impl PartialOrd for OrderedCoordinate {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        return Some(reading_order(&self.0, &other.0));
+    }
+}
+
+impl Ord for OrderedCoordinate {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let ord = self.partial_cmp(other).unwrap();
+        return ord;
+    }
+}
+
+impl Into<OrderedCoordinate> for Coordinate {
+    fn into(self) -> OrderedCoordinate {
+        return OrderedCoordinate(self);
+    }
+}
 
 #[derive(Debug, Clone)]
 enum Track {
@@ -605,6 +642,22 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_ordered_coordinate() {
+        let test: Vec<Coordinate> = vec![(2, 27), (3, 26), (2, 26), (1, 26), (2, 25)];
+        let test: Vec<OrderedCoordinate> = test.into_iter().map(|x| x.into()).collect();
+        let expected = {
+            let mut test = test.clone();
+            test.reverse();
+            test
+        };
+
+        let mut actual = test.clone();
+        actual.sort();
+
+        assert_eq!(actual, expected);
+    }
 
     #[test]
     #[should_panic]
