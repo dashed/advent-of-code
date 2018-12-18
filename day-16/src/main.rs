@@ -90,7 +90,9 @@ impl OpcodeInstruction {
 #[derive(Debug, Hash, PartialEq, Eq)]
 enum Opcode {
     Addr,
-    Addi
+    Addi,
+    Mulr,
+    Muli,
 }
 
 impl Opcode {
@@ -99,6 +101,8 @@ impl Opcode {
 
         set.insert(Opcode::Addr);
         set.insert(Opcode::Addi);
+        set.insert(Opcode::Mulr);
+        set.insert(Opcode::Muli);
 
         return set;
     }
@@ -125,6 +129,7 @@ impl Opcode {
 
                 let value_a = registers_before.get(register_a.unwrap());
                 let value_b = registers_before.get(register_b.unwrap());
+
                 let register_c = instruction.output_register();
 
                 let result = value_a + value_b;
@@ -142,6 +147,43 @@ impl Opcode {
                 let value_b = instruction.input_b();
 
                 let result = value_a + value_b;
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+            Opcode::Mulr => {
+                // mulr (multiply register) stores into register C the result of multiplying register A and register B.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return false;
+                }
+
+                let register_b = RegisterID::into_register_id(instruction.input_b());
+                if register_b.is_none() {
+                    return false;
+                }
+
+                let value_a = registers_before.get(register_a.unwrap());
+                let value_b = registers_before.get(register_b.unwrap());
+
+                let register_c = instruction.output_register();
+
+                let result = value_a * value_b;
+                registers_before.set(register_c, result);
+            }
+            Opcode::Muli => {
+                // muli (multiply immediate) stores into register C the result of multiplying register A and value B.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return false;
+                }
+
+                let value_a = registers_before.get(register_a.unwrap());
+                let value_b = instruction.input_b();
+
+                let result = value_a * value_b;
 
                 let register_c = instruction.output_register();
                 registers_before.set(register_c, result);
