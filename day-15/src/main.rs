@@ -297,15 +297,24 @@ impl Map {
         // an action is either a movement or an attack
         let mut num_of_actions_performed = 0;
 
-        let units: Vec<(Coordinate, Unit)> = {
+        let position_of_units: Vec<Coordinate> = {
             let mut units = vec![];
-            for (position_of_unit, unit) in self.units.clone().into_iter() {
-                units.push((position_of_unit, unit));
+            for (position_of_unit, _unit) in self.units.clone().into_iter() {
+                units.push(position_of_unit);
             }
             units
         };
 
-        for (position_of_unit, unit) in units {
+        for position_of_unit in position_of_units {
+            // check if this unit is still alive.
+            if !self.units.contains_key(&position_of_unit) {
+                continue;
+            }
+
+            let unit: Unit = self.units.get(&position_of_unit).unwrap().clone();
+
+            assert!(unit.is_alive());
+
             // Each unit begins its turn by identifying all possible targets (enemy units).
             let targets = if unit.is_elf() {
                 self.get_goblins()
@@ -315,18 +324,32 @@ impl Map {
                 unreachable!();
             };
 
+            let targets = targets.clone();
+
             // If no targets remain, combat ends.
             if targets.len() <= 0 {
                 return true;
             }
 
-            let adjacent_targets: Vec<Unit> = targets
-                .iter()
-                .filter(|(position_of_target, _target)| {
-                    return get_manhattan_distance(position_of_unit, **position_of_target) <= 1;
-                })
-                .map(|(_position_of_target, target)| (*target).clone())
-                .collect();
+            let adjacent_targets: Vec<(Coordinate, Unit)> = {
+                let mut adjacent_targets: Vec<(Coordinate, Unit)> = targets
+                    .iter()
+                    .map(|(position_of_target, target)| -> (Coordinate, Unit) {
+                        (*position_of_target.clone(), (*target).clone())
+                    })
+                    .filter(|(position_of_target, _target)| {
+                        return get_manhattan_distance(position_of_unit, *position_of_target) <= 1;
+                    })
+                    .collect();
+
+                adjacent_targets.sort_by(|item_1, item_2| {
+                    let (position_of_target_1, _target_1) = item_1;
+                    let (position_of_target_2, _target_2) = item_2;
+                    return reading_order(position_of_target_1, position_of_target_2);
+                });
+
+                adjacent_targets
+            };
 
             if adjacent_targets.len() >= 1 {
                 // If the unit is already in range of a target,
@@ -334,74 +357,85 @@ impl Map {
 
                 num_of_actions_performed += 1;
 
-                // TODO: implement
-            } else {
-                // Otherwise, since it is not in range of a target, it moves.
+                let (position_of_target, chosen_target) = adjacent_targets.first().clone().unwrap();
 
-                let mut reachable_paths: Vec<Path> = targets
-                    .into_iter()
-                    .map(|(position_of_target, _target)| {
-                        // for each target, identify open squares adjacent to position_of_target
-                        let adjacent_open_squares =
-                            self.get_adjacent_open_squares(*position_of_target);
+                let mut chosen_target: Unit = (*chosen_target).clone();
 
-                        let reachable_paths: Vec<Path> = adjacent_open_squares
-                            .into_iter()
-                            .map(|adjacent_coord| {
-                                return get_reachable_path(self, position_of_unit, adjacent_coord);
-                            })
-                            .filter(|reachable| {
-                                // filter out un-reachable adjacent coords
-                                return reachable.is_some();
-                            })
-                            .map(|reachable| {
-                                return reachable.unwrap();
-                            })
-                            .filter(|reachable| {
-                                // only consider non-empty paths
-                                return reachable.len() >= 1;
-                            })
-                            .collect();
-                        return reachable_paths;
-                    })
-                    .fold(
-                        vec![],
-                        |mut acc: Vec<Path>, reachable_paths: Vec<Path>| -> Vec<Path> {
-                            acc.extend(reachable_paths);
-                            return acc;
-                        },
-                    );
+                unit.attack(&mut chosen_target);
 
-                reachable_paths.sort_by(|path_1, path_2| {
-                    let len_1 = path_1.len();
-                    let len_2 = path_2.len();
-
-                    if len_1 != len_2 {
-                        return len_1.cmp(&len_2);
-                    }
-
-                    let coord_1 = path_1.first().unwrap();
-                    let coord_2 = path_2.first().unwrap();
-
-                    return reading_order(coord_1, coord_2);
-                });
-
-                if reachable_paths.len() >= 1 {
-                    let path: &Path = reachable_paths.first().unwrap();
-                    let next_move: Coordinate = *path.first().unwrap();
-
-                    self.units.remove(&position_of_unit);
-                    self.units.insert(next_move, unit.clone());
-
-                    num_of_actions_performed += 1;
-
-                    println!(
-                        "{} at {:?} next_move: {:?}",
-                        unit.to_string(),
-                        position_of_unit,
-                        next_move
-                    );
+                if chosen_target.is_dead() {
+                    self.units.remove(&position_of_target);
+                } else {
+                    self.units.insert(*position_of_target, chosen_target);
                 }
+
+                continue;
+            }
+
+            // Otherwise, since it is not in range of a target, it moves.
+
+            let mut reachable_paths: Vec<Path> = targets
+                .into_iter()
+                .map(|(position_of_target, _target)| {
+                    // for each target, identify open squares adjacent to position_of_target
+                    let adjacent_open_squares = self.get_adjacent_open_squares(*position_of_target);
+
+                    let reachable_paths: Vec<Path> = adjacent_open_squares
+                        .into_iter()
+                        .map(|adjacent_coord| {
+                            return get_reachable_path(self, position_of_unit, adjacent_coord);
+                        })
+                        .filter(|reachable| {
+                            // filter out un-reachable adjacent coords
+                            return reachable.is_some();
+                        })
+                        .map(|reachable| {
+                            return reachable.unwrap();
+                        })
+                        .filter(|reachable| {
+                            // only consider non-empty paths
+                            return reachable.len() >= 1;
+                        })
+                        .collect();
+                    return reachable_paths;
+                })
+                .fold(
+                    vec![],
+                    |mut acc: Vec<Path>, reachable_paths: Vec<Path>| -> Vec<Path> {
+                        acc.extend(reachable_paths);
+                        return acc;
+                    },
+                );
+
+            reachable_paths.sort_by(|path_1, path_2| {
+                let len_1 = path_1.len();
+                let len_2 = path_2.len();
+
+                if len_1 != len_2 {
+                    return len_1.cmp(&len_2);
+                }
+
+                let coord_1 = path_1.first().unwrap();
+                let coord_2 = path_2.first().unwrap();
+
+                return reading_order(coord_1, coord_2);
+            });
+
+            if reachable_paths.len() >= 1 {
+                let path: &Path = reachable_paths.first().unwrap();
+                let next_move: Coordinate = *path.first().unwrap();
+
+                // println!(
+                //     "{} at {:?} next_move: {:?}",
+                //     unit.to_string(),
+                //     position_of_unit,
+                //     next_move
+                // );
+
+                self.units.remove(&position_of_unit);
+                self.units.insert(next_move, unit);
+
+                num_of_actions_performed += 1;
             }
         }
 
@@ -432,6 +466,10 @@ impl Unit {
         }
     }
 
+    fn attack(&self, other_unit: &mut Unit) {
+        other_unit.hit_points = other_unit.hit_points - self.attack_power;
+    }
+
     fn new_elf() -> Unit {
         Unit::new(UnitType::Elf)
     }
@@ -445,6 +483,14 @@ impl Unit {
             UnitType::Goblin => "G".to_string(),
             UnitType::Elf => "E".to_string(),
         }
+    }
+
+    fn is_alive(&self) -> bool {
+        return self.hit_points > 0;
+    }
+
+    fn is_dead(&self) -> bool {
+        return !self.is_alive();
     }
 
     fn is_elf(&self) -> bool {
