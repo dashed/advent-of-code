@@ -1,6 +1,7 @@
 // https://adventofcode.com/2018/day/15
 
 // imports
+use rayon::prelude::*;
 
 use core::cmp::Ordering;
 use std::collections::BTreeMap;
@@ -279,7 +280,7 @@ impl Map {
     fn get_elves(&self) -> Vec<(Coordinate, Unit)> {
         return self
             .units
-            .iter()
+            .par_iter()
             .filter(|(_position, unit)| {
                 return unit.is_elf();
             })
@@ -301,7 +302,7 @@ impl Map {
     fn get_goblins(&self) -> Vec<(Coordinate, Unit)> {
         return self
             .units
-            .iter()
+            .par_iter()
             .filter(|(_position, unit)| {
                 return unit.is_goblin();
             })
@@ -327,7 +328,7 @@ impl Map {
         }
 
         let units: Vec<(Coordinate, Unit)> = {
-            let mut units: Vec<(Coordinate, Unit)> = self.units.clone().into_iter().collect();
+            let mut units: Vec<(Coordinate, Unit)> = self.units.clone().into_par_iter().collect();
 
             units.sort_by(|item_1, item_2| {
                 let (pos_1, _) = item_1;
@@ -360,7 +361,7 @@ impl Map {
         ];
 
         return coords
-            .into_iter()
+            .into_par_iter()
             .filter(|coord| {
                 return !self.is_occupied(*coord);
             })
@@ -391,7 +392,7 @@ impl Map {
 
         let adjacent_targets: Vec<(Coordinate, Unit)> = {
             let mut adjacent_targets: Vec<(Coordinate, Unit)> = targets
-                .iter()
+                .par_iter()
                 .map(|(position_of_target, target)| -> (Coordinate, Unit) {
                     (position_of_target.clone(), (*target).clone())
                 })
@@ -506,13 +507,13 @@ impl Map {
             // Otherwise, since it is not in range of a target, it moves.
 
             let mut reachable_paths: Vec<(Coordinate, Path)> = targets
-                .into_iter()
+                .into_par_iter()
                 .map(|(position_of_target, _target)| {
                     // for each target, identify open squares adjacent to position_of_target
                     let adjacent_open_squares = self.get_adjacent_open_squares(position_of_target);
 
                     let reachable_paths: Vec<(Coordinate, Path)> = adjacent_open_squares
-                        .into_iter()
+                        .into_par_iter()
                         .map(|reachable_square| {
                             let path = get_reachable_path(self, position_of_unit, reachable_square);
                             return (reachable_square, path);
@@ -531,8 +532,8 @@ impl Map {
                         .collect();
                     return reachable_paths;
                 })
-                .fold(
-                    vec![],
+                .reduce(
+                    || vec![],
                     |mut acc: Vec<(Coordinate, Path)>, reachable_paths: Vec<(Coordinate, Path)>| -> Vec<(Coordinate, Path)> {
                         acc.extend(reachable_paths);
                         return acc;
