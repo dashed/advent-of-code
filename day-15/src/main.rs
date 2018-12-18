@@ -149,8 +149,8 @@ impl Map {
         }
     }
 
-    fn is_wall(&self, position: &Coordinate) -> bool {
-        match self.terrain.get(position) {
+    fn is_wall(&self, position: Coordinate) -> bool {
+        match self.terrain.get(&position) {
             None => true,
             Some(map_state) => match map_state {
                 MapState::Wall => true,
@@ -159,13 +159,13 @@ impl Map {
         }
     }
 
-    fn is_occupied(&self, position: &Coordinate) -> bool {
+    fn is_occupied(&self, position: Coordinate) -> bool {
         if self.is_wall(position) {
             return true;
         }
 
         // check if the position is occupied by a unit
-        return self.units.contains_key(position);
+        return self.units.contains_key(&position);
     }
 
     fn get_elves(&self) -> Vec<(&Coordinate, &Unit)> {
@@ -240,7 +240,7 @@ impl Map {
         return coords
             .into_iter()
             .filter(|coord| {
-                return !self.is_occupied(coord);
+                return !self.is_occupied(*coord);
             })
             .collect();
     }
@@ -329,11 +329,11 @@ impl Unit {
 fn is_reachable(map: Map, start: Coordinate, end: Coordinate) -> bool {
     // TODO: apply shortest path algorithm
 
-    if map.is_wall(&start) || map.is_wall(&end) {
+    if map.is_wall(start) || map.is_wall(end) {
         return false;
     }
 
-    if map.is_occupied(&end) {
+    if map.is_occupied(end) {
         return false;
     }
 
@@ -413,6 +413,17 @@ mod tests {
         "###
         .trim();
 
-        assert_eq!(parse_input(input_string).to_string(), input_string);
+        let map = parse_input(input_string);
+
+        assert_eq!(map.to_string(), input_string);
+
+        assert_eq!(map.is_wall((0, 0)), true);
+        assert_eq!(map.is_occupied((0, 0)), true);
+
+        assert_eq!(map.is_wall((1, 1)), false);
+        assert_eq!(map.is_occupied((1, 1)), true);
+
+        assert_eq!(map.is_wall((2, 1)), false);
+        assert_eq!(map.is_occupied((2, 1)), false);
     }
 }
