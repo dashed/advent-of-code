@@ -327,7 +327,8 @@ impl Map {
                     .into_iter()
                     .filter(|end_coord| is_reachable(self, *position_of_unit, *end_coord))
                     .collect();
-                println!("{:?}", reachable_squares);
+
+
             }
         }
 
@@ -395,7 +396,7 @@ fn generate_distance_coords(
         .get_adjacent_open_squares(current_position)
         .into_iter()
         .filter(|current_square| {
-            return visited_squares.contains(&current_square);
+            return !visited_squares.contains(&current_square);
         })
         .map(|current_square: Coordinate| {
             // get manhattan distance from current_square towards the start
@@ -436,7 +437,6 @@ fn is_reachable(map: &Map, start: Coordinate, end: Coordinate) -> bool {
 
         // invariant: manhattan distance between current_square and start is at least 2
         visited_squares.insert(current_position);
-
 
         available_squares.extend(generate_distance_coords(
             map,
@@ -567,4 +567,21 @@ mod tests {
         assert_eq!(map.get_goblins().len(), 8);
         assert_eq!(map.has_goblins(), true);
     }
+
+    #[test]
+    fn test_is_reachable() {
+        let input_string = r###"
+###################
+#.E...............#
+#################.#
+#...G.............#
+###################
+        "###
+        .trim();
+
+        let map = parse_input(input_string);
+
+        assert_eq!(is_reachable(&map, (3, 1), (5, 3)), true);
+    }
+
 }
