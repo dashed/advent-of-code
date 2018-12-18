@@ -4,7 +4,9 @@
 
 use core::cmp::Ordering;
 use std::collections::BTreeMap;
+use std::collections::BinaryHeap;
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 // code
 
@@ -36,6 +38,36 @@ impl Transitions for Coordinate {
     fn right(&self) -> Coordinate {
         let (x, y) = self;
         return (x + 1, *y);
+    }
+}
+
+#[derive(PartialEq, Hash, Eq, Clone, Debug)]
+struct DistanceCoordinate(Distance, Coordinate);
+
+impl PartialOrd for DistanceCoordinate {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        // reversed for the binary heap which is a max-heap
+        if self.0 != other.0 {
+            return Some(other.0.cmp(&self.0));
+        }
+        return Some(reading_order(&other.1, &self.1));
+    }
+}
+
+impl Ord for DistanceCoordinate {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let ord = self.partial_cmp(other).unwrap();
+        match ord {
+            Ordering::Greater => Ordering::Less,
+            Ordering::Less => Ordering::Greater,
+            Ordering::Equal => ord,
+        }
+    }
+}
+
+impl Into<Coordinate> for DistanceCoordinate {
+    fn into(self) -> Coordinate {
+        return self.1;
     }
 }
 
@@ -364,51 +396,61 @@ fn is_reachable(map: &Map, start: Coordinate, end: Coordinate) -> bool {
     // backtrack from end towards start
     let mut current_position = end;
 
-    loop {
-        println!("{:?} {:?} {:?} {}", start, end, current_position, get_manhattan_distance(current_position, start));
-        assert!(current_position != start);
-        if get_manhattan_distance(current_position, start) <= 1 {
-            return true;
-        }
+    // let mut visited_squares: HashSet<Coordinate> = HashSet::new();
+    // let mut available_squares: BinaryHeap<OrderedCoordinate> = BinaryHeap::new();
 
-        // invariant: manhattan distance between current_position and start is at least 2
+    // while let Some(current_square) = available_squares.pop() {
 
-        let mut adjacent_open_squares: Vec<(Coordinate, Distance)> = map
-            .get_adjacent_open_squares(current_position)
-            .into_iter()
-            .map(|current_square| {
-                // get manhattan distance from current_square towards the start
-                let distance = get_manhattan_distance(current_square, start);
-                // invariant: distance >= 1
-                assert!(distance >= 1);
-                (current_square, distance)
-            })
-            .collect();
+    //     visited_squares.insert(current_square.into());
 
-        if adjacent_open_squares.is_empty() {
-            return false;
-        }
+    // }
 
-        // sort by distance from smallest distance to largest, then by reading order
-        adjacent_open_squares.sort_by(|item_1, item_2| {
+    return true;
+    // loop {
+    //     println!("{:?} {:?} {:?} {}", start, end, current_position, get_manhattan_distance(current_position, start));
+    //     assert!(current_position != start);
+    //     if get_manhattan_distance(current_position, start) <= 1 {
+    //         return true;
+    //     }
 
-            let (coord_1, distance_1) = item_1;
-            let (coord_2, distance_2) = item_2;
+    //     // invariant: manhattan distance between current_position and start is at least 2
 
-            if distance_1 != distance_2 {
-                return distance_1.cmp(distance_2);
-            }
+    //     let mut adjacent_open_squares: Vec<(Coordinate, Distance)> = map
+    //         .get_adjacent_open_squares(current_position)
+    //         .into_iter()
+    //         .map(|current_square| {
+    //             // get manhattan distance from current_square towards the start
+    //             let distance = get_manhattan_distance(current_square, start);
+    //             // invariant: distance >= 1
+    //             assert!(distance >= 1);
+    //             (current_square, distance)
+    //         })
+    //         .collect();
 
-            // distances are equal, break the tie by sorting the coordinate according to the reading order
-            return reading_order(coord_1, coord_2);
-        });
+    //     if adjacent_open_squares.is_empty() {
+    //         return false;
+    //     }
 
-        println!("{:?}", adjacent_open_squares);
+    //     // sort by distance from smallest distance to largest, then by reading order
+    //     adjacent_open_squares.sort_by(|item_1, item_2| {
 
-        let (next_position, _distance) = adjacent_open_squares.first().unwrap();
+    //         let (coord_1, distance_1) = item_1;
+    //         let (coord_2, distance_2) = item_2;
 
-        current_position = next_position.clone();
-    }
+    //         if distance_1 != distance_2 {
+    //             return distance_1.cmp(distance_2);
+    //         }
+
+    //         // distances are equal, break the tie by sorting the coordinate according to the reading order
+    //         return reading_order(coord_1, coord_2);
+    //     });
+
+    //     println!("{:?}", adjacent_open_squares);
+
+    //     let (next_position, _distance) = adjacent_open_squares.first().unwrap();
+
+    //     current_position = next_position.clone();
+    // }
 }
 
 // combat begins in a series of rounds
@@ -464,18 +506,37 @@ mod tests {
 
     #[test]
     fn test_coord_reading_order() {
-
-        let test: Vec<Coordinate> = vec![(2,27), (3,26), (2,26), (1,26), (2,25)];
+        let test: Vec<Coordinate> = vec![(2, 27), (3, 26), (2, 26), (1, 26), (2, 25)];
         let expected = {
             let mut x = test.clone();
             x.reverse();
             x
         };
 
-        let mut test = test;
-        test.sort_by(reading_order);
+        {
+            let mut test = test.clone();
+            test.sort_by(reading_order);
 
-        assert_eq!(test, expected);
+            assert_eq!(test, expected);
+        }
+
+        {
+            let mut available_squares: BinaryHeap<DistanceCoordinate> = BinaryHeap::new();
+
+            let items = vec![
+                DistanceCoordinate(5, (1, 26)),
+                DistanceCoordinate(5, (2, 25)),
+            ];
+            available_squares.extend(items);
+
+            let mut actual: Vec<Coordinate> = vec![];
+            while let Some(item) = available_squares.pop() {
+                println!("{:?}", item);
+                actual.push(item.into());
+            }
+
+            assert_eq!(actual, vec![(2, 25), (1, 26)]);
+        }
     }
 
     #[test]
