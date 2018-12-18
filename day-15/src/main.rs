@@ -138,6 +138,78 @@ impl Map {
         // check if the position is occupied by a unit
         return self.units.contains_key(position);
     }
+
+    fn get_elves(&self) -> Vec<&Unit> {
+        return self
+            .units
+            .iter()
+            .filter(|(_position, unit)| {
+                return unit.is_elf();
+            })
+            .map(|(_position, unit)| unit)
+            .collect();
+    }
+
+    fn has_elves(&self) -> bool {
+        return self
+            .units
+            .iter()
+            .filter(|(_position, unit)| {
+                return unit.is_elf();
+            })
+            .next()
+            .is_some();
+    }
+
+    fn get_goblins(&self) -> Vec<&Unit> {
+        return self
+            .units
+            .iter()
+            .filter(|(_position, unit)| {
+                return unit.is_goblin();
+            })
+            .map(|(_position, unit)| unit)
+            .collect();
+    }
+
+    fn has_goblins(&self) -> bool {
+        return self
+            .units
+            .iter()
+            .filter(|(_position, unit)| {
+                return unit.is_goblin();
+            })
+            .next()
+            .is_some();
+    }
+
+    // checks if a round can be executed
+    fn can_run_round(&self) -> bool {
+        if self.units.is_empty() {
+            return false;
+        }
+
+        let (_position, unit) = self.units.iter().next().unwrap();
+
+        if unit.is_elf() {
+            return self.has_goblins();
+        }
+
+        if unit.is_goblin() {
+            return self.has_elves();
+        }
+
+        unreachable!();
+    }
+
+    // returns true if combat has ended (i.e. round didn't run)
+    fn execute_round(&mut self) -> bool {
+        if !self.can_run_round() {
+            return true;
+        }
+
+        return false;
+    }
 }
 
 enum UnitType {
@@ -172,6 +244,20 @@ impl Unit {
         match self.unit_type {
             UnitType::Goblin => "G".to_string(),
             UnitType::Elf => "E".to_string(),
+        }
+    }
+
+    fn is_elf(&self) -> bool {
+        match self.unit_type {
+            UnitType::Elf => true,
+            _ => false,
+        }
+    }
+
+    fn is_goblin(&self) -> bool {
+        match self.unit_type {
+            UnitType::Goblin => true,
+            _ => false,
         }
     }
 }
@@ -234,7 +320,9 @@ fn main() {
 
     let input_string = include_str!("input.txt");
 
-    let map = parse_input(input_string);
+    let mut map = parse_input(input_string);
+
+    map.execute_round();
 
     // println!("{:?}", input_string);
 }
