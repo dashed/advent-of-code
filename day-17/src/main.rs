@@ -358,8 +358,6 @@ impl Map {
     }
 
     fn flood(&mut self, position: &Coordinate) {
-        // println!("{}", self.to_string());
-        // println!("======");
         if self.is_coord_out_of_bounds(position) {
             return;
         }
@@ -392,7 +390,7 @@ impl Map {
         let mut current = position.left();
         let mut has_left_wall = false;
 
-        while !self.is_coord_out_of_bounds(&current) {
+        loop {
             if self.is_clay(&current) || self.is_water_at_rest(&current) {
                 has_left_wall = true;
                 break;
@@ -419,7 +417,7 @@ impl Map {
         let mut current = position.right();
         let mut has_right_wall = false;
 
-        while !self.is_coord_out_of_bounds(&current) {
+        loop {
             if self.is_clay(&current) || self.is_water_at_rest(&current) {
                 has_right_wall = true;
                 break;
