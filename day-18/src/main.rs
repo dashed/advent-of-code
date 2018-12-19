@@ -37,6 +37,7 @@ impl Transitions for Coordinate {
     }
 }
 
+#[derive(Debug, Clone)]
 enum Acre {
     Ground,
     Tree,
@@ -44,7 +45,7 @@ enum Acre {
 }
 
 impl Acre {
-    fn next(&self, area: &Area) -> Self {
+    fn next(&self, adjacent_acres: Vec<Acre>) -> Self {
         return Acre::Ground;
     }
 }
@@ -123,6 +124,29 @@ impl Area {
                 unreachable!();
             }
         }
+    }
+
+    fn get_adjacent(&self, position: &Coordinate) -> Vec<Acre> {
+        let adjacent: Vec<Coordinate> = vec![
+            // clockwise
+            position.up(),
+            position.up().right(),
+            position.right(),
+            position.down().right(),
+            position.down(),
+            position.down().left(),
+            position.left(),
+            position.up().left(),
+        ];
+
+        let result: Vec<Acre> = adjacent
+            .into_iter()
+            .map(|coord| self.area.get(&coord))
+            .filter(|s| s.is_some())
+            .map(|s| s.unwrap().clone())
+            .collect();
+
+        return result;
     }
 
     fn tick(&mut self) {}
