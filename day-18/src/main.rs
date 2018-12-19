@@ -8,6 +8,8 @@ use std::collections::HashMap;
 
 type Coordinate = (i32, i32);
 
+type CollectionArea = HashMap<Coordinate, Acre>;
+
 trait Transitions {
     fn up(&self) -> Coordinate;
     fn down(&self) -> Coordinate;
@@ -51,7 +53,7 @@ impl Acre {
 }
 
 struct Area {
-    area: HashMap<Coordinate, Acre>,
+    area: CollectionArea,
     max_y: i32,
     max_x: i32,
 }
@@ -126,30 +128,44 @@ impl Area {
         }
     }
 
-    fn get_adjacent(&self, position: &Coordinate) -> Vec<Acre> {
-        let adjacent: Vec<Coordinate> = vec![
-            // clockwise
-            position.up(),
-            position.up().right(),
-            position.right(),
-            position.down().right(),
-            position.down(),
-            position.down().left(),
-            position.left(),
-            position.up().left(),
-        ];
+    fn tick(&mut self) {
+        let prev_area = &self.area;
+        let mut next_area: CollectionArea = HashMap::new();
 
-        let result: Vec<Acre> = adjacent
-            .into_iter()
-            .map(|coord| self.area.get(&coord))
-            .filter(|s| s.is_some())
-            .map(|s| s.unwrap().clone())
-            .collect();
+        for (coord, acre) in prev_area.iter() {
+            let adjacent = get_adjacent(&prev_area, &coord);
 
-        return result;
+            // ✨ magic
+            let next_acre = acre.next(adjacent);
+
+            next_area.insert(*coord, next_acre);
+        }
+
+        self.area = next_area;
     }
+}
 
-    fn tick(&mut self) {}
+fn get_adjacent(area: &CollectionArea, position: &Coordinate) -> Vec<Acre> {
+    let adjacent: Vec<Coordinate> = vec![
+        // clockwise
+        position.up(),
+        position.up().right(),
+        position.right(),
+        position.down().right(),
+        position.down(),
+        position.down().left(),
+        position.left(),
+        position.up().left(),
+    ];
+
+    let result: Vec<Acre> = adjacent
+        .into_iter()
+        .map(|coord| area.get(&coord))
+        .filter(|s| s.is_some())
+        .map(|s| s.unwrap().clone())
+        .collect();
+
+    return result;
 }
 
 fn generate_area(input_string: &str) -> Area {
