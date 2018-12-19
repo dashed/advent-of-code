@@ -211,6 +211,7 @@ impl Map {
     #[allow(dead_code)]
     fn to_string(&self) -> String {
         let max_y = self.max_y();
+        // let max_y = 30;
         let min_x = self.min_x();
         let max_x = self.max_x();
 
@@ -352,6 +353,9 @@ impl Map {
     }
 
     fn flood(&mut self, position: &Coordinate) -> Flow {
+
+        // println!("{}", self.to_string());
+        // println!("======");
         if self.is_coord_out_of_bounds(position) {
             return Flow::Flowing;
         }
@@ -380,75 +384,74 @@ impl Map {
         }
 
         // flood left
-        let left_position = position.left();
-        let left_result = self.flood(&left_position);
-
-        // flood right
-        let right_position = position.right();
-        let right_result = self.flood(&right_position);
-
-        // sweep left and right
-
-        let mut sweep = vec![];
-
-        // sweep left until a wall is hit
+        let mut water_at_rest = vec![];
+        water_at_rest.push(position.clone());
 
         let mut current = position.left();
         let mut has_left_wall = false;
 
         while !self.is_coord_out_of_bounds(&current) {
-            if self.is_clay(&current) {
+
+            if self.is_clay(&current) || self.is_water_at_rest(&current) {
                 has_left_wall = true;
                 break;
             }
 
-            let down = current.down();
+            if self.is_dry_sand(&current) {
+                self.upgrade_water(&current);
+            }
 
-            if (self.is_clay(&down) || self.is_water_at_rest(&down)) && self.is_water(&current) {
-                sweep.push(current);
-            } else {
+            let down = current.down();
+            let result = self.flood(&down);
+
+            if result.is_flowing() {
                 has_left_wall = false;
                 break;
             }
 
+            water_at_rest.push(current);
+
             current = current.left();
         }
 
-        // sweep right until a wall is hit
+        // flood right
         let mut current = position.right();
         let mut has_right_wall = false;
 
-        while has_left_wall && !self.is_coord_out_of_bounds(&current) {
-            if self.is_clay(&current) {
+        while !self.is_coord_out_of_bounds(&current) {
+
+            if self.is_clay(&current) || self.is_water_at_rest(&current) {
                 has_right_wall = true;
                 break;
             }
 
-            let down = current.down();
+            if self.is_dry_sand(&current) {
+                self.upgrade_water(&current);
+            }
 
-            if (self.is_clay(&down) || self.is_water_at_rest(&down)) && self.is_water(&current) {
-                sweep.push(current);
-            } else {
+            let down = current.down();
+            let result = self.flood(&down);
+
+            if result.is_flowing() {
                 has_right_wall = false;
                 break;
             }
+
+            water_at_rest.push(current);
 
             current = current.right();
         }
 
         if has_left_wall && has_right_wall {
-            for current in sweep {
+            for current in water_at_rest {
                 self.upgrade_water(&current);
             }
 
             return Flow::AtRest;
         }
 
-        if left_result.is_flowing() || right_result.is_flowing() {
-            return Flow::Flowing;
-        }
+        return Flow::Flowing;
 
-        return Flow::AtRest;
     }
 
     fn run_flood(&mut self) {
@@ -531,9 +534,12 @@ fn main() {
     // map.run_water();
     map.run_flood();
 
+    println!("Done flood.");
+
     // println!("{}", map.to_string());
     // not: 2339
     // not: 31479
+    // not: 9738
     println!("Part 1: {}", map.num_of_water_tiles());
 }
 
