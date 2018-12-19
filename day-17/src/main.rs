@@ -9,14 +9,14 @@ use std::collections::HashMap;
 #[derive(Debug)]
 enum Flow {
     Flowing,
-    AtRest
+    AtRest,
 }
 
 impl Flow {
     fn is_flowing(&self) -> bool {
         match self {
             Flow::Flowing => true,
-            _ => false
+            _ => false,
         }
     }
 }
@@ -80,13 +80,27 @@ impl Map {
 
         let mut total = 0;
 
-        for y in min_y..=max_y {
-            for x in min_x..=max_x {
-                let position = (x, y);
+        for (position, _tile) in self.terrain.iter() {
+            let (x, y) = position;
 
-                if self.is_water(&position) {
-                    total += 1;
-                }
+            if x < &min_x {
+                continue;
+            }
+
+            if x > &max_x {
+                continue;
+            }
+
+            if y < &min_y {
+                continue;
+            }
+
+            if y > &max_y {
+                continue;
+            }
+
+            if self.is_water(&position) {
+                total += 1;
             }
         }
 
@@ -197,7 +211,6 @@ impl Map {
     #[allow(dead_code)]
     fn to_string(&self) -> String {
         let max_y = self.max_y();
-        // let max_y = 30;
         let min_x = self.min_x();
         let max_x = self.max_x();
 
@@ -339,7 +352,6 @@ impl Map {
     }
 
     fn flood(&mut self, position: &Coordinate) -> Flow {
-
         if self.is_coord_out_of_bounds(position) {
             return Flow::Flowing;
         }
@@ -363,11 +375,9 @@ impl Map {
         match result {
             Flow::Flowing => {
                 return Flow::Flowing;
-            },
+            }
             _ => {}
         }
-
-
 
         // flood left
         let left_position = position.left();
@@ -376,7 +386,6 @@ impl Map {
         // flood right
         let right_position = position.right();
         let right_result = self.flood(&right_position);
-
 
         // sweep left and right
 
@@ -388,7 +397,6 @@ impl Map {
         let mut has_left_wall = false;
 
         while !self.is_coord_out_of_bounds(&current) {
-
             if self.is_clay(&current) {
                 has_left_wall = true;
                 break;
@@ -411,7 +419,6 @@ impl Map {
         let mut has_right_wall = false;
 
         while has_left_wall && !self.is_coord_out_of_bounds(&current) {
-
             if self.is_clay(&current) {
                 has_right_wall = true;
                 break;
@@ -429,7 +436,7 @@ impl Map {
             current = current.right();
         }
 
-        if has_left_wall && has_right_wall  {
+        if has_left_wall && has_right_wall {
             for current in sweep {
                 self.upgrade_water(&current);
             }
@@ -442,13 +449,11 @@ impl Map {
         }
 
         return Flow::AtRest;
-
     }
 
     fn run_flood(&mut self) {
         self.flood(&WATER_SPRING.down());
     }
-
 }
 
 fn generate_map(input_string: &str) -> Map {
