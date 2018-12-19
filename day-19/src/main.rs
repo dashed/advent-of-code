@@ -69,6 +69,7 @@ impl Registers {
     }
 }
 
+#[derive(Debug, Clone)]
 enum Opcode {
     Addr,
     Addi,
@@ -88,12 +89,322 @@ enum Opcode {
     Eqrr,
 }
 
+impl Opcode {
+    fn execute(
+        &self,
+        mut registers_before: Registers,
+        instruction: OpcodeInstruction,
+    ) -> Option<Registers> {
+        match self {
+            Opcode::Addr => {
+                // addr (add register) stores into register C the result of adding register A and register B.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return None;
+                }
+
+                let register_b = RegisterID::into_register_id(instruction.input_b());
+                if register_b.is_none() {
+                    return None;
+                }
+
+                let value_a = registers_before.get(register_a.unwrap());
+                let value_b = registers_before.get(register_b.unwrap());
+
+                let register_c = instruction.output_register();
+
+                let result = value_a + value_b;
+                registers_before.set(register_c, result);
+            }
+            Opcode::Addi => {
+                // addi (add immediate) stores into register C the result of adding register A and value B.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return None;
+                }
+
+                let value_a = registers_before.get(register_a.unwrap());
+                let value_b = instruction.input_b();
+
+                let result = value_a + value_b;
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+            Opcode::Mulr => {
+                // mulr (multiply register) stores into register C the result of multiplying register A and register B.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return None;
+                }
+
+                let register_b = RegisterID::into_register_id(instruction.input_b());
+                if register_b.is_none() {
+                    return None;
+                }
+
+                let value_a = registers_before.get(register_a.unwrap());
+                let value_b = registers_before.get(register_b.unwrap());
+
+                let register_c = instruction.output_register();
+
+                let result = value_a * value_b;
+                registers_before.set(register_c, result);
+            }
+            Opcode::Muli => {
+                // muli (multiply immediate) stores into register C the result of multiplying register A and value B.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return None;
+                }
+
+                let value_a = registers_before.get(register_a.unwrap());
+                let value_b = instruction.input_b();
+
+                let result = value_a * value_b;
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+            Opcode::Banr => {
+                // banr (bitwise AND register) stores into register C the result of the bitwise AND of register A and register B.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return None;
+                }
+
+                let register_b = RegisterID::into_register_id(instruction.input_b());
+                if register_b.is_none() {
+                    return None;
+                }
+
+                let value_a = registers_before.get(register_a.unwrap());
+                let value_b = registers_before.get(register_b.unwrap());
+
+                let register_c = instruction.output_register();
+
+                let result = value_a & value_b;
+                registers_before.set(register_c, result);
+            }
+            Opcode::Bani => {
+                // bani (bitwise AND immediate) stores into register C the result of the bitwise AND of register A and value B.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return None;
+                }
+
+                let value_a = registers_before.get(register_a.unwrap());
+                let value_b = instruction.input_b();
+
+                let result = value_a & value_b;
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+            Opcode::Borr => {
+                // borr (bitwise OR register) stores into register C the result of the bitwise OR of register A and register B.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return None;
+                }
+
+                let register_b = RegisterID::into_register_id(instruction.input_b());
+                if register_b.is_none() {
+                    return None;
+                }
+
+                let value_a = registers_before.get(register_a.unwrap());
+                let value_b = registers_before.get(register_b.unwrap());
+
+                let register_c = instruction.output_register();
+
+                let result = value_a | value_b;
+                registers_before.set(register_c, result);
+            }
+            Opcode::Bori => {
+                // bori (bitwise OR immediate) stores into register C the result of the bitwise OR of register A and value B.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return None;
+                }
+
+                let value_a = registers_before.get(register_a.unwrap());
+                let value_b = instruction.input_b();
+
+                let result = value_a | value_b;
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+            Opcode::Setr => {
+                // setr (set register) copies the contents of register A into register C. (Input B is ignored.)
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return None;
+                }
+
+                let value_a = registers_before.get(register_a.unwrap());
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, value_a);
+            }
+            Opcode::Seti => {
+                // seti (set immediate) stores value A into register C. (Input B is ignored.)
+
+                let value_a = instruction.input_a();
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, value_a);
+            }
+            Opcode::Gtir => {
+                // gtir (greater-than immediate/register) sets register C to 1 if value A is greater than register B.
+                // Otherwise, register C is set to 0.
+
+                let value_a = instruction.input_a();
+
+                let register_b = RegisterID::into_register_id(instruction.input_b());
+                if register_b.is_none() {
+                    return None;
+                }
+                let value_b = registers_before.get(register_b.unwrap());
+
+                let result = if value_a > value_b { 1 } else { 0 };
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+            Opcode::Gtri => {
+                // gtri (greater-than register/immediate) sets register C to 1 if register A is greater than value B.
+                // Otherwise, register C is set to 0.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return None;
+                }
+                let value_a = registers_before.get(register_a.unwrap());
+
+                let value_b = instruction.input_b();
+
+                let result = if value_a > value_b { 1 } else { 0 };
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+            Opcode::Gtrr => {
+                // gtrr (greater-than register/register) sets register C to 1 if register A is greater than register B.
+                // Otherwise, register C is set to 0.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return None;
+                }
+                let value_a = registers_before.get(register_a.unwrap());
+
+                let register_b = RegisterID::into_register_id(instruction.input_b());
+                if register_b.is_none() {
+                    return None;
+                }
+                let value_b = registers_before.get(register_b.unwrap());
+
+                let result = if value_a > value_b { 1 } else { 0 };
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+            Opcode::Eqir => {
+                // eqir (equal immediate/register) sets register C to 1 if value A is equal to register B.
+                // Otherwise, register C is set to 0.
+
+                let value_a = instruction.input_a();
+
+                let register_b = RegisterID::into_register_id(instruction.input_b());
+                if register_b.is_none() {
+                    return None;
+                }
+                let value_b = registers_before.get(register_b.unwrap());
+
+                let result = if value_a == value_b { 1 } else { 0 };
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+            Opcode::Eqri => {
+                // eqri (equal register/immediate) sets register C to 1 if register A is equal to value B.
+                // Otherwise, register C is set to 0.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return None;
+                }
+                let value_a = registers_before.get(register_a.unwrap());
+
+                let value_b = instruction.input_b();
+
+                let result = if value_a == value_b { 1 } else { 0 };
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+            Opcode::Eqrr => {
+                // eqrr (equal register/register) sets register C to 1 if register A is equal to register B.
+                // Otherwise, register C is set to 0.
+
+                let register_a = RegisterID::into_register_id(instruction.input_a());
+                if register_a.is_none() {
+                    return None;
+                }
+                let value_a = registers_before.get(register_a.unwrap());
+
+                let register_b = RegisterID::into_register_id(instruction.input_b());
+                if register_b.is_none() {
+                    return None;
+                }
+                let value_b = registers_before.get(register_b.unwrap());
+
+                let result = if value_a == value_b { 1 } else { 0 };
+
+                let register_c = instruction.output_register();
+                registers_before.set(register_c, result);
+            }
+        }
+
+        return Some(registers_before);
+    }
+}
+
 struct OpcodeInstruction(
     Opcode,
     i32,        /* input A */
     i32,        /* input B */
     RegisterID, /* output register */
 );
+
+impl OpcodeInstruction {
+    fn output_register(&self) -> RegisterID {
+        return self.3.clone();
+    }
+
+    fn input_a(&self) -> i32 {
+        return self.1;
+    }
+
+    fn input_b(&self) -> i32 {
+        return self.2;
+    }
+
+    fn opcode(&self) -> Opcode {
+        return self.0.clone();
+    }
+}
 
 enum Status {
     Halted,
