@@ -146,56 +146,76 @@ fn main() {
 
     // parse positions of clay
 
-    let clay_coordinates: Vec<Coordinate> = input_string
+    let clay_coordinates: Vec<_> = input_string
         .trim()
         .lines()
         .map(|line| {
-            let target = line.split("..").next().unwrap().trim();
+            // println!("{}", line);
 
-            let (x, y) = target
-                .split(",")
-                .map(|s| s.trim())
-                .fold((None, None), |acc, s| {
-                    let (x, y) = acc;
+            let tokens: Vec<&str> = line.split(",").map(|s| s.trim()).collect();
 
-                    let mut s_iter = s.trim().split("=").map(|s| s.trim());
+            assert!(tokens.len() == 2);
 
-                    let identifier = s_iter.next().unwrap().to_lowercase();
-                    let value: i32 = s_iter.next().map(|s| s.parse::<i32>().unwrap()).unwrap();
+            let axis: i32 = tokens[0].parse().unwrap();
+            let range: Vec<i32> = {
+                let range = tokens[1];
+                range
+                    .split("..")
+                    .map(|s| s.trim())
+                    .map(|s| s.parse::<i32>().unwrap())
+                    .collect()
+            };
 
-                    match identifier.as_ref() {
-                        "x" => {
-                            return (Some(value), y);
-                        }
-                        "y" => {
-                            return (x, Some(value));
-                        }
-                        _ => {
-                            unreachable!();
-                        }
-                    }
-                });
+            println!("{:?}", tokens);
 
-            let coord: Coordinate = (x.unwrap(), y.unwrap());
+            return line;
 
-            return coord;
+            // let target = line.split("..").next().unwrap().trim();
+
+            // let (x, y) = target
+            //     .split(",")
+            //     .map(|s| s.trim())
+            //     .fold((None, None), |acc, s| {
+            //         let (x, y) = acc;
+
+            //         let mut s_iter = s.trim().split("=").map(|s| s.trim());
+
+            //         let identifier = s_iter.next().unwrap().to_lowercase();
+            //         let value: i32 = s_iter.next().map(|s| s.parse::<i32>().unwrap()).unwrap();
+
+            //         match identifier.as_ref() {
+            //             "x" => {
+            //                 return (Some(value), y);
+            //             }
+            //             "y" => {
+            //                 return (x, Some(value));
+            //             }
+            //             _ => {
+            //                 unreachable!();
+            //             }
+            //         }
+            //     });
+
+            // let coord: Coordinate = (x.unwrap(), y.unwrap());
+
+            // return coord;
         })
         .collect();
 
     // add clay to terrain
 
-    let mut map = Map::new();
+    // let mut map = Map::new();
 
     // let terrain = HashMap::new();
 
-    for coordinate in clay_coordinates {
-        // println!("{:?}", coordinate);
-        map.insert_clay(&coordinate);
-    }
+    // for coordinate in clay_coordinates {
+    //     // println!("{:?}", coordinate);
+    //     map.insert_clay(&coordinate);
+    // }
 
-    println!("max_y: {}", map.max_y());
-    println!("min_x: {}", map.min_x());
-    println!("max_x: {}", map.max_x());
+    // println!("max_y: {}", map.max_y());
+    // println!("min_x: {}", map.min_x());
+    // println!("max_x: {}", map.max_x());
 
-    println!("{}", map.to_string());
+    // println!("{}", map.to_string());
 }
