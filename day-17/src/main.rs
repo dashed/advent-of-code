@@ -3,23 +3,10 @@
 // imports
 
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::Write;
 
 // code
-
-#[derive(Debug)]
-enum Flow {
-    Flowing,
-    AtRest,
-}
-
-impl Flow {
-    fn is_flowing(&self) -> bool {
-        match self {
-            Flow::Flowing => true,
-            _ => false,
-        }
-    }
-}
 
 type Coordinate = (i32, i32);
 
@@ -63,33 +50,53 @@ type Terrain = HashMap<Coordinate, MapState>;
 
 struct Map {
     terrain: Terrain,
+
+    min_y: Option<i32>,
+    max_y: Option<i32>,
 }
 
 impl Map {
     fn new() -> Self {
         Map {
             terrain: HashMap::new(),
+            min_y: None,
+            max_y: None,
         }
     }
 
-    fn num_of_water_tiles(&self) -> i32 {
+    fn num_of_rested_water_tiles(&mut self) -> i32 {
         let min_y = self.min_y();
         let max_y = self.max_y();
-        let min_x = self.min_x();
-        let max_x = self.max_x();
 
         let mut total = 0;
 
         for (position, _tile) in self.terrain.iter() {
-            let (x, y) = position;
+            let (_x, y) = position;
 
-            if x < &min_x {
+            if y < &min_y {
                 continue;
             }
 
-            if x > &max_x {
+            if y > &max_y {
                 continue;
             }
+
+            if self.is_water_at_rest(&position) {
+                total += 1;
+            }
+        }
+
+        return total;
+    }
+
+    fn num_of_water_tiles(&mut self) -> i32 {
+        let min_y = self.min_y();
+        let max_y = self.max_y();
+
+        let mut total = 0;
+
+        for (position, _tile) in self.terrain.iter() {
+            let (_x, y) = position;
 
             if y < &min_y {
                 continue;
@@ -107,20 +114,10 @@ impl Map {
         return total;
     }
 
-    fn is_coord_out_of_bounds(&self, position: &Coordinate) -> bool {
-        let (x, y) = position;
+    fn is_coord_out_of_bounds(&mut self, position: &Coordinate) -> bool {
+        let (_x, y) = position;
 
-        let max_x = self.max_x();
-        let min_x = self.min_x();
         let max_y = self.max_y();
-
-        if x > &max_x {
-            return true;
-        }
-
-        if x < &min_x {
-            return true;
-        }
 
         if y > &max_y {
             return true;
@@ -133,8 +130,12 @@ impl Map {
         return false;
     }
 
-    fn min_y(&self) -> i32 {
-        return self
+    fn min_y(&mut self) -> i32 {
+        if self.min_y.is_some() {
+            return self.min_y.unwrap();
+        }
+
+        let value = self
             .terrain
             .iter()
             .filter(|item| {
@@ -148,10 +149,18 @@ impl Map {
             })
             .min()
             .unwrap();
+
+        self.min_y = Some(value);
+
+        return value;
     }
 
-    fn max_y(&self) -> i32 {
-        return self
+    fn max_y(&mut self) -> i32 {
+        if self.max_y.is_some() {
+            return self.max_y.unwrap();
+        }
+
+        let value = self
             .terrain
             .iter()
             .filter(|item| {
@@ -165,16 +174,16 @@ impl Map {
             })
             .max()
             .unwrap();
+
+        self.max_y = Some(value);
+
+        return value;
     }
 
-    fn min_x(&self) -> i32 {
+    fn min_x(&mut self) -> i32 {
         return self
             .terrain
             .iter()
-            .filter(|item| {
-                let (coord, _map_state) = item;
-                return self.is_clay(coord);
-            })
             .map(|item| {
                 let (coord, _map_state) = item;
                 let (x, _y) = coord;
@@ -184,14 +193,10 @@ impl Map {
             .unwrap();
     }
 
-    fn max_x(&self) -> i32 {
+    fn max_x(&mut self) -> i32 {
         return self
             .terrain
             .iter()
-            .filter(|item| {
-                let (coord, _map_state) = item;
-                return self.is_clay(coord);
-            })
             .map(|item| {
                 let (coord, _map_state) = item;
                 let (x, _y) = coord;
@@ -209,7 +214,7 @@ impl Map {
     }
 
     #[allow(dead_code)]
-    fn to_string(&self) -> String {
+    fn to_string(&mut self) -> String {
         let max_y = self.max_y();
         // let max_y = 30;
         let min_x = self.min_x();
@@ -352,20 +357,19 @@ impl Map {
         }
     }
 
-    fn flood(&mut self, position: &Coordinate) -> Flow {
-
+    fn flood(&mut self, position: &Coordinate) {
         // println!("{}", self.to_string());
         // println!("======");
         if self.is_coord_out_of_bounds(position) {
-            return Flow::Flowing;
+            return;
         }
 
         if self.is_water_flowing(position) {
-            return Flow::Flowing;
+            return;
         }
 
         if self.is_clay(position) || self.is_water_at_rest(position) {
-            return Flow::AtRest;
+            return;
         }
 
         if self.is_dry_sand(position) {
@@ -375,12 +379,10 @@ impl Map {
         // flood downward
         let down_position = position.down();
 
-        let result = self.flood(&down_position);
-        match result {
-            Flow::Flowing => {
-                return Flow::Flowing;
-            }
-            _ => {}
+        self.flood(&down_position);
+
+        if !(self.is_clay(&down_position) || self.is_water_at_rest(&down_position)) {
+            return;
         }
 
         // flood left
@@ -391,7 +393,6 @@ impl Map {
         let mut has_left_wall = false;
 
         while !self.is_coord_out_of_bounds(&current) {
-
             if self.is_clay(&current) || self.is_water_at_rest(&current) {
                 has_left_wall = true;
                 break;
@@ -402,9 +403,9 @@ impl Map {
             }
 
             let down = current.down();
-            let result = self.flood(&down);
+            self.flood(&down);
 
-            if result.is_flowing() {
+            if !(self.is_clay(&down) || self.is_water_at_rest(&down)) {
                 has_left_wall = false;
                 break;
             }
@@ -419,7 +420,6 @@ impl Map {
         let mut has_right_wall = false;
 
         while !self.is_coord_out_of_bounds(&current) {
-
             if self.is_clay(&current) || self.is_water_at_rest(&current) {
                 has_right_wall = true;
                 break;
@@ -430,9 +430,9 @@ impl Map {
             }
 
             let down = current.down();
-            let result = self.flood(&down);
+            self.flood(&down);
 
-            if result.is_flowing() {
+            if !(self.is_clay(&down) || self.is_water_at_rest(&down)) {
                 has_right_wall = false;
                 break;
             }
@@ -446,12 +446,7 @@ impl Map {
             for current in water_at_rest {
                 self.upgrade_water(&current);
             }
-
-            return Flow::AtRest;
         }
-
-        return Flow::Flowing;
-
     }
 
     fn run_flood(&mut self) {
@@ -534,13 +529,12 @@ fn main() {
     // map.run_water();
     map.run_flood();
 
-    println!("Done flood.");
-
-    // println!("{}", map.to_string());
-    // not: 2339
-    // not: 31479
-    // not: 9738
     println!("Part 1: {}", map.num_of_water_tiles());
+
+    let mut output = File::create("day-17/part_1_result.txt").unwrap();
+    write!(output, "{}", map.to_string()).unwrap();
+
+    println!("Part 2: {}", map.num_of_rested_water_tiles());
 }
 
 #[cfg(test)]
