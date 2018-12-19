@@ -26,6 +26,7 @@ impl RegisterID {
     }
 }
 
+#[derive(Debug, Clone)]
 struct Registers(i32, i32, i32, i32, i32, i32);
 
 impl Registers {
@@ -90,6 +91,10 @@ enum Opcode {
 }
 
 impl Opcode {
+    fn from_str(input: &str) -> Self {
+        Opcode::Addr
+    }
+
     fn execute(
         &self,
         mut registers_before: Registers,
@@ -381,6 +386,7 @@ impl Opcode {
     }
 }
 
+#[derive(Debug, Clone)]
 struct OpcodeInstruction(
     Opcode,
     i32,        /* input A */
@@ -413,7 +419,7 @@ enum Status {
 
 struct Program {
     // current value of the instruction pointer
-    instruction_pointer: usize,
+    instruction_pointer: i32,
     // indicates the register that the instruction pointer is bound to
     instruction_pointer_bound: RegisterID,
     registers: Registers,
@@ -446,7 +452,7 @@ impl Program {
 
     fn execute_instruction(&mut self) -> Status {
         // get next instruction
-        let instruction = self.instructions.get(self.instruction_pointer);
+        let instruction = self.instructions.get(self.instruction_pointer as usize);
 
         if instruction.is_none() {
             // If the instruction pointer ever causes the device to attempt to load
@@ -454,11 +460,22 @@ impl Program {
             return Status::Halted;
         }
 
-        // TODO: write the value in instruction pointer to the bound register
+        let instruction: &OpcodeInstruction = instruction.unwrap();
 
-        // TODO: execute instruction
+        // write the value in instruction pointer to the bound register
+        self.registers.set(
+            self.instruction_pointer_bound.clone(),
+            self.instruction_pointer,
+        );
 
-        // TODO: write bound register back to the instruction poiinter
+        // execute instruction
+        let opcode = instruction.opcode();
+        self.registers = opcode
+            .execute(self.registers.clone(), instruction.clone())
+            .unwrap();
+
+        // write bound register back to the instruction poiinter
+        self.instruction_pointer = self.registers.get(self.instruction_pointer_bound.clone());
 
         // after the instruction has executed, add one to the instruction pointer
         self.instruction_pointer += 1;
@@ -470,5 +487,34 @@ impl Program {
 fn main() {
     let input_string = include_str!("input.txt");
 
-    println!("{}", input_string);
+    let mut input_iter = input_string.trim().lines().map(|s| s.trim());
+
+    let instruction_pointer_bound = input_iter.next().unwrap();
+
+    let mut instructions = vec![];
+
+    while let Some(opcode_instruction_line) = input_iter.next() {
+        let opcode_instruction = {
+            let mut iter = opcode_instruction_line.split_whitespace().map(|x| x.trim());
+
+            let opcode_str = iter.next().unwrap();
+
+            let arr: Vec<i32> = iter
+                .map(|x| -> i32 {
+                    return x.parse().unwrap();
+                })
+                .collect();
+
+            OpcodeInstruction(
+                Opcode::from_str(opcode_str),
+                arr[0],
+                arr[1],
+                RegisterID::into_register_id(arr[2]).unwrap(),
+            )
+        };
+
+        instructions.push(opcode_instruction);
+    }
+
+    println!("{:?}", instructions);
 }
