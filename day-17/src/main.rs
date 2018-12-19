@@ -8,6 +8,9 @@ use std::collections::HashMap;
 
 type Coordinate = (i32, i32);
 
+// position of the water spring
+const WATER_SPRING: Coordinate = (500, 0);
+
 trait Transitions {
     fn down(&self) -> Coordinate;
     fn left(&self) -> Coordinate;
@@ -95,6 +98,9 @@ impl Map {
     }
 
     fn insert_clay(&mut self, clay_coordinate: &Coordinate) {
+        // clay can never be right where the water spring is positioned
+        assert!(clay_coordinate != &WATER_SPRING);
+
         self.terrain.insert(*clay_coordinate, MapState::Clay);
     }
 
@@ -113,24 +119,32 @@ impl Map {
 
                 match self.terrain.get(&position) {
                     None => {
-                        row_string.push_str(".");
-                    }
-                    Some(map_state) => match map_state {
-                        MapState::Clay => {
-                            row_string.push_str("#");
-                        }
-                        MapState::Sand => {
+                        if position == WATER_SPRING {
+                            row_string.push_str("+");
+                        } else {
                             row_string.push_str(".");
                         }
-                        MapState::Water(water) => match water {
-                            Water::AtRest => {
-                                row_string.push_str("~");
+                    }
+                    Some(map_state) => {
+                        assert!(position != WATER_SPRING);
+
+                        match map_state {
+                            MapState::Clay => {
+                                row_string.push_str("#");
                             }
-                            Water::Reachable => {
-                                row_string.push_str("|");
+                            MapState::Sand => {
+                                row_string.push_str(".");
                             }
-                        },
-                    },
+                            MapState::Water(water) => match water {
+                                Water::AtRest => {
+                                    row_string.push_str("~");
+                                }
+                                Water::Reachable => {
+                                    row_string.push_str("|");
+                                }
+                            },
+                        };
+                    }
                 }
             }
 
@@ -146,76 +160,73 @@ fn main() {
 
     // parse positions of clay
 
-    let clay_coordinates: Vec<_> = input_string
-        .trim()
-        .lines()
-        .map(|line| {
+    let clay_coordinates: Vec<Coordinate> =
+        input_string.trim().lines().fold(vec![], |mut acc, line| {
             // println!("{}", line);
 
             let tokens: Vec<&str> = line.split(",").map(|s| s.trim()).collect();
 
             assert!(tokens.len() == 2);
 
-            let axis: i32 = tokens[0].parse().unwrap();
-            let range: Vec<i32> = {
-                let range = tokens[1];
-                range
+            let axis: (Option<i32>, Option<i32>) = {
+                let parsed_axis: Vec<&str> = tokens[0].split("=").map(|s| s.trim()).collect();
+                let axis_str = parsed_axis[0];
+                let value: i32 = parsed_axis[1].parse().unwrap();
+                match axis_str.as_ref() {
+                    "x" => (Some(value), None),
+                    "y" => (None, Some(value)),
+                    _ => {
+                        unreachable!();
+                    }
+                }
+            };
+
+            let range = {
+                let parsed_range: Vec<&str> = tokens[1].split("=").map(|s| s.trim()).collect();
+                let axis_str = parsed_range[0];
+                let range: Vec<i32> = parsed_range[1]
                     .split("..")
                     .map(|s| s.trim())
                     .map(|s| s.parse::<i32>().unwrap())
-                    .collect()
+                    .collect();
+
+                assert!(range.len() == 2);
+
+                range[0]..=range[1]
             };
 
-            println!("{:?}", tokens);
+            for n in range {
+                match axis {
+                    (None, None) => {
+                        unreachable!();
+                    }
+                    (Some(_), Some(_)) => {
+                        unreachable!();
+                    }
+                    (Some(x), None) => {
+                        acc.push((x, n));
+                    }
+                    (None, Some(y)) => {
+                        acc.push((n, y));
+                    }
+                }
+            }
 
-            return line;
-
-            // let target = line.split("..").next().unwrap().trim();
-
-            // let (x, y) = target
-            //     .split(",")
-            //     .map(|s| s.trim())
-            //     .fold((None, None), |acc, s| {
-            //         let (x, y) = acc;
-
-            //         let mut s_iter = s.trim().split("=").map(|s| s.trim());
-
-            //         let identifier = s_iter.next().unwrap().to_lowercase();
-            //         let value: i32 = s_iter.next().map(|s| s.parse::<i32>().unwrap()).unwrap();
-
-            //         match identifier.as_ref() {
-            //             "x" => {
-            //                 return (Some(value), y);
-            //             }
-            //             "y" => {
-            //                 return (x, Some(value));
-            //             }
-            //             _ => {
-            //                 unreachable!();
-            //             }
-            //         }
-            //     });
-
-            // let coord: Coordinate = (x.unwrap(), y.unwrap());
-
-            // return coord;
-        })
-        .collect();
+            return acc;
+        });
 
     // add clay to terrain
 
-    // let mut map = Map::new();
+    let mut map = Map::new();
 
-    // let terrain = HashMap::new();
+    for coordinate in clay_coordinates {
+        // println!("{:?}", coordinate);
+        map.insert_clay(&coordinate);
+    }
 
-    // for coordinate in clay_coordinates {
-    //     // println!("{:?}", coordinate);
-    //     map.insert_clay(&coordinate);
-    // }
+    println!("max_y: {}", map.max_y());
+    println!("min_x: {}", map.min_x());
+    println!("max_x: {}", map.max_x());
 
-    // println!("max_y: {}", map.max_y());
-    // println!("min_x: {}", map.min_x());
-    // println!("max_x: {}", map.max_x());
-
-    // println!("{}", map.to_string());
+    println!("{}", map.to_string());
 }
