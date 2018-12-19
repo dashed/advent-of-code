@@ -275,8 +275,8 @@ fn part_2(input_string: &str) -> usize {
     let mut area = generate_area(input_string);
 
     let mut seen: HashMap<Area, i32> = HashMap::new();
-    // let mut lookup: HashMap<i32, Area> = HashMap::new();
-    let mut current_id = 0;
+    // let mut lookup = HashMap::new();
+    let mut area_num = 0;
 
     let mut ticks = 0;
 
@@ -284,37 +284,29 @@ fn part_2(input_string: &str) -> usize {
         if seen.contains_key(&area) {
             break;
         }
-        seen.insert(area.clone(), current_id);
-        // lookup.insert(current_id, area.clone());
+        seen.insert(area.clone(), area_num);
+        // lookup.insert(area_num, area.clone());
         area.tick();
 
         ticks += 1;
-        current_id += 1;
+        area_num += 1;
     }
 
     // invariant: area is the first snapshot of the cycle
 
-    println!("current_id: {}", current_id);
-    println!("saved: {}", seen.get(&area).unwrap());
-    println!("seen len: {}", seen.len());
-
-    let cycle_len = seen.len() as i32 - seen.get(&area).unwrap() + 1;
-
-    println!("cycle_len: {}", cycle_len);
+    let cycle_len = seen.len() as i32 - seen.get(&area).unwrap();
 
     let remaining_ticks = 1_000_000_000 - ticks;
-    println!("remaining_ticks: {}", remaining_ticks);
-    let stop_point = remaining_ticks % cycle_len;
 
-    println!("stop_point: {}", stop_point);
+    // additional ticks to perform
+    let additional_ticks = remaining_ticks % cycle_len;
 
-    for _ in 2..=stop_point {
+    // let area_num = seen.get(&area).unwrap();
+    // let area = lookup.get(&(area_num + additional_ticks)).unwrap();
+
+    for _ in 1..=additional_ticks {
         area.tick();
     }
-
-    // not: 214760
-    // not: 207774
-    // not: 190576
 
     return area.num_of_lumberyards() * area.num_of_trees();
 }
@@ -324,7 +316,7 @@ fn main() {
 
     let part_1_result = part_1(input_string, 10);
 
-    // println!("Part 1: {}", part_1_result);
+    println!("Part 1: {}", part_1_result);
 
     println!("Part 2: {}", part_2(input_string));
 }
@@ -337,7 +329,7 @@ mod tests {
     fn area_string() {
         let expected_string = include_str!("input.txt");
 
-        let mut area = generate_area(expected_string);
+        let area = generate_area(expected_string);
 
         assert_eq!(area.to_string(), expected_string);
     }
