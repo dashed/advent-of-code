@@ -57,6 +57,32 @@ impl Map {
         }
     }
 
+    fn is_coord_out_of_bounds(&self, position: &Coordinate) -> bool {
+        let (x, y) = position;
+
+        let max_x = self.max_x();
+        let min_x = self.min_x();
+        let max_y = self.max_y();
+
+        if x > &max_x {
+            return true;
+        }
+
+        if x < &min_x {
+            return true;
+        }
+
+        if y > &max_y {
+            return true;
+        }
+
+        if y < &0 {
+            return true;
+        }
+
+        return false;
+    }
+
     fn max_y(&self) -> i32 {
         return self
             .terrain
@@ -172,30 +198,75 @@ impl Map {
         return self.terrain.get(&position).is_none();
     }
 
-    fn flowing_water(&mut self, position: &Coordinate) {
-        self.terrain
-            .insert(*position, MapState::Water(Water::Flowing));
+    fn upgrade_water(&mut self, position: &Coordinate) {
+        match self.terrain.get(&position) {
+            None => {
+                self.terrain
+                    .insert(*position, MapState::Water(Water::Flowing));
+            }
+            Some(map_state) => {
+                match map_state {
+                    MapState::Water(water_state) => match water_state {
+                        Water::Flowing => {
+                            self.terrain
+                                .insert(*position, MapState::Water(Water::AtRest));
+                        }
+                        Water::AtRest => {}
+                    },
+                    MapState::Clay => {
+                        unreachable!();
+                    }
+                };
+            }
+        }
     }
 
     fn can_flow_into(&self, position: &Coordinate) -> bool {
-        return !self.is_clay(position) && self.is_dry_sand(position);
+        return !self.is_clay(position)
+            && self.is_dry_sand(position)
+            && !self.is_coord_out_of_bounds(position);
+    }
+
+    fn is_water_at_rest(&self, position: &Coordinate) -> bool {
+        match self.terrain.get(&position) {
+            None => {
+                return false;
+            }
+            Some(map_state) => match map_state {
+                MapState::Clay => {
+                    return false;
+                }
+                MapState::Water(water_state) => match water_state {
+                    Water::Flowing => false,
+                    Water::AtRest => true,
+                },
+            },
+        }
     }
 
     fn run_water(&mut self) {
         let mut flowing_water: Vec<Coordinate> = vec![WATER_SPRING.down()];
 
         while let Some(current) = flowing_water.pop() {
+            println!("{:?}", current);
+            println!("{}", self.to_string());
+            println!("============");
+
             // invariant: current position is not clay
             assert!(!self.is_clay(&current));
             // invariant: current position is dry sand
-            assert!(self.is_dry_sand(&current));
+            // assert!(self.is_dry_sand(&current));
 
             // water has flowed into current position
-            self.flowing_water(&current);
+            self.upgrade_water(&current);
 
             // can water flow down?
             let next_position_down = current.down();
             if self.can_flow_into(&next_position_down) {
+                if !self.is_water_at_rest(&current) {
+                    flowing_water.push(current);
+                }
+
                 flowing_water.push(next_position_down);
                 continue;
             }
@@ -207,20 +278,23 @@ impl Map {
             let next_position_right = current.right();
             let valid_right = self.can_flow_into(&next_position_right);
 
+            if valid_left || valid_right {
+                if !self.is_water_at_rest(&current) {
+                    flowing_water.push(current);
+                }
+            }
+
             if valid_left {
                 flowing_water.push(next_position_left);
             }
 
             if valid_right {
-                flowing_water.push(next_position_left);
+                flowing_water.push(next_position_right);
             }
 
-            if valid_left || valid_right {
-                continue;
+            if !valid_left && !valid_right {
+                self.upgrade_water(&current);
             }
-
-            // if not, backtrack, marking flowing water as water at-rest
-            // TODO:
         }
     }
 }
