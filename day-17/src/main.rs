@@ -216,7 +216,6 @@ impl Map {
     #[allow(dead_code)]
     fn to_string(&mut self) -> String {
         let max_y = self.max_y();
-        // let max_y = 30;
         let min_x = self.min_x();
         let max_x = self.max_x();
 
