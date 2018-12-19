@@ -110,6 +110,9 @@ version = "0.1.0"
 [[package]]
 name = "day-18"
 version = "0.1.0"
+dependencies = [
+ "rayon 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "day-2"

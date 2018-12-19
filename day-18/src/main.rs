@@ -2,6 +2,7 @@
 
 // imports
 
+use rayon::prelude::*;
 use std::collections::HashMap;
 
 // code
@@ -52,8 +53,10 @@ impl Acre {
             Acre::Ground => {
                 // An open acre will become filled with trees if three or more
                 // adjacent acres contained trees. Otherwise, nothing happens.
-                let num_of_adjacent_trees =
-                    adjacent_acres.iter().filter(|s| **s == Acre::Tree).count();
+                let num_of_adjacent_trees = adjacent_acres
+                    .par_iter()
+                    .filter(|s| **s == Acre::Tree)
+                    .count();
 
                 if num_of_adjacent_trees >= 3 {
                     return Acre::Tree;
@@ -65,7 +68,7 @@ impl Acre {
                 // An acre filled with trees will become a lumberyard if three or more
                 // adjacent acres were lumberyards. Otherwise, nothing happens.
                 let num_of_adjacent_lumberyards = adjacent_acres
-                    .iter()
+                    .par_iter()
                     .filter(|s| **s == Acre::Lumberyard)
                     .count();
 
@@ -79,12 +82,14 @@ impl Acre {
                 // to at least one other lumberyard and at least one acre containing trees.
                 // Otherwise, it becomes open.
                 let num_of_adjacent_lumberyards = adjacent_acres
-                    .iter()
+                    .par_iter()
                     .filter(|s| **s == Acre::Lumberyard)
                     .count();
 
-                let num_of_adjacent_trees =
-                    adjacent_acres.iter().filter(|s| **s == Acre::Tree).count();
+                let num_of_adjacent_trees = adjacent_acres
+                    .par_iter()
+                    .filter(|s| **s == Acre::Tree)
+                    .count();
 
                 if num_of_adjacent_lumberyards >= 1 && num_of_adjacent_trees >= 1 {
                     return self.clone();
@@ -186,21 +191,23 @@ impl Area {
 
     fn tick(&mut self) {
         let prev_area = &self.area;
-        let mut next_area: CollectionArea = HashMap::new();
 
-        for (coord, acre) in prev_area.iter() {
-            let adjacent = get_adjacent(&prev_area, &coord);
+        let next_area: CollectionArea = prev_area
+            .par_iter()
+            .map(|(coord, acre)| {
+                let adjacent = get_adjacent(&prev_area, &coord);
 
-            // Changes happen across all acres simultaneously,
-            // each of them using the state of all acres at the beginning of the minute
-            // and changing to their new form by the end of that same minute.
-            // Changes that happen during the minute don't affect each other.
+                // Changes happen across all acres simultaneously,
+                // each of them using the state of all acres at the beginning of the minute
+                // and changing to their new form by the end of that same minute.
+                // Changes that happen during the minute don't affect each other.
 
-            // ✨ magic
-            let next_acre = acre.next(adjacent);
+                // ✨ magic
+                let next_acre = acre.next(adjacent);
 
-            next_area.insert(*coord, next_acre);
-        }
+                return (coord.clone(), next_acre);
+            })
+            .collect();
 
         self.area = next_area;
     }
