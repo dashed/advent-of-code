@@ -155,9 +155,7 @@ impl Map {
     }
 }
 
-fn main() {
-    let input_string = include_str!("input.txt");
-
+fn generate_map(input_string: &str) -> Map {
     // parse positions of clay
 
     let clay_coordinates: Vec<Coordinate> =
@@ -220,13 +218,62 @@ fn main() {
     let mut map = Map::new();
 
     for coordinate in clay_coordinates {
-        // println!("{:?}", coordinate);
         map.insert_clay(&coordinate);
     }
+
+    return map;
+}
+
+fn main() {
+    let input_string = include_str!("input.txt");
+
+    let map = generate_map(input_string);
 
     println!("max_y: {}", map.max_y());
     println!("min_x: {}", map.min_x());
     println!("max_x: {}", map.max_x());
 
     println!("{}", map.to_string());
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_map() {
+        let input_string = r###"
+x=495, y=2..7
+y=7, x=495..501
+x=501, y=3..7
+x=498, y=2..4
+x=506, y=1..2
+x=498, y=10..13
+x=504, y=10..13
+y=13, x=498..504
+        "###
+        .trim();
+
+        let expected = r###"
+.....+......
+...........#
+#..#.......#
+#..#..#.....
+#..#..#.....
+#.....#.....
+#.....#.....
+#######.....
+............
+............
+...#.....#..
+...#.....#..
+...#.....#..
+...#######..
+        "###
+        .trim();
+
+        let map = generate_map(input_string);
+
+        assert_eq!(map.to_string(), expected);
+    }
 }
