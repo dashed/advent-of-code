@@ -323,6 +323,45 @@ impl Map {
         }
     }
 
+    fn flood(&mut self, position: &Coordinate) {
+
+        if self.is_clay(position) || self.is_water_at_rest(position) {
+            return;
+        }
+
+        if self.is_dry_sand(position) {
+            self.upgrade_water(position);
+        }
+
+        // flood downward
+        let down_position = position.down();
+
+        if self.is_dry_sand(&down_position) {
+            self.flood(&down_position);
+        }
+
+        if self.is_clay(&down_position) || self.is_water_at_rest(&down_position) {
+
+            // println!("shit {:?}", position);
+            // flood left
+            let left_position = position.left();
+            if self.is_dry_sand(&left_position) {
+                self.flood(&left_position);
+            }
+
+            // flood right
+            let right_position = position.right();
+            if self.is_dry_sand(&right_position) {
+                self.flood(&right_position);
+            }
+        }
+
+    }
+
+    fn run_flood(&mut self) {
+        self.flood(&WATER_SPRING.down());
+    }
+
     fn run_water(&mut self) {
         let mut flowing_water: Vec<Coordinate> = vec![WATER_SPRING.down()];
 
@@ -543,10 +582,12 @@ fn main() {
 
     let mut map = generate_map(input_string);
 
-    map.run_water();
+    // map.run_water();
+    map.run_flood();
 
     println!("{}", map.to_string());
     // not: 2339
+    // not: 31479
     println!("Part 1: {}", map.num_of_water_tiles());
 }
 
