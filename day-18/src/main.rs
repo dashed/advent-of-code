@@ -3,6 +3,9 @@
 // imports
 
 use rayon::prelude::*;
+use std::cell::RefCell;
+use std::rc::Rc;
+use std::hash::{Hash, Hasher};
 use std::collections::HashMap;
 
 // code
@@ -40,7 +43,7 @@ impl Transitions for Coordinate {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum Acre {
     Ground,
     Tree,
@@ -101,10 +104,12 @@ impl Acre {
     }
 }
 
+#[derive(Debug, Clone, Eq, PartialEq)]
 struct Area {
     area: CollectionArea,
     max_y: i32,
     max_x: i32,
+    as_string: Option<String>,
 }
 
 impl Area {
@@ -113,6 +118,7 @@ impl Area {
             area: HashMap::new(),
             max_y: 0,
             max_x: 0,
+            as_string: None
         }
     }
 
@@ -129,7 +135,12 @@ impl Area {
     }
 
     #[allow(dead_code)]
-    fn to_string(&self) -> String {
+    fn to_string(&mut self) -> String {
+
+        if self.as_string.is_some() {
+            return self.as_string.clone().unwrap();
+        }
+
         let mut map_string: Vec<String> = vec![];
 
         for y in 0..=self.max_y {
@@ -159,7 +170,10 @@ impl Area {
             map_string.push(row_string);
         }
 
-        return map_string.join("\n");
+        let result = map_string.join("\n");
+        self.as_string = Some(result.clone());
+        return result;
+
     }
 
     fn insert(&mut self, position: Coordinate, acre: char) {
@@ -190,6 +204,9 @@ impl Area {
     }
 
     fn tick(&mut self) {
+
+        self.as_string = None;
+
         let prev_area = &self.area;
 
         let next_area: CollectionArea = prev_area
@@ -262,7 +279,41 @@ fn part_1(input_string: &str, ticks: i32) -> usize {
 }
 
 fn part_2(input_string: &str) -> usize {
-    return part_1(input_string, 1_000);
+
+    // let mut area = generate_area(input_string);
+
+    let mut area = Rc::new(RefCell::new(generate_area(input_string)));
+
+    let mut lookup_table: HashMap<String, Rc<RefCell<Area>>> = HashMap::new();
+
+    let ticks = 200001;
+
+    for _ in 1..=ticks {
+
+        let prev_area_str: String = area.borrow_mut().to_string();
+
+        match lookup_table.get(&prev_area_str) {
+            None => {
+                // assert!(area == prev_area);
+
+                area.borrow_mut().tick();
+
+                let next_area_str: String = area.borrow_mut().to_string();
+
+                assert!(prev_area_str != next_area_str);
+
+                lookup_table.insert(prev_area_str, area.clone());
+            }
+            Some(saved_area) => {
+                let next_area_str: String = saved_area.borrow_mut().to_string();
+                assert!(prev_area_str != next_area_str);
+                area = saved_area.clone();
+            }
+        }
+
+    }
+
+    return area.borrow().num_of_lumberyards() * area.borrow().num_of_trees();
 }
 
 fn main() {
@@ -270,7 +321,7 @@ fn main() {
 
     let part_1_result = part_1(input_string, 10);
 
-    println!("Part 1: {}", part_1_result);
+    // println!("Part 1: {}", part_1_result);
 
     println!("Part 2: {}", part_2(input_string));
 }
@@ -283,7 +334,7 @@ mod tests {
     fn area_string() {
         let expected_string = include_str!("input.txt");
 
-        let area = generate_area(expected_string);
+        let mut area = generate_area(expected_string);
 
         assert_eq!(area.to_string(), expected_string);
     }
