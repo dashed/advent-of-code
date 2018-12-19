@@ -261,12 +261,18 @@ fn part_1(input_string: &str, ticks: i32) -> usize {
     return area.num_of_lumberyards() * area.num_of_trees();
 }
 
+fn part_2(input_string: &str) -> usize {
+    return part_1(input_string, 1_000);
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
     let part_1_result = part_1(input_string, 10);
 
     println!("Part 1: {}", part_1_result);
+
+    println!("Part 2: {}", part_2(input_string));
 }
 
 #[cfg(test)]
