@@ -12,11 +12,60 @@ enum RegisterID {
     Five,
 }
 
+impl RegisterID {
+    fn into_register_id(input: i32) -> Option<RegisterID> {
+        match input {
+            0 => Some(RegisterID::Zero),
+            1 => Some(RegisterID::One),
+            2 => Some(RegisterID::Two),
+            3 => Some(RegisterID::Three),
+            4 => Some(RegisterID::Four),
+            5 => Some(RegisterID::Five),
+            _ => None,
+        }
+    }
+}
+
 struct Registers(i32, i32, i32, i32, i32, i32);
 
 impl Registers {
     fn new() -> Self {
         return Registers(0, 0, 0, 0, 0, 0);
+    }
+
+    fn get(&self, register_id: RegisterID) -> i32 {
+        match register_id {
+            RegisterID::Zero => self.0,
+            RegisterID::One => self.1,
+            RegisterID::Two => self.2,
+            RegisterID::Three => self.3,
+            RegisterID::Four => self.4,
+            RegisterID::Five => self.5,
+        }
+    }
+
+    fn set(&mut self, register_id: RegisterID, value: i32) {
+        match register_id {
+            RegisterID::Zero => {
+                self.0 = value;
+            }
+            RegisterID::One => {
+                self.1 = value;
+            }
+            RegisterID::Two => {
+                self.2 = value;
+            }
+            RegisterID::Three => {
+                self.3 = value;
+            }
+            RegisterID::Four => {
+                self.4 = value;
+            }
+
+            RegisterID::Five => {
+                self.5 = value;
+            }
+        }
     }
 }
 
