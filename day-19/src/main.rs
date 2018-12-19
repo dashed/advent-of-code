@@ -564,14 +564,29 @@ fn main() {
 
     println!("Part 2: {}", other_program.registers.get(RegisterID::Zero));
 
+    // part 2 spends quite a lot of time on these instructions
     // OpcodeInstruction(Mulr, 3, 1, Two)
-    // OpcodeInstruction(Eqrr, 2, 5, Two)
-    // OpcodeInstruction(Addr, 2, 4, Four)
-    // OpcodeInstruction(Addi, 4, 1, Four)
-    // OpcodeInstruction(Addi, 1, 1, One)
-    // OpcodeInstruction(Gtrr, 1, 5, Two)
-    // OpcodeInstruction(Addr, 4, 2, Four)
-    // OpcodeInstruction(Seti, 2, 9, Four)
+    // reg[2] = reg[3] * reg[1]
 
+    // OpcodeInstruction(Eqrr, 2, 5, Two)
+    // reg[2] = reg[2] == reg[5]
+
+    // OpcodeInstruction(Addr, 2, 4, Four)
+    // reg[4] = reg[2] + reg[4]
+
+    // OpcodeInstruction(Addi, 4, 1, Four)
+    // reg[4] = reg[4] + 1
+
+    // OpcodeInstruction(Addi, 1, 1, One)
+    // reg[1] = reg[1] + 1
+
+    // OpcodeInstruction(Gtrr, 1, 5, Two)
+    // reg[2] = reg[1] > reg[5]
+
+    // OpcodeInstruction(Addr, 4, 2, Four)
+    // reg[4] = reg[4] + reg[2]
+
+    // OpcodeInstruction(Seti, 2, 9, Four)
+    // reg[4] = 2
 
 }
