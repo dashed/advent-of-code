@@ -292,14 +292,18 @@ fn part_2(input_string: &str) -> usize {
         area_num += 1;
     }
 
-    // invariant: area is the first snapshot of the cycle
+    // invariant: area is the first area of the cycle
 
-    let cycle_len = seen.len() as i32 - seen.get(&area).unwrap();
+    let cycle_length = seen.len() as i32 - seen.get(&area).unwrap() + 1;
 
     let remaining_ticks = 1_000_000_000 - ticks;
 
     // additional ticks to perform
-    let additional_ticks = remaining_ticks % cycle_len;
+    let additional_ticks = remaining_ticks % (cycle_length - 1);
+
+    // additional ticks left to perform are mapped to [0, cycle_length), or
+    // [0, cycle_length - 1].
+    // with the current area being the first pattern in the cycle (i.e. 0 ticks to perform)
 
     // let area_num = seen.get(&area).unwrap();
     // let area = lookup.get(&(area_num + additional_ticks)).unwrap();
