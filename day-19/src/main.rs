@@ -489,6 +489,8 @@ impl Program {
             self.instruction_pointer,
         );
 
+        println!("{:?}", instruction);
+
         // execute instruction
         let opcode = instruction.opcode();
         self.registers = opcode
@@ -545,9 +547,31 @@ fn main() {
         instructions.push(opcode_instruction);
     }
 
-    let mut program = Program::new(instruction_pointer_bound, instructions);
+    let mut program = Program::new(instruction_pointer_bound.clone(), instructions.clone());
 
     program.run_program();
 
     println!("Part 1: {}", program.registers.get(RegisterID::Zero));
+
+    // A new background process immediately spins up in its place.
+    // It appears identical, but on closer inspection, you notice that this time,
+    // register 0 started with the value 1.
+
+    let mut other_program = Program::new(instruction_pointer_bound, instructions);
+
+    other_program.registers.set(RegisterID::Zero, 1);
+    other_program.run_program();
+
+    println!("Part 2: {}", other_program.registers.get(RegisterID::Zero));
+
+    // OpcodeInstruction(Mulr, 3, 1, Two)
+    // OpcodeInstruction(Eqrr, 2, 5, Two)
+    // OpcodeInstruction(Addr, 2, 4, Four)
+    // OpcodeInstruction(Addi, 4, 1, Four)
+    // OpcodeInstruction(Addi, 1, 1, One)
+    // OpcodeInstruction(Gtrr, 1, 5, Two)
+    // OpcodeInstruction(Addr, 4, 2, Four)
+    // OpcodeInstruction(Seti, 2, 9, Four)
+
+
 }
