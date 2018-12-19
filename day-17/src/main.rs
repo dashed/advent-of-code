@@ -232,8 +232,7 @@ impl Map {
     }
 
     fn can_flow_into(&self, position: &Coordinate) -> bool {
-        return !self.is_clay(position)
-            && self.is_dry_sand(position);
+        return !self.is_clay(position) && self.is_dry_sand(position);
     }
 
     fn is_water_at_rest(&self, position: &Coordinate) -> bool {
@@ -315,7 +314,8 @@ impl Map {
             // invariant: water cannot go down only if the next position is:
             // - water
             // - or clay
-            let should_flow_sideways = self.is_clay(&next_position_down) || self.is_water_at_rest(&next_position_down);
+            let should_flow_sideways =
+                self.is_clay(&next_position_down) || self.is_water_at_rest(&next_position_down);
 
             if should_flow_sideways {
                 // TODO:
@@ -336,7 +336,6 @@ impl Map {
             if self.is_water_flowing(&current) {
                 flowing_water.push(current);
             }
-
 
             flowing_water.push(next_position_down);
         }
