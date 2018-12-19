@@ -111,6 +111,18 @@ impl Area {
         }
     }
 
+    fn num_of_trees(&self) -> usize {
+        return self.area.values().filter(|s| **s == Acre::Tree).count();
+    }
+
+    fn num_of_lumberyards(&self) -> usize {
+        return self
+            .area
+            .values()
+            .filter(|s| **s == Acre::Lumberyard)
+            .count();
+    }
+
     #[allow(dead_code)]
     fn to_string(&self) -> String {
         let mut map_string: Vec<String> = vec![];
@@ -232,11 +244,22 @@ fn generate_area(input_string: &str) -> Area {
     return area;
 }
 
+fn part_1(input_string: &str, ticks: i32) -> usize {
+    let mut area = generate_area(input_string);
+
+    for _ in 1..=ticks {
+        area.tick();
+    }
+
+    return area.num_of_lumberyards() * area.num_of_trees();
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
-    let area = generate_area(input_string);
-    println!("{}", area.to_string());
+    let part_1_result = part_1(input_string, 10);
+
+    println!("Part 1: {}", part_1_result);
 }
 
 #[cfg(test)]
@@ -250,6 +273,144 @@ mod tests {
         let area = generate_area(expected_string);
 
         assert_eq!(area.to_string(), expected_string);
+    }
+
+    #[test]
+    fn test_part_1() {
+        let input_string = r###"
+.#.#...|#.
+.....#|##|
+.|..|...#.
+..|#.....#
+#.#|||#|#|
+...#.||...
+.|....|...
+||...#|.#|
+|.||||..|.
+...#.|..|.
+    "###
+        .trim();
+
+        assert_eq!(part_1(input_string, 10), 1147);
+    }
+
+    #[test]
+    fn example() {
+        let input_string = r###"
+.#.#...|#.
+.....#|##|
+.|..|...#.
+..|#.....#
+#.#|||#|#|
+...#.||...
+.|....|...
+||...#|.#|
+|.||||..|.
+...#.|..|.
+    "###
+        .trim();
+
+        let mut area = generate_area(input_string);
+
+        // initial
+        assert_eq!(area.to_string(), input_string);
+
+        // after 1 minute
+        area.tick();
+
+        let result = r###"
+.......##.
+......|###
+.|..|...#.
+..|#||...#
+..##||.|#|
+...#||||..
+||...|||..
+|||||.||.|
+||||||||||
+....||..|.
+    "###
+        .trim();
+
+        assert_eq!(area.to_string(), result);
+
+        // after 2 minutes
+        area.tick();
+
+        let result = r###"
+.......#..
+......|#..
+.|.|||....
+..##|||..#
+..###|||#|
+...#|||||.
+|||||||||.
+||||||||||
+||||||||||
+.|||||||||
+    "###
+        .trim();
+
+        assert_eq!(area.to_string(), result);
+
+        // after 3 minutes
+        area.tick();
+
+        let result = r###"
+.......#..
+....|||#..
+.|.||||...
+..###|||.#
+...##|||#|
+.||##|||||
+||||||||||
+||||||||||
+||||||||||
+||||||||||
+    "###
+        .trim();
+
+        assert_eq!(area.to_string(), result);
+
+        // after 4 minutes
+        area.tick();
+
+        let result = r###"
+.....|.#..
+...||||#..
+.|.#||||..
+..###||||#
+...###||#|
+|||##|||||
+||||||||||
+||||||||||
+||||||||||
+||||||||||
+    "###
+        .trim();
+
+        assert_eq!(area.to_string(), result);
+
+        // after 10 minutes
+        for _ in 5..=10 {
+            area.tick();
+        }
+
+        let result = r###"
+.||##.....
+||###.....
+||##......
+|##.....##
+|##.....##
+|##....##|
+||##.####|
+||#####|||
+||||#|||||
+||||||||||
+    "###
+        .trim();
+
+        assert_eq!(area.to_string(), result);
     }
 
 }
