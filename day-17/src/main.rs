@@ -109,6 +109,10 @@ impl Map {
         return self
             .terrain
             .iter()
+            .filter(|item| {
+                let (coord, _map_state) = item;
+                return self.is_clay(coord);
+            })
             .map(|item| {
                 let (coord, _map_state) = item;
                 let (_x, y) = coord;
@@ -122,6 +126,10 @@ impl Map {
         return self
             .terrain
             .iter()
+            .filter(|item| {
+                let (coord, _map_state) = item;
+                return self.is_clay(coord);
+            })
             .map(|item| {
                 let (coord, _map_state) = item;
                 let (_x, y) = coord;
@@ -135,6 +143,10 @@ impl Map {
         return self
             .terrain
             .iter()
+            .filter(|item| {
+                let (coord, _map_state) = item;
+                return self.is_clay(coord);
+            })
             .map(|item| {
                 let (coord, _map_state) = item;
                 let (x, _y) = coord;
@@ -148,6 +160,10 @@ impl Map {
         return self
             .terrain
             .iter()
+            .filter(|item| {
+                let (coord, _map_state) = item;
+                return self.is_clay(coord);
+            })
             .map(|item| {
                 let (coord, _map_state) = item;
                 let (x, _y) = coord;
@@ -167,6 +183,7 @@ impl Map {
     #[allow(dead_code)]
     fn to_string(&self) -> String {
         let max_y = self.max_y();
+        // let max_y = 100;
         let min_x = self.min_x();
         let max_x = self.max_x();
 
@@ -244,18 +261,8 @@ impl Map {
                 match map_state {
                     MapState::Water(water_state) => match water_state {
                         Water::Flowing => {
-                            let left_position = position.left();
-                            let left_condition =
-                                self.is_clay(&left_position) || self.is_water(&left_position);
-
-                            let right_position = position.right();
-                            let right_condition =
-                                self.is_clay(&right_position) || self.is_water(&right_position);
-
-                            if left_condition && right_condition {
-                                self.terrain
-                                    .insert(*position, MapState::Water(Water::AtRest));
-                            }
+                            self.terrain
+                                .insert(*position, MapState::Water(Water::AtRest));
                         }
                         Water::AtRest => {}
                     },
@@ -320,10 +327,7 @@ impl Map {
     fn run_water(&mut self) {
         let mut flowing_water: Vec<Coordinate> = vec![WATER_SPRING.down()];
 
-        let mut y_level_at_rest: Option<i32> = None;
-        let mut potential_water_at_rest: HashSet<Coordinate> = HashSet::new();
-
-        while let Some(current) = flowing_water.pop() {
+        'main_loop: while let Some(current) = flowing_water.pop() {
             // use std::thread;
             // use std::time::Duration;
             // thread::sleep(Duration::from_millis(100));
@@ -333,82 +337,81 @@ impl Map {
             // invariant: current position is not clay
             assert!(!self.is_clay(&current));
 
-            if let Some(y_level) = y_level_at_rest {
-                let (_x, y) = current;
-
-                if y < y_level {
-                    for position in potential_water_at_rest.iter() {
-                        self.upgrade_water(&position);
-                    }
-
-                    y_level_at_rest = None;
-                    potential_water_at_rest = HashSet::new();
-                }
-            }
-
             if self.is_dry_sand(&current) {
                 self.upgrade_water(&current);
             }
 
             // can water flow down?
             let next_position_down = current.down();
-            // invariant: water cannot go down only if the next position is:
-            // - water
-            // - or clay
-            let should_flow_sideways =
-                self.is_clay(&next_position_down) || self.is_water_at_rest(&next_position_down);
-
-            if should_flow_sideways {
-                let next_position_left = current.left();
-                let left_is_dry = self.is_dry_sand(&next_position_left);
-
-                let next_position_right = current.right();
-                let right_is_dry = self.is_dry_sand(&next_position_right);
-
-                if (left_is_dry || right_is_dry) && self.is_water_flowing(&current) {
-                    if y_level_at_rest.is_none() {
-                        let (_x, y) = current;
-                        y_level_at_rest = Some(y);
-                    }
-
-                    potential_water_at_rest.insert(current);
-                    flowing_water.push(current);
-                }
-
-                if left_is_dry {
-                    potential_water_at_rest.insert(next_position_left);
-                    flowing_water.push(next_position_left);
-                }
-
-                if right_is_dry {
-                    potential_water_at_rest.insert(next_position_right);
-                    flowing_water.push(next_position_right);
-                }
-
-                continue;
-            }
-
-            y_level_at_rest = None;
-            potential_water_at_rest = HashSet::new();
 
             if self.is_coord_out_of_bounds(&next_position_down) {
                 // invariant: water will flow infinitely into the abyss
+                // invariant: there's no clay to hit
                 continue;
             }
-
-            if self.is_water(&next_position_down) {
-                // invariant: no new areas of dry sand to flow into
-                continue;
-            }
-
-            // at this point, water can flow down
 
             if self.is_dry_sand(&next_position_down) {
-                if self.is_water_flowing(&current) {
+                flowing_water.push(current);
+                flowing_water.push(next_position_down);
+                continue;
+            }
+
+            if self.is_clay(&next_position_down) || self.is_water_at_rest(&next_position_down) {
+                let left_position = current.left();
+                let left_condition = self.is_dry_sand(&left_position)
+                    && !self.is_coord_out_of_bounds(&left_position);
+
+                let right_position = current.right();
+                let right_condition = self.is_dry_sand(&right_position)
+                    && !self.is_coord_out_of_bounds(&right_position);
+
+                if left_condition || right_condition {
                     flowing_water.push(current);
                 }
 
-                flowing_water.push(next_position_down);
+                if left_condition {
+                    flowing_water.push(left_position);
+                }
+
+                if right_condition {
+                    flowing_water.push(right_position);
+                }
+
+                if left_condition || right_condition {
+                    continue;
+                }
+
+                // no dry sand on either side of current
+
+                assert!(self.is_water_flowing(&current));
+
+                // sweep left until dry sand is found
+
+                let mut sweeped_positions = vec![];
+
+                let mut current_sweep = left_position;
+
+                while !self.is_coord_out_of_bounds(&current_sweep) {
+                    if self.is_dry_sand(&current_sweep) {
+                        flowing_water.push(left_position);
+                        continue 'main_loop;
+                    }
+
+                    if self.is_clay(&current_sweep) {
+                        // hit a wall
+                        break;
+                    }
+
+                    let below_sweep = current_sweep.down();
+
+                    if self.is_clay(&below_sweep) || self.is_water_at_rest(&below_sweep) {
+                        sweeped_positions.push(current_sweep);
+                    }
+
+                    current_sweep = current_sweep.left();
+                }
+
+                println!("sweep: {:?}", current);
             }
         }
     }
@@ -488,6 +491,8 @@ fn main() {
 
     map.run_water();
 
+    println!("{}", map.to_string());
+    // not: 2339
     println!("Part 1: {}", map.num_of_water_tiles());
 }
 
