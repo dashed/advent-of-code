@@ -190,6 +190,35 @@ impl Map {
             // water has flowed into current position
             flowing_water.push(current);
             self.flowing_water(&current);
+
+            // can water flow down?
+            let next_position = current.down();
+            if !self.is_clay(&next_position) && self.is_dry_sand(&next_position) {
+                unvisited.push(next_position);
+                continue;
+            }
+
+            // if not, see if we can flow sideways
+            let next_position_left = current.left();
+            let valid_left = !self.is_clay(&next_position_left) && self.is_dry_sand(&next_position_left);
+
+            let next_position_right = current.right();
+            let valid_right = !self.is_clay(&next_position_right) && self.is_dry_sand(&next_position_right);
+
+            if valid_left {
+                unvisited.push(next_position_left);
+            }
+
+            if valid_right {
+                unvisited.push(next_position_left);
+            }
+
+            if valid_left || valid_right {
+                continue;
+            }
+
+            // if not, backtrack, marking flowing water as water at-rest
+            // TODO:
         }
     }
 }
@@ -270,9 +299,14 @@ fn main() {
     println!("min_x: {}", map.min_x());
     println!("max_x: {}", map.max_x());
 
+
     println!("{}", map.to_string());
+    println!("============");
 
     map.run_water();
+
+    println!("{}", map.to_string());
+    println!("============");
 }
 
 #[cfg(test)]
