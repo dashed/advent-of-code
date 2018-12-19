@@ -6,6 +6,21 @@ use std::collections::HashMap;
 
 // code
 
+#[derive(Debug)]
+enum Flow {
+    Flowing,
+    AtRest
+}
+
+impl Flow {
+    fn is_flowing(&self) -> bool {
+        match self {
+            Flow::Flowing => true,
+            _ => false
+        }
+    }
+}
+
 type Coordinate = (i32, i32);
 
 // position of the water spring
@@ -323,10 +338,18 @@ impl Map {
         }
     }
 
-    fn flood(&mut self, position: &Coordinate) {
+    fn flood(&mut self, position: &Coordinate) -> Flow {
+
+        if self.is_coord_out_of_bounds(position) {
+            return Flow::Flowing;
+        }
+
+        if self.is_water_flowing(position) {
+            return Flow::Flowing;
+        }
 
         if self.is_clay(position) || self.is_water_at_rest(position) {
-            return;
+            return Flow::AtRest;
         }
 
         if self.is_dry_sand(position) {
@@ -336,25 +359,89 @@ impl Map {
         // flood downward
         let down_position = position.down();
 
-        if self.is_dry_sand(&down_position) {
-            self.flood(&down_position);
+        let result = self.flood(&down_position);
+        match result {
+            Flow::Flowing => {
+                return Flow::Flowing;
+            },
+            _ => {}
         }
 
-        if self.is_clay(&down_position) || self.is_water_at_rest(&down_position) {
 
-            // println!("shit {:?}", position);
-            // flood left
-            let left_position = position.left();
-            if self.is_dry_sand(&left_position) {
-                self.flood(&left_position);
+
+        // flood left
+        let left_position = position.left();
+        let left_result = self.flood(&left_position);
+
+        // flood right
+        let right_position = position.right();
+        let right_result = self.flood(&right_position);
+
+
+        // sweep left and right
+
+        let mut sweep = vec![];
+
+        // sweep left until a wall is hit
+
+        let mut current = position.left();
+        let mut has_left_wall = false;
+
+        while !self.is_coord_out_of_bounds(&current) {
+
+            if self.is_clay(&current) {
+                has_left_wall = true;
+                break;
             }
 
-            // flood right
-            let right_position = position.right();
-            if self.is_dry_sand(&right_position) {
-                self.flood(&right_position);
+            let down = current.down();
+
+            if (self.is_clay(&down) || self.is_water_at_rest(&down)) && self.is_water(&current) {
+                sweep.push(current);
+            } else {
+                has_left_wall = false;
+                break;
             }
+
+            current = current.left();
         }
+
+        // sweep right until a wall is hit
+        let mut current = position.right();
+        let mut has_right_wall = false;
+
+        while has_left_wall && !self.is_coord_out_of_bounds(&current) {
+
+            if self.is_clay(&current) {
+                has_right_wall = true;
+                break;
+            }
+
+            let down = current.down();
+
+            if (self.is_clay(&down) || self.is_water_at_rest(&down)) && self.is_water(&current) {
+                sweep.push(current);
+            } else {
+                has_right_wall = false;
+                break;
+            }
+
+            current = current.right();
+        }
+
+        if has_left_wall && has_right_wall  {
+            for current in sweep {
+                self.upgrade_water(&current);
+            }
+
+            return Flow::AtRest;
+        }
+
+        if left_result.is_flowing() || right_result.is_flowing() {
+            return Flow::Flowing;
+        }
+
+        return Flow::AtRest;
 
     }
 
@@ -362,152 +449,6 @@ impl Map {
         self.flood(&WATER_SPRING.down());
     }
 
-    fn run_water(&mut self) {
-        let mut flowing_water: Vec<Coordinate> = vec![WATER_SPRING.down()];
-
-        // let mut index = 0;
-
-        'main_loop: while let Some(current) = flowing_water.pop() {
-            // use std::thread;
-            // use std::time::Duration;
-            // thread::sleep(Duration::from_millis(100));
-            // println!("{}", self.to_string());
-            // println!("============");
-            // println!("{:?}", current);
-
-            // if index >= 100 {
-            //     break;
-            // }
-            // println!("index: {}", index);
-            // index += 1;
-
-            // invariant: current position is not clay
-            assert!(!self.is_clay(&current));
-
-            if self.is_water_at_rest(&current) {
-                continue;
-            }
-
-            if self.is_dry_sand(&current) {
-                self.upgrade_water(&current);
-            }
-
-            // can water flow down?
-            let next_position_down = current.down();
-
-            if self.is_coord_out_of_bounds(&next_position_down) {
-                // invariant: water will flow infinitely into the abyss
-                // invariant: there's no clay to hit
-                continue;
-            }
-
-            if self.is_dry_sand(&next_position_down) {
-                flowing_water.push(current);
-                flowing_water.push(next_position_down);
-                continue;
-            }
-
-            if self.is_clay(&next_position_down) || self.is_water_at_rest(&next_position_down) {
-
-                // can't go down; but can try to go sideways
-
-                let left_position = current.left();
-                let left_condition = self.is_dry_sand(&left_position)
-                    && !self.is_coord_out_of_bounds(&left_position);
-
-                let right_position = current.right();
-                let right_condition = self.is_dry_sand(&right_position)
-                    && !self.is_coord_out_of_bounds(&right_position);
-
-                if left_condition || right_condition {
-                    flowing_water.push(current);
-                }
-
-                if left_condition {
-                    flowing_water.push(left_position);
-                }
-
-                if right_condition {
-                    flowing_water.push(right_position);
-                }
-
-                if left_condition || right_condition {
-                    continue;
-                }
-
-                // no dry sand directly on either side of current
-
-                assert!(self.is_water(&current));
-
-                // sweep left and right to convert to water at rest
-
-                let mut sweeped_positions = vec![current];
-
-                // sweep left
-                let mut current_sweep = left_position;
-                let mut hit_left_wall = false;
-
-                while !self.is_coord_out_of_bounds(&current_sweep) {
-
-                    if self.is_clay(&current_sweep) {
-                        // hit a wall
-                        hit_left_wall = true;
-                        break;
-                    }
-
-                    let below_sweep = current_sweep.down();
-
-                    if self.is_clay(&below_sweep) || self.is_water_at_rest(&below_sweep) {
-                        if self.is_dry_sand(&current_sweep) {
-                            flowing_water.push(current_sweep);
-                            continue 'main_loop;
-                        }
-                        sweeped_positions.push(current_sweep);
-                    } else {
-                        continue 'main_loop;
-                    }
-
-                    current_sweep = current_sweep.left();
-                }
-
-                // sweep right
-                let mut current_sweep = right_position;
-                let mut hit_right_wall = false;
-
-                while !self.is_coord_out_of_bounds(&current_sweep) {
-
-                    if self.is_clay(&current_sweep) {
-                        // hit a wall
-                        hit_right_wall = true;
-                        break;
-                    }
-
-                    let below_sweep = current_sweep.down();
-
-                    if self.is_clay(&below_sweep) || self.is_water_at_rest(&below_sweep) {
-                        if self.is_dry_sand(&current_sweep) {
-                            flowing_water.push(current_sweep);
-                            continue 'main_loop;
-                        }
-                        sweeped_positions.push(current_sweep);
-                    } else {
-                        continue 'main_loop;
-                    }
-
-                    current_sweep = current_sweep.right();
-                }
-
-                if hit_left_wall && hit_right_wall {
-                    for position in sweeped_positions {
-                        assert!(self.is_water(&position));
-                        self.upgrade_water(&position);
-                    }
-                }
-            }
-        }
-
-        // println!("loops: {}", index);
-    }
 }
 
 fn generate_map(input_string: &str) -> Map {
@@ -585,7 +526,7 @@ fn main() {
     // map.run_water();
     map.run_flood();
 
-    println!("{}", map.to_string());
+    // println!("{}", map.to_string());
     // not: 2339
     // not: 31479
     println!("Part 1: {}", map.num_of_water_tiles());
@@ -631,7 +572,7 @@ y=13, x=498..504
 
         assert_eq!(map.to_string(), expected);
 
-        map.run_water();
+        map.run_flood();
 
         assert_eq!(map.num_of_water_tiles(), 57);
     }
