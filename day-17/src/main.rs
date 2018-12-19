@@ -58,6 +58,27 @@ impl Map {
         }
     }
 
+    fn num_of_water_tiles(&self) -> i32 {
+        let min_y = self.min_y();
+        let max_y = self.max_y();
+        let min_x = self.min_x();
+        let max_x = self.max_x();
+
+        let mut total = 0;
+
+        for y in min_y..=max_y {
+            for x in min_x..=max_x {
+                let position = (x, y);
+
+                if self.is_water(&position) {
+                    total += 1;
+                }
+            }
+        }
+
+        return total;
+    }
+
     fn is_coord_out_of_bounds(&self, position: &Coordinate) -> bool {
         let (x, y) = position;
 
@@ -82,6 +103,19 @@ impl Map {
         }
 
         return false;
+    }
+
+    fn min_y(&self) -> i32 {
+        return self
+            .terrain
+            .iter()
+            .map(|item| {
+                let (coord, _map_state) = item;
+                let (_x, y) = coord;
+                return *y;
+            })
+            .min()
+            .unwrap();
     }
 
     fn max_y(&self) -> i32 {
@@ -130,6 +164,7 @@ impl Map {
         self.terrain.insert(*clay_coordinate, MapState::Clay);
     }
 
+    #[allow(dead_code)]
     fn to_string(&self) -> String {
         let max_y = self.max_y();
         let min_x = self.min_x();
@@ -451,17 +486,9 @@ fn main() {
 
     let mut map = generate_map(input_string);
 
-    println!("max_y: {}", map.max_y());
-    println!("min_x: {}", map.min_x());
-    println!("max_x: {}", map.max_x());
-
-    println!("{}", map.to_string());
-    println!("============");
-
     map.run_water();
 
-    println!("{}", map.to_string());
-    println!("============");
+    println!("Part 1: {}", map.num_of_water_tiles());
 }
 
 #[cfg(test)]
@@ -500,8 +527,12 @@ y=13, x=498..504
         "###
         .trim();
 
-        let map = generate_map(input_string);
+        let mut map = generate_map(input_string);
 
         assert_eq!(map.to_string(), expected);
+
+        map.run_water();
+
+        assert_eq!(map.num_of_water_tiles(), 57);
     }
 }
