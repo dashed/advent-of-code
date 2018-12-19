@@ -36,12 +36,11 @@ impl Transitions for Coordinate {
 
 enum Water {
     AtRest,
-    Reachable,
+    Flowing,
 }
 
 enum MapState {
     Clay,
-    Sand,
     Water(Water),
 }
 
@@ -132,14 +131,11 @@ impl Map {
                             MapState::Clay => {
                                 row_string.push_str("#");
                             }
-                            MapState::Sand => {
-                                row_string.push_str(".");
-                            }
                             MapState::Water(water) => match water {
                                 Water::AtRest => {
                                     row_string.push_str("~");
                                 }
-                                Water::Reachable => {
+                                Water::Flowing => {
                                     row_string.push_str("|");
                                 }
                             },
@@ -172,11 +168,28 @@ impl Map {
         }
     }
 
+    fn is_dry_sand(&self, position: &Coordinate) -> bool {
+        return self.terrain.get(&position).is_none();
+    }
+
+    fn flowing_water(&mut self, position: &Coordinate) {
+        self.terrain
+            .insert(*position, MapState::Water(Water::Flowing));
+    }
+
     fn run_water(&mut self) {
-        let mut unvisited = vec![WATER_SPRING.down()];
+        let mut unvisited: Vec<Coordinate> = vec![WATER_SPRING.down()];
+        let mut flowing_water: Vec<Coordinate> = vec![];
 
         while let Some(current) = unvisited.pop() {
+            // invariant: current position is not clay
             assert!(!self.is_clay(&current));
+            // invariant: current position is dry sand
+            assert!(self.is_dry_sand(&current));
+
+            // water has flowed into current position
+            flowing_water.push(current);
+            self.flowing_water(&current);
         }
     }
 }
