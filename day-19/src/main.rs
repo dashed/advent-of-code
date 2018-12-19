@@ -92,7 +92,28 @@ enum Opcode {
 
 impl Opcode {
     fn from_str(input: &str) -> Self {
-        Opcode::Addr
+        let input = input.to_lowercase();
+        match input.as_ref() {
+            "addr" => Opcode::Addr,
+            "addi" => Opcode::Addi,
+            "mulr" => Opcode::Mulr,
+            "muli" => Opcode::Muli,
+            "banr" => Opcode::Banr,
+            "bani" => Opcode::Bani,
+            "borr" => Opcode::Borr,
+            "bori" => Opcode::Bori,
+            "setr" => Opcode::Setr,
+            "seti" => Opcode::Seti,
+            "gtir" => Opcode::Gtir,
+            "gtri" => Opcode::Gtri,
+            "gtrr" => Opcode::Gtrr,
+            "eqir" => Opcode::Eqir,
+            "eqri" => Opcode::Eqri,
+            "eqrr" => Opcode::Eqrr,
+            _ => {
+                unreachable!();
+            }
+        }
     }
 
     fn execute(
@@ -489,7 +510,15 @@ fn main() {
 
     let mut input_iter = input_string.trim().lines().map(|s| s.trim());
 
-    let instruction_pointer_bound = input_iter.next().unwrap();
+    let instruction_pointer_bound: RegisterID = {
+        let mut iter = input_iter.next().unwrap().split_whitespace();
+        iter.next();
+        let register_num = iter
+            .next()
+            .map(|s| s.trim().parse::<i32>().unwrap())
+            .unwrap();
+        RegisterID::into_register_id(register_num).unwrap()
+    };
 
     let mut instructions = vec![];
 
@@ -516,5 +545,9 @@ fn main() {
         instructions.push(opcode_instruction);
     }
 
-    println!("{:?}", instructions);
+    let mut program = Program::new(instruction_pointer_bound, instructions);
+
+    program.run_program();
+
+    println!("Part 1: {}", program.registers.get(RegisterID::Zero));
 }
