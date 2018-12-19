@@ -282,30 +282,29 @@ fn part_2(input_string: &str) -> usize {
 
     // let mut area = generate_area(input_string);
 
-    let mut area = Rc::new(RefCell::new(generate_area(input_string)));
+    let mut area = generate_area(input_string);
 
-    let mut lookup_table: HashMap<String, Rc<RefCell<Area>>> = HashMap::new();
+    let mut lookup_table: HashMap<String, Area> = HashMap::new();
 
-    let ticks = 200001;
+    let ticks = 1_000_000_000;
 
     for _ in 1..=ticks {
 
-        let prev_area_str: String = area.borrow_mut().to_string();
+        let prev_area_str: String = area.to_string();
 
-        match lookup_table.get(&prev_area_str) {
+        match lookup_table.get_mut(&prev_area_str) {
             None => {
-                // assert!(area == prev_area);
 
-                area.borrow_mut().tick();
+                area.tick();
 
-                let next_area_str: String = area.borrow_mut().to_string();
+                let next_area_str: String = area.to_string();
 
                 assert!(prev_area_str != next_area_str);
 
                 lookup_table.insert(prev_area_str, area.clone());
             }
             Some(saved_area) => {
-                let next_area_str: String = saved_area.borrow_mut().to_string();
+                let next_area_str: String = saved_area.to_string();
                 assert!(prev_area_str != next_area_str);
                 area = saved_area.clone();
             }
@@ -313,7 +312,7 @@ fn part_2(input_string: &str) -> usize {
 
     }
 
-    return area.borrow().num_of_lumberyards() * area.borrow().num_of_trees();
+    return area.num_of_lumberyards() * area.num_of_trees();
 }
 
 fn main() {
