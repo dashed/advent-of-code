@@ -633,7 +633,6 @@ fn part_2(input_string: &str) -> Option<Coordinate> {
 }
 
 fn main() {
-
     let input_string = include_str!("input.txt");
 
     let crashed_position = part_1(input_string);
