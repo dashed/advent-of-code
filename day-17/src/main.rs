@@ -233,8 +233,7 @@ impl Map {
 
     fn can_flow_into(&self, position: &Coordinate) -> bool {
         return !self.is_clay(position)
-            && self.is_dry_sand(position)
-            && !self.is_coord_out_of_bounds(position);
+            && self.is_dry_sand(position);
     }
 
     fn is_water_at_rest(&self, position: &Coordinate) -> bool {
@@ -293,7 +292,7 @@ impl Map {
         let mut index = 1;
 
         while let Some(current) = flowing_water.pop() {
-            if index >= 80 {
+            if index >= 85 {
                 break;
             }
             index += 1;
@@ -307,50 +306,39 @@ impl Map {
             // invariant: current position is dry sand
             // assert!(self.is_dry_sand(&current));
 
-            // water has flowed into current position
-            self.upgrade_water(&current);
+            if self.is_dry_sand(&current) {
+                self.upgrade_water(&current);
+            }
 
             // can water flow down?
             let next_position_down = current.down();
-            if self.can_flow_into(&next_position_down) {
-                if !self.is_water_at_rest(&current) {
-                    flowing_water.push(current);
-                }
+            // invariant: water cannot go down only if the next position is:
+            // - water
+            // - or clay
+            let should_flow_sideways = self.is_clay(&next_position_down) || self.is_water_at_rest(&next_position_down);
 
-                flowing_water.push(next_position_down);
+            if should_flow_sideways {
+                // TODO:
                 continue;
             }
 
-            // if not, see if we can flow sideways
-            let next_position_left = current.left();
-            let valid_left = self.can_flow_into(&next_position_left);
-
-            let next_position_right = current.right();
-            let valid_right = self.can_flow_into(&next_position_right);
-
-            if valid_left || valid_right {
-                if !self.is_water_at_rest(&current) {
-                    flowing_water.push(current);
-                }
+            if self.is_coord_out_of_bounds(&next_position_down) {
+                // invariant: water will flow infinitely into the abyss
+                continue;
             }
 
-            if valid_left {
-                flowing_water.push(next_position_left);
+            if self.is_water(&next_position_down) {
+                // invariant: no new areas of dry sand to flow into
+                continue;
             }
 
-            if valid_right {
-                flowing_water.push(next_position_right);
+            // at this point, water can flow down
+            if self.is_water_flowing(&current) {
+                flowing_water.push(current);
             }
 
-            if !valid_left && !valid_right {
-                let is_water_flowing = self.is_water_flowing(&current);
-                // let can_become_at_rest = self.is_water_flowing(&current.left())
-                //     && self.is_water_flowing(&current.right());
 
-                if is_water_flowing {
-                    self.upgrade_water(&current);
-                }
-            }
+            flowing_water.push(next_position_down);
         }
     }
 }
