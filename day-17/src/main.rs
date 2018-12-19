@@ -153,6 +153,32 @@ impl Map {
 
         return map_string.join("\n");
     }
+
+    fn is_clay(&self, position: &Coordinate) -> bool {
+        match self.terrain.get(&position) {
+            None => {
+                return false;
+            }
+            Some(map_state) => {
+                match map_state {
+                    MapState::Clay => {
+                        return true;
+                    }
+                    _ => {
+                        return false;
+                    }
+                };
+            }
+        }
+    }
+
+    fn run_water(&mut self) {
+        let mut unvisited = vec![WATER_SPRING.down()];
+
+        while let Some(current) = unvisited.pop() {
+            assert!(!self.is_clay(&current));
+        }
+    }
 }
 
 fn generate_map(input_string: &str) -> Map {
@@ -160,8 +186,6 @@ fn generate_map(input_string: &str) -> Map {
 
     let clay_coordinates: Vec<Coordinate> =
         input_string.trim().lines().fold(vec![], |mut acc, line| {
-            // println!("{}", line);
-
             let tokens: Vec<&str> = line.split(",").map(|s| s.trim()).collect();
 
             assert!(tokens.len() == 2);
@@ -181,7 +205,7 @@ fn generate_map(input_string: &str) -> Map {
 
             let range = {
                 let parsed_range: Vec<&str> = tokens[1].split("=").map(|s| s.trim()).collect();
-                let axis_str = parsed_range[0];
+                let _axis_str = parsed_range[0];
                 let range: Vec<i32> = parsed_range[1]
                     .split("..")
                     .map(|s| s.trim())
@@ -227,13 +251,15 @@ fn generate_map(input_string: &str) -> Map {
 fn main() {
     let input_string = include_str!("input.txt");
 
-    let map = generate_map(input_string);
+    let mut map = generate_map(input_string);
 
     println!("max_y: {}", map.max_y());
     println!("min_x: {}", map.min_x());
     println!("max_x: {}", map.max_x());
 
     println!("{}", map.to_string());
+
+    map.run_water();
 }
 
 #[cfg(test)]
