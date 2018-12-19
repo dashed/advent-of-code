@@ -68,8 +68,76 @@ impl Map {
             .unwrap();
     }
 
+    fn min_x(&self) -> i32 {
+        return self
+            .terrain
+            .iter()
+            .map(|item| {
+                let (coord, _map_state) = item;
+                let (x, _y) = coord;
+                return *x;
+            })
+            .min()
+            .unwrap();
+    }
+
+    fn max_x(&self) -> i32 {
+        return self
+            .terrain
+            .iter()
+            .map(|item| {
+                let (coord, _map_state) = item;
+                let (x, _y) = coord;
+                return *x;
+            })
+            .max()
+            .unwrap();
+    }
+
     fn insert_clay(&mut self, clay_coordinate: &Coordinate) {
         self.terrain.insert(*clay_coordinate, MapState::Clay);
+    }
+
+    fn to_string(&self) -> String {
+        let max_y = self.max_y();
+        let min_x = self.min_x();
+        let max_x = self.max_x();
+
+        let mut map_string: Vec<String> = vec![];
+
+        for y in 0..=max_y {
+            let mut row_string = String::from("");
+
+            for x in min_x..=max_x {
+                let position = (x, y);
+
+                match self.terrain.get(&position) {
+                    None => {
+                        row_string.push_str(".");
+                    }
+                    Some(map_state) => match map_state {
+                        MapState::Clay => {
+                            row_string.push_str("#");
+                        }
+                        MapState::Sand => {
+                            row_string.push_str(".");
+                        }
+                        MapState::Water(water) => match water {
+                            Water::AtRest => {
+                                row_string.push_str("~");
+                            }
+                            Water::Reachable => {
+                                row_string.push_str("|");
+                            }
+                        },
+                    },
+                }
+            }
+
+            map_string.push(row_string);
+        }
+
+        return map_string.join("\n");
     }
 }
 
@@ -125,5 +193,9 @@ fn main() {
         map.insert_clay(&coordinate);
     }
 
-    println!("{}", map.max_y());
+    println!("max_y: {}", map.max_y());
+    println!("min_x: {}", map.min_x());
+    println!("max_x: {}", map.max_x());
+
+    println!("{}", map.to_string());
 }
