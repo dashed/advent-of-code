@@ -208,8 +208,18 @@ impl Map {
                 match map_state {
                     MapState::Water(water_state) => match water_state {
                         Water::Flowing => {
-                            self.terrain
-                                .insert(*position, MapState::Water(Water::AtRest));
+                            let left_position = position.left();
+                            let left_condition =
+                                self.is_clay(&left_position) || self.is_water(&left_position);
+
+                            let right_position = position.right();
+                            let right_condition =
+                                self.is_clay(&right_position) || self.is_water(&right_position);
+
+                            if left_condition && right_condition {
+                                self.terrain
+                                    .insert(*position, MapState::Water(Water::AtRest));
+                            }
                         }
                         Water::AtRest => {}
                     },
@@ -244,10 +254,50 @@ impl Map {
         }
     }
 
+    fn is_water_flowing(&self, position: &Coordinate) -> bool {
+        match self.terrain.get(&position) {
+            None => {
+                return false;
+            }
+            Some(map_state) => match map_state {
+                MapState::Clay => {
+                    return false;
+                }
+                MapState::Water(water_state) => match water_state {
+                    Water::Flowing => true,
+                    Water::AtRest => false,
+                },
+            },
+        }
+    }
+
+    fn is_water(&self, position: &Coordinate) -> bool {
+        match self.terrain.get(&position) {
+            None => {
+                return false;
+            }
+            Some(map_state) => match map_state {
+                MapState::Clay => {
+                    return false;
+                }
+                MapState::Water(_water_state) => {
+                    return true;
+                }
+            },
+        }
+    }
+
     fn run_water(&mut self) {
         let mut flowing_water: Vec<Coordinate> = vec![WATER_SPRING.down()];
 
+        let mut index = 1;
+
         while let Some(current) = flowing_water.pop() {
+            if index >= 80 {
+                break;
+            }
+            index += 1;
+
             println!("{:?}", current);
             println!("{}", self.to_string());
             println!("============");
@@ -293,7 +343,13 @@ impl Map {
             }
 
             if !valid_left && !valid_right {
-                self.upgrade_water(&current);
+                let is_water_flowing = self.is_water_flowing(&current);
+                // let can_become_at_rest = self.is_water_flowing(&current.left())
+                //     && self.is_water_flowing(&current.right());
+
+                if is_water_flowing {
+                    self.upgrade_water(&current);
+                }
             }
         }
     }
