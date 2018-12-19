@@ -232,10 +232,6 @@ impl Map {
         }
     }
 
-    fn can_flow_into(&self, position: &Coordinate) -> bool {
-        return !self.is_clay(position) && self.is_dry_sand(position);
-    }
-
     fn is_water_at_rest(&self, position: &Coordinate) -> bool {
         match self.terrain.get(&position) {
             None => {
@@ -292,17 +288,12 @@ impl Map {
         let mut y_level_at_rest: Option<i32> = None;
         let mut potential_water_at_rest: HashSet<Coordinate> = HashSet::new();
 
-        let index = 1;
-
         while let Some(current) = flowing_water.pop() {
-            // if index >= 85 {
-            //     break;
-            // }
-            // index += 1;
-
-            // println!("{:?}", current);
-            println!("{}", self.to_string());
-            println!("============");
+            // use std::thread;
+            // use std::time::Duration;
+            // thread::sleep(Duration::from_millis(100));
+            // println!("{}", self.to_string());
+            // println!("============");
 
             // invariant: current position is not clay
             assert!(!self.is_clay(&current));
@@ -312,7 +303,6 @@ impl Map {
 
                 if y < y_level {
                     for position in potential_water_at_rest.iter() {
-                        // println!("wow: {:?}", position);
                         self.upgrade_water(&position);
                     }
 
