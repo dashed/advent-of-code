@@ -526,7 +526,6 @@ fn main() {
 
     let mut map = generate_map(input_string);
 
-    // map.run_water();
     map.run_flood();
 
     println!("Part 1: {}", map.num_of_water_tiles());
@@ -540,6 +539,20 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn part_1_and_2() {
+        let input_string = include_str!("input.txt");
+        let mut map = generate_map(input_string);
+
+        map.run_flood();
+
+        // Part 1
+        assert_eq!(map.num_of_water_tiles(), 33004);
+
+        // Part 2
+        assert_eq!(map.num_of_rested_water_tiles(), 23294);
+    }
 
     #[test]
     fn test_map() {
