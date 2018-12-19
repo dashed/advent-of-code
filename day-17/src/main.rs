@@ -55,6 +55,19 @@ impl Map {
         }
     }
 
+    fn max_y(&self) -> i32 {
+        return self
+            .terrain
+            .iter()
+            .map(|item| {
+                let (coord, _map_state) = item;
+                let (_x, y) = coord;
+                return *y;
+            })
+            .max()
+            .unwrap();
+    }
+
     fn insert_clay(&mut self, clay_coordinate: &Coordinate) {
         self.terrain.insert(*clay_coordinate, MapState::Clay);
     }
@@ -70,19 +83,32 @@ fn main() {
         .lines()
         .map(|line| {
             let target = line.split("..").next().unwrap().trim();
-            let coord: Vec<i32> = target
+
+            let (x, y) = target
                 .split(",")
-                .map(|s| {
-                    return s.trim().split("=").skip(1).next().unwrap().trim();
-                })
-                .map(|s| {
-                    return s.parse::<i32>().unwrap();
-                })
-                .collect();
+                .map(|s| s.trim())
+                .fold((None, None), |acc, s| {
+                    let (x, y) = acc;
 
-            assert!(coord.len() == 2);
+                    let mut s_iter = s.trim().split("=").map(|s| s.trim());
 
-            let coord: Coordinate = (coord[0], coord[1]);
+                    let identifier = s_iter.next().unwrap().to_lowercase();
+                    let value: i32 = s_iter.next().map(|s| s.parse::<i32>().unwrap()).unwrap();
+
+                    match identifier.as_ref() {
+                        "x" => {
+                            return (Some(value), y);
+                        }
+                        "y" => {
+                            return (x, Some(value));
+                        }
+                        _ => {
+                            unreachable!();
+                        }
+                    }
+                });
+
+            let coord: Coordinate = (x.unwrap(), y.unwrap());
 
             return coord;
         })
@@ -99,5 +125,5 @@ fn main() {
         map.insert_clay(&coordinate);
     }
 
-    // println!("{}", input_string);
+    println!("{}", map.max_y());
 }
