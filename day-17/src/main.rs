@@ -296,7 +296,7 @@ impl Map {
             // }
             // index += 1;
 
-            println!("{:?}", current);
+            // println!("{:?}", current);
             println!("{}", self.to_string());
             println!("============");
 
@@ -316,17 +316,22 @@ impl Map {
                 self.is_clay(&next_position_down) || self.is_water_at_rest(&next_position_down);
 
             if should_flow_sideways {
-                if self.is_water_flowing(&current) {
+
+                let next_position_left = current.left();
+                let left_is_dry = self.is_dry_sand(&next_position_left);
+
+                let next_position_right = current.right();
+                let right_is_dry = self.is_dry_sand(&next_position_right);
+
+                if (left_is_dry || right_is_dry) && self.is_water_flowing(&current) {
                     flowing_water.push(current);
                 }
 
-                let next_position_left = current.left();
-                if self.is_dry_sand(&next_position_left) {
+                if left_is_dry {
                     flowing_water.push(next_position_left);
                 }
 
-                let next_position_right = current.right();
-                if self.is_dry_sand(&next_position_right) {
+                if right_is_dry {
                     flowing_water.push(next_position_right);
                 }
 
@@ -344,11 +349,16 @@ impl Map {
             }
 
             // at this point, water can flow down
-            if self.is_water_flowing(&current) {
-                flowing_water.push(current);
+
+            if self.is_dry_sand(&next_position_down) {
+                if self.is_water_flowing(&current) {
+                    flowing_water.push(current);
+                }
+
+                flowing_water.push(next_position_down);
             }
 
-            flowing_water.push(next_position_down);
+
         }
     }
 }
