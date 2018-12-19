@@ -3,6 +3,7 @@
 // imports
 
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 // code
 
@@ -288,7 +289,10 @@ impl Map {
     fn run_water(&mut self) {
         let mut flowing_water: Vec<Coordinate> = vec![WATER_SPRING.down()];
 
-        let mut index = 1;
+        let mut y_level_at_rest: Option<i32> = None;
+        let mut potential_water_at_rest: HashSet<Coordinate> = HashSet::new();
+
+        let index = 1;
 
         while let Some(current) = flowing_water.pop() {
             // if index >= 85 {
@@ -303,6 +307,20 @@ impl Map {
             // invariant: current position is not clay
             assert!(!self.is_clay(&current));
 
+            if let Some(y_level) = y_level_at_rest {
+                let (_x, y) = current;
+
+                if y < y_level {
+                    for position in potential_water_at_rest.iter() {
+                        // println!("wow: {:?}", position);
+                        self.upgrade_water(&position);
+                    }
+
+                    y_level_at_rest = None;
+                    potential_water_at_rest = HashSet::new();
+                }
+            }
+
             if self.is_dry_sand(&current) {
                 self.upgrade_water(&current);
             }
@@ -316,7 +334,6 @@ impl Map {
                 self.is_clay(&next_position_down) || self.is_water_at_rest(&next_position_down);
 
             if should_flow_sideways {
-
                 let next_position_left = current.left();
                 let left_is_dry = self.is_dry_sand(&next_position_left);
 
@@ -324,19 +341,30 @@ impl Map {
                 let right_is_dry = self.is_dry_sand(&next_position_right);
 
                 if (left_is_dry || right_is_dry) && self.is_water_flowing(&current) {
+                    if y_level_at_rest.is_none() {
+                        let (_x, y) = current;
+                        y_level_at_rest = Some(y);
+                    }
+
+                    potential_water_at_rest.insert(current);
                     flowing_water.push(current);
                 }
 
                 if left_is_dry {
+                    potential_water_at_rest.insert(next_position_left);
                     flowing_water.push(next_position_left);
                 }
 
                 if right_is_dry {
+                    potential_water_at_rest.insert(next_position_right);
                     flowing_water.push(next_position_right);
                 }
 
                 continue;
             }
+
+            y_level_at_rest = None;
+            potential_water_at_rest = HashSet::new();
 
             if self.is_coord_out_of_bounds(&next_position_down) {
                 // invariant: water will flow infinitely into the abyss
@@ -357,8 +385,6 @@ impl Map {
 
                 flowing_water.push(next_position_down);
             }
-
-
         }
     }
 }
