@@ -177,40 +177,42 @@ impl Map {
             .insert(*position, MapState::Water(Water::Flowing));
     }
 
-    fn run_water(&mut self) {
-        let mut unvisited: Vec<Coordinate> = vec![WATER_SPRING.down()];
-        let mut flowing_water: Vec<Coordinate> = vec![];
+    fn can_flow_into(&self, position: &Coordinate) -> bool {
+        return !self.is_clay(position) && self.is_dry_sand(position);
+    }
 
-        while let Some(current) = unvisited.pop() {
+    fn run_water(&mut self) {
+        let mut flowing_water: Vec<Coordinate> = vec![WATER_SPRING.down()];
+
+        while let Some(current) = flowing_water.pop() {
             // invariant: current position is not clay
             assert!(!self.is_clay(&current));
             // invariant: current position is dry sand
             assert!(self.is_dry_sand(&current));
 
             // water has flowed into current position
-            flowing_water.push(current);
             self.flowing_water(&current);
 
             // can water flow down?
-            let next_position = current.down();
-            if !self.is_clay(&next_position) && self.is_dry_sand(&next_position) {
-                unvisited.push(next_position);
+            let next_position_down = current.down();
+            if self.can_flow_into(&next_position_down) {
+                flowing_water.push(next_position_down);
                 continue;
             }
 
             // if not, see if we can flow sideways
             let next_position_left = current.left();
-            let valid_left = !self.is_clay(&next_position_left) && self.is_dry_sand(&next_position_left);
+            let valid_left = self.can_flow_into(&next_position_left);
 
             let next_position_right = current.right();
-            let valid_right = !self.is_clay(&next_position_right) && self.is_dry_sand(&next_position_right);
+            let valid_right = self.can_flow_into(&next_position_right);
 
             if valid_left {
-                unvisited.push(next_position_left);
+                flowing_water.push(next_position_left);
             }
 
             if valid_right {
-                unvisited.push(next_position_left);
+                flowing_water.push(next_position_left);
             }
 
             if valid_left || valid_right {
@@ -298,7 +300,6 @@ fn main() {
     println!("max_y: {}", map.max_y());
     println!("min_x: {}", map.min_x());
     println!("max_x: {}", map.max_x());
-
 
     println!("{}", map.to_string());
     println!("============");
