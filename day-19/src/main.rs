@@ -12,7 +12,13 @@ enum RegisterID {
     Five,
 }
 
-struct Registers(i32, i32, i32, i32);
+struct Registers(i32, i32, i32, i32, i32, i32);
+
+impl Registers {
+    fn new() -> Self {
+        return Registers(0, 0, 0, 0, 0, 0);
+    }
+}
 
 enum Opcode {
     Addr,
@@ -49,7 +55,14 @@ struct Program {
 }
 
 impl Program {
-    // add code here
+    fn new(instruction_pointer_bound: RegisterID) -> Self {
+        Program {
+            // The instruction pointer starts at 0.
+            instruction_pointer: 0,
+            instruction_pointer_bound,
+            registers: Registers::new(),
+        }
+    }
 }
 
 fn main() {
