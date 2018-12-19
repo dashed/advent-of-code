@@ -3,10 +3,8 @@
 // imports
 
 use rayon::prelude::*;
-use std::cell::RefCell;
-use std::rc::Rc;
-use std::hash::{Hash, Hasher};
 use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
 
 // code
 
@@ -109,7 +107,14 @@ struct Area {
     area: CollectionArea,
     max_y: i32,
     max_x: i32,
-    as_string: Option<String>,
+}
+
+impl Hash for Area {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.max_y.hash(state);
+        self.max_x.hash(state);
+        self.to_string().hash(state);
+    }
 }
 
 impl Area {
@@ -118,7 +123,6 @@ impl Area {
             area: HashMap::new(),
             max_y: 0,
             max_x: 0,
-            as_string: None
         }
     }
 
@@ -135,12 +139,7 @@ impl Area {
     }
 
     #[allow(dead_code)]
-    fn to_string(&mut self) -> String {
-
-        if self.as_string.is_some() {
-            return self.as_string.clone().unwrap();
-        }
-
+    fn to_string(&self) -> String {
         let mut map_string: Vec<String> = vec![];
 
         for y in 0..=self.max_y {
@@ -170,10 +169,7 @@ impl Area {
             map_string.push(row_string);
         }
 
-        let result = map_string.join("\n");
-        self.as_string = Some(result.clone());
-        return result;
-
+        return map_string.join("\n");
     }
 
     fn insert(&mut self, position: Coordinate, acre: char) {
@@ -204,9 +200,6 @@ impl Area {
     }
 
     fn tick(&mut self) {
-
-        self.as_string = None;
-
         let prev_area = &self.area;
 
         let next_area: CollectionArea = prev_area
@@ -279,38 +272,49 @@ fn part_1(input_string: &str, ticks: i32) -> usize {
 }
 
 fn part_2(input_string: &str) -> usize {
-
-    // let mut area = generate_area(input_string);
-
     let mut area = generate_area(input_string);
 
-    let mut lookup_table: HashMap<String, Area> = HashMap::new();
+    let mut seen: HashMap<Area, i32> = HashMap::new();
+    // let mut lookup: HashMap<i32, Area> = HashMap::new();
+    let mut current_id = 0;
 
-    let ticks = 1_000_000_000;
+    let mut ticks = 0;
 
-    for _ in 1..=ticks {
-
-        let prev_area_str: String = area.to_string();
-
-        match lookup_table.get_mut(&prev_area_str) {
-            None => {
-
-                area.tick();
-
-                let next_area_str: String = area.to_string();
-
-                assert!(prev_area_str != next_area_str);
-
-                lookup_table.insert(prev_area_str, area.clone());
-            }
-            Some(saved_area) => {
-                let next_area_str: String = saved_area.to_string();
-                assert!(prev_area_str != next_area_str);
-                area = saved_area.clone();
-            }
+    loop {
+        if seen.contains_key(&area) {
+            break;
         }
+        seen.insert(area.clone(), current_id);
+        // lookup.insert(current_id, area.clone());
+        area.tick();
 
+        ticks += 1;
+        current_id += 1;
     }
+
+    // invariant: area is the first snapshot of the cycle
+
+    println!("current_id: {}", current_id);
+    println!("saved: {}", seen.get(&area).unwrap());
+    println!("seen len: {}", seen.len());
+
+    let cycle_len = seen.len() as i32 - seen.get(&area).unwrap() + 1;
+
+    println!("cycle_len: {}", cycle_len);
+
+    let remaining_ticks = 1_000_000_000 - ticks;
+    println!("remaining_ticks: {}", remaining_ticks);
+    let stop_point = remaining_ticks % cycle_len;
+
+    println!("stop_point: {}", stop_point);
+
+    for _ in 2..=stop_point {
+        area.tick();
+    }
+
+    // not: 214760
+    // not: 207774
+    // not: 190576
 
     return area.num_of_lumberyards() * area.num_of_trees();
 }
