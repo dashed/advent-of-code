@@ -291,10 +291,10 @@ impl Map {
         let mut index = 1;
 
         while let Some(current) = flowing_water.pop() {
-            if index >= 85 {
-                break;
-            }
-            index += 1;
+            // if index >= 85 {
+            //     break;
+            // }
+            // index += 1;
 
             println!("{:?}", current);
             println!("{}", self.to_string());
@@ -302,8 +302,6 @@ impl Map {
 
             // invariant: current position is not clay
             assert!(!self.is_clay(&current));
-            // invariant: current position is dry sand
-            // assert!(self.is_dry_sand(&current));
 
             if self.is_dry_sand(&current) {
                 self.upgrade_water(&current);
@@ -318,7 +316,20 @@ impl Map {
                 self.is_clay(&next_position_down) || self.is_water_at_rest(&next_position_down);
 
             if should_flow_sideways {
-                // TODO:
+                if self.is_water_flowing(&current) {
+                    flowing_water.push(current);
+                }
+
+                let next_position_left = current.left();
+                if self.is_dry_sand(&next_position_left) {
+                    flowing_water.push(next_position_left);
+                }
+
+                let next_position_right = current.right();
+                if self.is_dry_sand(&next_position_right) {
+                    flowing_water.push(next_position_right);
+                }
+
                 continue;
             }
 
