@@ -536,26 +536,33 @@ impl Map {
         }
     }
 
-    fn parse_directions(directions: Directions) {}
+    fn parse_routes(&self, routes: Routes, current_position: Coordinate) {}
+
+    fn parse_directions(&self, directions: Directions) {
+        let Directions(routes) = directions;
+
+        let current_position = (0, 0);
+
+        self.parse_routes(routes, current_position);
+    }
 }
 
 fn main() {
     let input_string = include_str!("input.txt");
 
     // let input_string = "^(SWSSE(N|ES(ENSW|)WWW(NNNWESSS|)|)|)$";
-    // let map = Map::new();
-
-    // map.parse_input(input_string);
 
     // let input_string = "^N(E|W)N$";
 
     let directions = parse_input(input_string);
+    let map = Map::new();
+    map.parse_directions(directions);
 
     // println!("{:?}", result);
 
-    assert_eq!(directions.to_string(), input_string);
+    // assert_eq!(directions.to_string(), input_string);
 
-    println!("{}", directions.to_string());
+    // println!("{}", directions.to_string());
 }
 
 #[cfg(test)]
