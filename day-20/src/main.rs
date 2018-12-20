@@ -65,24 +65,38 @@ fn tokenize(input_string: &str) -> Vec<Tokens> {
         .collect();
 }
 
+struct Route(Vec<OpenDirections>);
+
+enum Branches {}
+
+struct BranchGroup(Branches);
+
+enum Routes {
+    Route,
+    Branch,
+}
+
 // keep track where in the token stream to start reading tokens from
 type TokenPosition = usize;
 
 // after parsing/consuming a portion of the token stream; a result T might be generated.
 // the starting position of the token stream for the next parse is also returned
-type ParseResult<T> = (T, TokenPosition);
+//
+// if None was returned, this indicates that parsing wasn't successful,
+// and the token stream was not consumed
+//
+type ParseResult<T> = Option<(T, TokenPosition)>;
 
 fn parse_start(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()> {
     match tokens.get(start_at) {
         None => {
-            unreachable!();
+            return None;
         }
         Some(token) => {
             if token == &Tokens::Start {
-                return ((), start_at + 1);
+                return Some(((), start_at + 1));
             }
-
-            unreachable!();
+            return None;
         }
     }
 }
@@ -90,14 +104,13 @@ fn parse_start(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()>
 fn parse_end(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()> {
     match tokens.get(start_at) {
         None => {
-            unreachable!();
+            return None;
         }
         Some(token) => {
             if token == &Tokens::End {
-                return ((), start_at + 1);
+                return Some(((), start_at + 1));
             }
-
-            unreachable!();
+            return None;
         }
     }
 }
