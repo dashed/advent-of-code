@@ -67,10 +67,10 @@ fn tokenize(input_string: &str) -> Vec<Tokens> {
         .collect();
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Route(Vec<OpenDirections>);
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Branches {
     // invariant: branches must have at least one option
 
@@ -81,12 +81,12 @@ enum Branches {
     CannotSkip(Box<Routes>, Vec<Routes>),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct BranchGroup(Branches);
 
 // NOTE: wrap in box because recursive types is illegal in Rust
 // https://stackoverflow.com/questions/25296195/why-are-recursive-struct-types-illegal-in-rust
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Routes {
     Route(Route, Box<Option<Routes>>),
     Branch(BranchGroup, Box<Option<Routes>>),
@@ -165,13 +165,13 @@ fn parse_route(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Rou
 fn parse_branches(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Branches> {
     let mut current_position = start_at;
 
-    let starting_routes: Routes = match parse_routes(tokens, current_position) {
+    let starting_routes: Box<Routes> = match parse_routes(tokens, current_position) {
         None => {
             return None;
         }
         Some((routes, next_position)) => {
             current_position = next_position;
-            routes
+            Box::new(routes)
         }
     };
 
@@ -185,21 +185,30 @@ fn parse_branches(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<
             if token == &Tokens::BranchOr {
                 current_position += 1;
             }
-            return None;
         }
     }
 
     match parse_branches(tokens, current_position) {
-        None => {}
+        None => {
+            // implies either skippable, or routes terminates this list
+        }
         Some((branches, next_position)) => {
             let result = match branches {
-                Branches::CanSkip(routes, other_routes) => {
-                    let foo: Vec<Routes> = vec![];
-                    Branches::CanSkip(Box::new(starting_routes), foo)
+                Branches::CanSkip(routes_head, other_routes) => {
+                    let mut rest_routes: Vec<Routes> = vec![];
+
+                    rest_routes.push(*routes_head);
+                    rest_routes.extend(other_routes);
+
+                    Branches::CanSkip(starting_routes, rest_routes)
                 }
-                Branches::CannotSkip(routes, other_routes) => {
-                    let foo: Vec<Routes> = vec![];
-                    Branches::CannotSkip(Box::new(starting_routes), foo)
+                Branches::CannotSkip(routes_head, other_routes) => {
+                    let mut rest_routes: Vec<Routes> = vec![];
+
+                    rest_routes.push(*routes_head);
+                    rest_routes.extend(other_routes);
+
+                    Branches::CannotSkip(starting_routes, rest_routes)
                 }
             };
 
@@ -207,7 +216,18 @@ fn parse_branches(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<
         }
     }
 
-    return None;
+    match parse_routes(tokens, current_position) {
+        None => {
+            // implies entire branch group is optional
+        }
+        Some((other_routes, next_position)) => {
+            let result = Branches::CannotSkip(starting_routes, vec![other_routes]);
+            return Some((result, next_position));
+        }
+    }
+
+    let result = Branches::CanSkip(starting_routes, vec![]);
+    return Some((result, current_position));
 }
 
 fn parse_branch_group(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<BranchGroup> {
