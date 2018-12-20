@@ -71,16 +71,16 @@ struct Route(Vec<OpenDirections>);
 
 enum Branches {
     // invariant: branches must have at least one option
-    CanSkip(Routes, Vec<Routes>),
-    CannotSkip(Routes, Vec<Routes>),
+    CanSkip(Box<Routes>, Vec<Routes>),
+    CannotSkip(Box<Routes>, Vec<Routes>),
 }
 
 struct BranchGroup(Branches);
 
 // TODO: flesh out
 enum Routes {
-    Route,
-    Branch,
+    Route(Route, Vec<Routes>),
+    Branch(BranchGroup, Vec<Routes>),
 }
 
 // keep track where in the token stream to start reading tokens from
