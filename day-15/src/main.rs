@@ -1185,7 +1185,7 @@ mod tests {
         let mut map = parse_input(input_string);
 
         // round 1
-        // after round 1, the elf should be going left
+        // after round 1, the elf should not be going left
         // src: https://www.reddit.com/r/adventofcode/comments/a6f100/day_15_details_easy_to_be_wrong_on/ebvkuxr/
         map.execute_round();
         assert_eq!(
