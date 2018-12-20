@@ -450,7 +450,7 @@ fn parse_input(input_string: &str) -> Directions {
     return Directions(routes);
 }
 
-type Distance = i32;
+type Distance = usize;
 
 #[derive(Debug, PartialEq, Clone)]
 enum OpenDirections {
@@ -534,6 +534,10 @@ impl Map {
 
             room_distance: HashMap::new(),
         }
+    }
+
+    fn distance_to_farthest_room(&self) -> Distance {
+        return *self.room_distance.values().into_iter().max().unwrap();
     }
 
     fn visit_room(
@@ -678,13 +682,15 @@ impl Map {
 fn main() {
     // let input_string = include_str!("input.txt");
 
-    let input_string = "^(SWSSE(N|ES(ENSW|)WWW(NNNWESSS|)|)|)$";
+    let input_string = "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$";
 
     // let input_string = "^N(E|W)N$";
 
     let directions = parse_input(input_string);
     let mut map = Map::new();
     map.parse_directions(directions);
+
+    println!("{}", map.distance_to_farthest_room());
 
     // println!("{:?}", result);
 
@@ -698,26 +704,27 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse() {
-        let input_string = "^WNE$";
-        let parse_result = parse_input(input_string);
-        assert_eq!(parse_result.to_string(), input_string);
+    fn test_examples() {
+        let examples: Vec<(&str, Distance)> = vec![
+            ("^WNE$", 3),
+            ("^ENWWW(NEEE|SSE(EE|N))$", 10),
+            ("^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$", 18),
+            ("^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$", 23),
+            (
+                "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$",
+                31,
+            ),
+        ];
 
-        let input_string = "^ENWWW(NEEE|SSE(EE|N))$";
-        let parse_result = parse_input(input_string);
-        assert_eq!(parse_result.to_string(), input_string);
+        for (input_string, distance) in examples {
+            let directions = parse_input(input_string);
+            assert_eq!(directions.to_string(), input_string);
 
-        let input_string = "^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$";
-        let parse_result = parse_input(input_string);
-        assert_eq!(parse_result.to_string(), input_string);
+            let mut map = Map::new();
+            map.parse_directions(directions);
 
-        let input_string = "^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$";
-        let parse_result = parse_input(input_string);
-        assert_eq!(parse_result.to_string(), input_string);
-
-        let input_string = "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$";
-        let parse_result = parse_input(input_string);
-        assert_eq!(parse_result.to_string(), input_string);
+            assert_eq!(map.distance_to_farthest_room(), distance);
+        }
     }
 
 }
