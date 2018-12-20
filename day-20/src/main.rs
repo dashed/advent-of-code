@@ -536,12 +536,81 @@ impl Map {
         }
     }
 
-    fn parse_routes(&self, routes: Routes, current_position: Coordinate) {}
+    fn visit_room(
+        &mut self,
+        direction: OpenDirections,
+        current_position: Coordinate,
+    ) -> Coordinate {
+        // generate new position
 
-    fn parse_directions(&self, directions: Directions) {
+        let new_position = match direction {
+            OpenDirections::North => current_position.north(),
+            OpenDirections::South => current_position.south(),
+            OpenDirections::West => current_position.west(),
+            OpenDirections::East => current_position.east(),
+        };
+
+        let current_distance = self.room_distance.get(&current_position).unwrap();
+        let new_distance = current_distance + 1;
+
+        // is this room reached by the least amount of doors?
+
+        match self.room_distance.get(&new_position) {
+            None => {
+                self.room_distance.insert(new_position, new_distance);
+            }
+            Some(best_distance) => {
+                if new_distance < *best_distance {
+                    self.room_distance.insert(new_position, new_distance);
+                }
+            }
+        }
+
+        return new_position;
+    }
+
+    fn parse_route(&mut self, route: Route, current_position: Coordinate) -> Coordinate {
+        let Route(directions) = route;
+
+        if directions.len() <= 0 {
+            return current_position;
+        }
+
+        // generate new position
+
+        let mut new_position = current_position;
+
+        for direction in directions {
+            new_position = self.visit_room(direction, new_position);
+        }
+
+        return new_position;
+    }
+
+    fn parse_routes(&mut self, routes: Routes, current_position: Coordinate) -> Coordinate {
+        match routes {
+            Routes::Route(route, more_routes) => {
+                let new_position = self.parse_route(route, current_position);
+                match *more_routes {
+                    None => {
+                        return new_position;
+                    }
+                    Some(more_routes) => {
+                        return self.parse_routes(more_routes, new_position);
+                    }
+                }
+            }
+            Routes::Branch(branch_group, more_routes) => {
+                return current_position;
+            }
+        }
+    }
+
+    fn parse_directions(&mut self, directions: Directions) {
         let Directions(routes) = directions;
 
         let current_position = (0, 0);
+        self.room_distance.insert(current_position, 0);
 
         self.parse_routes(routes, current_position);
     }
@@ -555,7 +624,7 @@ fn main() {
     // let input_string = "^N(E|W)N$";
 
     let directions = parse_input(input_string);
-    let map = Map::new();
+    let mut map = Map::new();
     map.parse_directions(directions);
 
     // println!("{:?}", result);
