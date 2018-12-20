@@ -461,6 +461,17 @@ impl Program {
 
     fn run_program(&mut self) {
         loop {
+
+            // hard-coded program for part 2:
+            // check if instruction_pointer starts at instruction 2 (i.e. about to run instruction #3)
+            if self.instruction_pointer == 2 && self.registers.get(RegisterID::Three) != 0 {
+
+
+
+                self.instruction_pointer = 12;
+                continue;
+            }
+
             let result = self.execute_instruction();
             match result {
                 Status::Halted => {
@@ -569,6 +580,12 @@ fn main() {
 
     // part 2 spends quite a lot of time on these instructions
 
+    // instruction 2:
+    //
+    // seti 1 9 1
+    //
+    // reg[1] = 1
+
     // (BEGIN do while loop body)
     //
     // instruction 3:
@@ -657,15 +674,23 @@ fn main() {
 
     naive interpretation:
 
+    reg[1] = 1
     do {
 
         if(reg[3] * reg[1] == reg[5]) {
-            reg[0] = reg[3] + reg[0]
+            reg[0] = reg[0] + reg[3]
         }
 
         reg[1] = reg[1] + 1
 
-    } while ( !( reg[1] > reg[5] ) )
+    } while ( reg[1] <= reg[5] )
+
+    interpretation:
+        if reg[5] is a multiple of reg[3] if there exists a positive integer reg[1],
+        such that reg[5] = reg[3] * reg[1]
+
+    invariants:
+        reg[3] cannot be 0; since no integer value of reg[1] exists to satisfy reg[5] = reg[3] * reg[1]
 
     */
 }
