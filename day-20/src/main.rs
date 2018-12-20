@@ -122,6 +122,10 @@ fn parse_end(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()> {
     }
 }
 
+fn parse_routes(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Routes> {
+    return None;
+}
+
 type Distance = i32;
 
 #[derive(Debug, PartialEq)]
@@ -203,6 +207,8 @@ impl Map {
         // starting position in the token stream
         let mut current_position = 0;
 
+        // parse starting token
+
         match parse_start(&tokenized, current_position) {
             None => {
                 panic!("Expect starting token: ^");
@@ -211,6 +217,19 @@ impl Map {
                 current_position = next_position;
             }
         }
+
+        // parse routes
+        let routes: Routes = match parse_routes(&tokenized, current_position) {
+            None => {
+                panic!("No routes generated");
+            }
+            Some((routes, next_position)) => {
+                current_position = next_position;
+                routes
+            }
+        };
+
+        // TODO: parse ending token
     }
 
     // parse route starting from the current position
