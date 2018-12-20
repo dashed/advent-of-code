@@ -162,7 +162,11 @@ fn parse_route(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Rou
     return Some((result, next_position));
 }
 
-fn parse_branch_group(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Routes> {
+fn parse_branches(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Branches> {
+    return None;
+}
+
+fn parse_branch_group(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<BranchGroup> {
     let mut current_position = start_at;
 
     // parse opening parentheses
@@ -180,6 +184,15 @@ fn parse_branch_group(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseRes
     }
 
     // parse branches
+    let branches: Branches = match parse_branches(tokens, current_position) {
+        None => {
+            return None;
+        }
+        Some((branches, next_position)) => {
+            current_position = next_position;
+            branches
+        }
+    };
 
     // parse closing parentheses
 
@@ -195,8 +208,8 @@ fn parse_branch_group(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseRes
         }
     }
 
-    // TODO: fix
-    return None;
+    let result = (BranchGroup(branches), current_position);
+    return Some(result);
 }
 
 fn parse_routes(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Routes> {
