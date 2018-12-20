@@ -587,21 +587,30 @@ impl Map {
         return new_position;
     }
 
-    fn parse_routes(&mut self, routes: Routes, current_position: Coordinate) -> Coordinate {
+    fn parse_branch_group(
+        &mut self,
+        branch_group: BranchGroup,
+        more_routes: Option<Routes>,
+        current_position: Coordinate,
+    ) {
+
+    }
+
+    fn parse_routes(&mut self, routes: Routes, current_position: Coordinate) {
         match routes {
             Routes::Route(route, more_routes) => {
                 let new_position = self.parse_route(route, current_position);
                 match *more_routes {
                     None => {
-                        return new_position;
+                        return;
                     }
                     Some(more_routes) => {
-                        return self.parse_routes(more_routes, new_position);
+                        self.parse_routes(more_routes, new_position);
                     }
                 }
             }
             Routes::Branch(branch_group, more_routes) => {
-                return current_position;
+                self.parse_branch_group(branch_group, *more_routes, current_position);
             }
         }
     }
