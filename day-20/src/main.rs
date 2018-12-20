@@ -4,6 +4,7 @@
 
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::collections::LinkedList;
 
 // code
 
@@ -70,19 +71,61 @@ fn tokenize(input_string: &str) -> Vec<Tokens> {
 #[derive(Debug, Clone)]
 struct Route(Vec<OpenDirections>);
 
+impl Route {
+    fn to_string(&self) -> String {
+        let directions = &self.0;
+        let directions: Vec<String> = directions.iter().map(|d| d.to_string()).collect();
+
+        return directions.join("");
+    }
+}
+
 #[derive(Debug, Clone)]
 enum Branches {
     // invariant: branches must have at least one option
 
     // this allows any of the options to be skipped
-    CanSkip(Box<Routes>, Vec<Routes>),
+    CanSkip(Box<Routes>, LinkedList<Routes>),
 
     // only one of the options must be chosen
-    CannotSkip(Box<Routes>, Vec<Routes>),
+    CannotSkip(Box<Routes>, LinkedList<Routes>),
+}
+
+impl Branches {
+    fn to_string(&self) -> String {
+        match self {
+            Branches::CanSkip(routes, rest_routes) => {
+                let rest_str: Vec<String> = rest_routes
+                    .iter()
+                    .map(|routes| routes.to_string())
+                    .collect();
+
+                if rest_str.len() <= 0 {
+                    return format!("{}|", routes.to_string());
+                }
+
+                return format!("{}|{}|", routes.to_string(), rest_str.join("|"));
+            }
+            Branches::CannotSkip(routes, rest_routes) => {
+                let rest_str: Vec<String> = rest_routes
+                    .iter()
+                    .map(|routes| routes.to_string())
+                    .collect();
+                return format!("{}|{}", routes.to_string(), rest_str.join("|"));
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
 struct BranchGroup(Branches);
+
+impl BranchGroup {
+    fn to_string(&self) -> String {
+        let branches = &self.0;
+        return format!("({})", branches.to_string());
+    }
+}
 
 // NOTE: wrap in box because recursive types is illegal in Rust
 // https://stackoverflow.com/questions/25296195/why-are-recursive-struct-types-illegal-in-rust
@@ -90,6 +133,38 @@ struct BranchGroup(Branches);
 enum Routes {
     Route(Route, Box<Option<Routes>>),
     Branch(BranchGroup, Box<Option<Routes>>),
+}
+
+impl Routes {
+    fn to_string(&self) -> String {
+        match self {
+            Routes::Route(route, routes) => {
+                let rest: String = if routes.is_none() {
+                    "".to_string()
+                } else {
+                    routes.clone().unwrap().to_string()
+                };
+                return format!("{}{}", route.to_string(), rest);
+            }
+            Routes::Branch(branch_group, routes) => {
+                let rest: String = if routes.is_none() {
+                    "".to_string()
+                } else {
+                    routes.clone().unwrap().to_string()
+                };
+                return format!("{}{}", branch_group.to_string(), rest);
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+struct Input(Routes);
+
+impl Input {
+    fn to_string(&self) -> String {
+        return format!("^{}$", self.0.to_string());
+    }
 }
 
 // keep track where in the token stream to start reading tokens from
@@ -196,19 +271,13 @@ fn parse_branches(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<
         }
         Some((branches, next_position)) => {
             let result = match branches {
-                Branches::CanSkip(routes_head, other_routes) => {
-                    let mut rest_routes: Vec<Routes> = vec![];
-
-                    rest_routes.push(*routes_head);
-                    rest_routes.extend(other_routes);
+                Branches::CanSkip(routes_head, mut rest_routes) => {
+                    rest_routes.push_front(*routes_head);
 
                     Branches::CanSkip(starting_routes, rest_routes)
                 }
-                Branches::CannotSkip(routes_head, other_routes) => {
-                    let mut rest_routes: Vec<Routes> = vec![];
-
-                    rest_routes.push(*routes_head);
-                    rest_routes.extend(other_routes);
+                Branches::CannotSkip(routes_head, mut rest_routes) => {
+                    rest_routes.push_front(*routes_head);
 
                     Branches::CannotSkip(starting_routes, rest_routes)
                 }
@@ -223,12 +292,15 @@ fn parse_branches(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<
             // implies entire branch group is optional
         }
         Some((other_routes, next_position)) => {
-            let result = Branches::CannotSkip(starting_routes, vec![other_routes]);
+            let mut list = LinkedList::new();
+            list.push_back(other_routes);
+
+            let result = Branches::CannotSkip(starting_routes, list);
             return Some((result, next_position));
         }
     }
 
-    let result = Branches::CanSkip(starting_routes, vec![]);
+    let result = Branches::CanSkip(starting_routes, LinkedList::new());
     return Some((result, current_position));
 }
 
@@ -314,6 +386,45 @@ fn parse_routes(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Ro
     }
 }
 
+fn parse_input(input_string: &str) -> Input {
+    let tokenized = tokenize(input_string);
+
+    // starting position in the token stream
+    let mut current_position = 0;
+
+    // parse starting token
+
+    match parse_start(&tokenized, current_position) {
+        None => {
+            panic!("Expect starting token: ^");
+        }
+        Some((_, next_position)) => {
+            current_position = next_position;
+        }
+    }
+
+    // parse routes
+    let routes: Routes = match parse_routes(&tokenized, current_position) {
+        None => {
+            panic!("No routes generated");
+        }
+        Some((routes, next_position)) => {
+            current_position = next_position;
+            routes
+        }
+    };
+
+    // parse ending token
+    match parse_end(&tokenized, current_position) {
+        None => {
+            panic!("Expect starting token: $");
+        }
+        Some((_, _next_position)) => {}
+    }
+
+    return Input(routes);
+}
+
 type Distance = i32;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -325,6 +436,17 @@ enum OpenDirections {
 }
 
 impl OpenDirections {
+    fn to_string(&self) -> String {
+        let result = match self {
+            OpenDirections::North => "N",
+            OpenDirections::South => "S",
+            OpenDirections::West => "W",
+            OpenDirections::East => "E",
+        };
+
+        return result.to_string();
+    }
+
     fn from_char(d: char) -> Self {
         match d {
             'N' => OpenDirections::North,
@@ -434,10 +556,16 @@ impl Map {
 fn main() {
     let input_string = include_str!("input.txt");
 
-    // let input_string = "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$";
-    let map = Map::new();
+    let input_string = "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$";
+    // let map = Map::new();
 
-    map.parse_input(input_string);
+    // map.parse_input(input_string);
+
+    let result = parse_input(input_string);
+
+    assert_eq!(result.to_string(), input_string);
+
+    println!("{}", result.to_string());
 }
 
 #[cfg(test)]
