@@ -518,10 +518,6 @@ impl Transitions for Coordinate {
 }
 
 struct Map {
-    // a coordinate indicates a room;
-    // and from this room indicates possible directions to go into
-    map: HashMap<Coordinate, HashSet<OpenDirections>>,
-
     // the fewest number of doors to pass through to reach room defined by Coordinate
     room_distance: HashMap<Coordinate, Distance>,
 }
@@ -531,8 +527,6 @@ struct Map {
 impl Map {
     fn new() -> Self {
         Map {
-            map: HashMap::new(),
-
             room_distance: HashMap::new(),
         }
     }
@@ -701,6 +695,17 @@ fn main() {
 
     println!("Part 1: {}", map.distance_to_farthest_room());
 
+    // find number of rooms that are reachable by at least 1000 doors
+    let num_of_rooms = map
+        .room_distance
+        .values()
+        .into_iter()
+        .filter(|x| {
+            return *x >= &1000;
+        })
+        .count();
+
+    println!("Part 2: {}", num_of_rooms);
 }
 
 #[cfg(test)]
