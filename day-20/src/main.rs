@@ -24,10 +24,9 @@ branch_group
     ( branches )
 
 routes
-    branch_group routes
-    route routes
     route
-    branch_group
+    route branch_group
+    route routes
 
 route
     direction route
@@ -132,7 +131,7 @@ impl BranchGroup {
 #[derive(Debug, Clone)]
 enum Routes {
     Route(Route, Box<Option<Routes>>),
-    Branch(BranchGroup, Box<Option<Routes>>),
+    Branch(Route, BranchGroup, Box<Option<Routes>>),
 }
 
 impl Routes {
@@ -146,13 +145,13 @@ impl Routes {
                 };
                 return format!("{}{}", route.to_string(), rest);
             }
-            Routes::Branch(branch_group, routes) => {
+            Routes::Branch(route, branch_group, routes) => {
                 let rest: String = if routes.is_none() {
                     "".to_string()
                 } else {
                     routes.clone().unwrap().to_string()
                 };
-                return format!("{}{}", branch_group.to_string(), rest);
+                return format!("{}{}{}", route.to_string(), branch_group.to_string(), rest);
             }
         }
     }
@@ -353,37 +352,43 @@ fn parse_branch_group(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseRes
 }
 
 fn parse_routes(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Routes> {
-    let parse_result = parse_route(tokens, start_at);
+    let mut current_position = start_at;
 
-    if parse_result.is_some() {
-        let (starting_route, next_position) = parse_result.unwrap();
-        match parse_routes(tokens, next_position) {
-            None => {
-                let result = Routes::Route(starting_route, Box::new(None));
-                return Some((result, next_position));
-            }
-            Some((routes, next_position)) => {
-                let result = Routes::Route(starting_route, Box::new(Some(routes)));
-                return Some((result, next_position));
-            }
-        }
-    }
-
-    match parse_branch_group(tokens, start_at) {
+    let starting_route: Route = match parse_route(tokens, current_position) {
         None => {
             return None;
         }
+        Some((route, next_position)) => {
+            current_position = next_position;
+            route
+        }
+    };
+
+    match parse_branch_group(tokens, current_position) {
+        None => {}
         Some((branch_group, next_position)) => match parse_routes(tokens, next_position) {
             None => {
-                let result = Routes::Branch(branch_group, Box::new(None));
+                let result = Routes::Branch(starting_route, branch_group, Box::new(None));
                 return Some((result, next_position));
             }
             Some((routes, next_position)) => {
-                let result = Routes::Branch(branch_group, Box::new(Some(routes)));
+                let result = Routes::Branch(starting_route, branch_group, Box::new(Some(routes)));
                 return Some((result, next_position));
             }
         },
     }
+
+    let routes = match parse_routes(tokens, current_position) {
+        None => Box::new(None),
+        Some((routes, next_position)) => {
+            current_position = next_position;
+            Box::new(Some(routes))
+        }
+    };
+
+    let result = Routes::Route(starting_route, routes);
+
+    return Some((result, current_position));
 }
 
 fn parse_input(input_string: &str) -> Input {
@@ -515,12 +520,16 @@ impl Map {
 fn main() {
     let input_string = include_str!("input.txt");
 
-    let input_string = "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$";
+    // let input_string = "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$";
     // let map = Map::new();
 
     // map.parse_input(input_string);
 
+    // let input_string = "^N(E|W)N$";
+
     let result = parse_input(input_string);
+
+    // println!("{:?}", result);
 
     assert_eq!(result.to_string(), input_string);
 
