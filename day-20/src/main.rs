@@ -510,47 +510,6 @@ impl Map {
             room_distance: HashMap::new(),
         }
     }
-
-    fn parse_input(&self, input_string: &str) {
-        let tokenized = tokenize(input_string);
-
-        // starting position in the token stream
-        let mut current_position = 0;
-
-        // parse starting token
-
-        match parse_start(&tokenized, current_position) {
-            None => {
-                panic!("Expect starting token: ^");
-            }
-            Some((_, next_position)) => {
-                current_position = next_position;
-            }
-        }
-
-        // parse routes
-        let routes: Routes = match parse_routes(&tokenized, current_position) {
-            None => {
-                panic!("No routes generated");
-            }
-            Some((routes, next_position)) => {
-                current_position = next_position;
-                routes
-            }
-        };
-
-        println!("{:?}", routes);
-
-        // parse ending token
-        match parse_end(&tokenized, current_position) {
-            None => {
-                panic!("Expect starting token: $");
-            }
-            Some((_, next_position)) => {
-                current_position = next_position;
-            }
-        }
-    }
 }
 
 fn main() {
@@ -573,31 +532,26 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_examples() {
+    fn test_parse() {
         let input_string = "^WNE$";
-        let map = Map::new();
-
-        map.parse_input(input_string);
+        let parse_result = parse_input(input_string);
+        assert_eq!(parse_result.to_string(), input_string);
 
         let input_string = "^ENWWW(NEEE|SSE(EE|N))$";
-        let map = Map::new();
-
-        map.parse_input(input_string);
+        let parse_result = parse_input(input_string);
+        assert_eq!(parse_result.to_string(), input_string);
 
         let input_string = "^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$";
-        let map = Map::new();
-
-        map.parse_input(input_string);
+        let parse_result = parse_input(input_string);
+        assert_eq!(parse_result.to_string(), input_string);
 
         let input_string = "^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$";
-        let map = Map::new();
-
-        map.parse_input(input_string);
+        let parse_result = parse_input(input_string);
+        assert_eq!(parse_result.to_string(), input_string);
 
         let input_string = "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$";
-        let map = Map::new();
-
-        map.parse_input(input_string);
+        let parse_result = parse_input(input_string);
+        assert_eq!(parse_result.to_string(), input_string);
     }
 
 }
