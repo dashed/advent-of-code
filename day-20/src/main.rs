@@ -67,6 +67,7 @@ fn tokenize(input_string: &str) -> Vec<Tokens> {
         .collect();
 }
 
+#[derive(Debug)]
 struct Route(Vec<OpenDirections>);
 
 enum Branches {
@@ -77,7 +78,6 @@ enum Branches {
 
 struct BranchGroup(Branches);
 
-// TODO: flesh out
 enum Routes {
     Route(Route, Vec<Routes>),
     Branch(BranchGroup, Vec<Routes>),
@@ -122,13 +122,52 @@ fn parse_end(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()> {
     }
 }
 
+fn parse_route(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Route> {
+    let mut current_position = start_at;
+    let mut route = vec![];
+
+    loop {
+        match tokens.get(current_position) {
+            None => {
+                break;
+            }
+            Some(token) => {
+                if let Tokens::OpenDirection(direction) = token {
+                    route.push(direction.clone());
+                    current_position += 1;
+                    continue;
+                }
+                break;
+            }
+        }
+    }
+
+    if route.len() <= 0 {
+        // no route was parsed
+        return None;
+    }
+
+    let next_position = start_at + route.len();
+    let result = Route(route);
+
+    return Some((result, next_position));
+}
+
 fn parse_routes(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Routes> {
+    let parse_result = parse_route(tokens, start_at);
+
+    if parse_result.is_some() {
+        let route = parse_result.unwrap();
+
+        println!("{:?}", route);
+    }
+
     return None;
 }
 
 type Distance = i32;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 enum OpenDirections {
     North,
     South,
