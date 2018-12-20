@@ -569,6 +569,8 @@ fn main() {
 
     // part 2 spends quite a lot of time on these instructions
 
+    // (BEGIN do while loop body)
+    //
     // instruction 3:
     //
     // OpcodeInstruction(Mulr, 3, 1, Two)
@@ -598,10 +600,15 @@ fn main() {
     //
     // reg[1] = reg[1] + 1
 
+    // (END do while loop body)
+
     // instruction 9:
     //
     // OpcodeInstruction(Gtrr, 1, 5, Two)
+    //
     // reg[2] = reg[1] > reg[5]
+    //
+    // do while loop guard
 
     // instruction 10:
     //
@@ -618,12 +625,21 @@ fn main() {
     //
     // reg[4] = 2
     //
-    // go to instruction 3 (i.e. run )
+    // go to instruction 3 (i.e. run do-while loop body again)
     //
+
+    // instruction 12:
+    // addi 3 1 3
 
     /*
 
-    reg[2] = (reg[3] * reg[1]) == reg[5]
+    naive interpretation:
+
+    do {
+
+        reg[2] = reg[3] * reg[1]
+
+    } while ( !( reg[1] > reg[5] ) )
 
     */
 }
