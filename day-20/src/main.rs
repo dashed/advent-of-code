@@ -23,10 +23,15 @@ branches
 branch_group
     ( branches )
 
+routes_extension
+    branch_group
+    route
+    branch_group routes_extension
+    route routes_extension
+
 routes
     route
-    route branch_group
-    route routes
+    route routes_extension
 
 route
     direction route
