@@ -159,9 +159,9 @@ impl Routes {
 }
 
 #[derive(Debug, Clone)]
-struct Input(Routes);
+struct Directions(Routes);
 
-impl Input {
+impl Directions {
     fn to_string(&self) -> String {
         return format!("^{}$", self.0.to_string());
     }
@@ -264,6 +264,8 @@ fn parse_branches(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<
             }
         }
     }
+
+    // parse for more routes
 
     let mut can_skip_all = true;
     let mut rest_routes: Vec<Routes> = vec![];
@@ -409,7 +411,7 @@ fn parse_routes(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Ro
     }
 }
 
-fn parse_input(input_string: &str) -> Input {
+fn parse_input(input_string: &str) -> Directions {
     let tokenized = tokenize(input_string);
 
     // starting position in the token stream
@@ -445,7 +447,7 @@ fn parse_input(input_string: &str) -> Input {
         Some((_, _next_position)) => {}
     }
 
-    return Input(routes);
+    return Directions(routes);
 }
 
 type Distance = i32;
@@ -533,6 +535,8 @@ impl Map {
             room_distance: HashMap::new(),
         }
     }
+
+    fn parse_directions(directions: Directions) {}
 }
 
 fn main() {
@@ -545,13 +549,13 @@ fn main() {
 
     // let input_string = "^N(E|W)N$";
 
-    let result = parse_input(input_string);
+    let directions = parse_input(input_string);
 
     // println!("{:?}", result);
 
-    assert_eq!(result.to_string(), input_string);
+    assert_eq!(directions.to_string(), input_string);
 
-    println!("{}", result.to_string());
+    println!("{}", directions.to_string());
 }
 
 #[cfg(test)]
