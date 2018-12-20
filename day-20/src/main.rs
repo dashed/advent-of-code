@@ -163,6 +163,33 @@ fn parse_route(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Rou
 }
 
 fn parse_branches(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Branches> {
+
+    let mut current_position = start_at;
+
+    let routes: Routes = match parse_routes(tokens, current_position) {
+        None => {
+            return None;
+        }
+        Some((routes, next_position)) => {
+            current_position = next_position;
+            routes
+        }
+    };
+
+    // parse branch or: |
+
+    match tokens.get(current_position) {
+        None => {
+            return None;
+        }
+        Some(token) => {
+            if token == &Tokens::BranchOr {
+                current_position += 1;
+            }
+            return None;
+        }
+    }
+
     return None;
 }
 
@@ -229,7 +256,21 @@ fn parse_routes(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Ro
         }
     }
 
-    return None;
+    match parse_branch_group(tokens, start_at) {
+        None => {
+            return None;
+        }
+        Some((branch_group, next_position)) => match parse_routes(tokens, next_position) {
+            None => {
+                let result = Routes::Branch(branch_group, Box::new(None));
+                return Some((result, next_position));
+            }
+            Some((routes, next_position)) => {
+                let result = Routes::Branch(branch_group, Box::new(Some(routes)));
+                return Some((result, next_position));
+            }
+        },
+    }
 }
 
 type Distance = i32;
