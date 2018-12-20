@@ -162,6 +162,7 @@ impl Routes {
 struct Directions(Routes);
 
 impl Directions {
+    #[allow(dead_code)]
     fn to_string(&self) -> String {
         return format!("^{}$", self.0.to_string());
     }
@@ -591,46 +592,51 @@ impl Map {
         return new_position;
     }
 
+    fn generate_positions(
+        &mut self,
+        choices: Vec<Routes>,
+        current_position: Coordinate,
+    ) -> HashSet<Coordinate> {
+        // generate new positions for every choice taken
+
+        let new_positions: HashSet<Coordinate> =
+            choices
+                .into_iter()
+                .fold(HashSet::new(), |mut acc, routes_choice| {
+                    let new_positions = self.parse_routes(routes_choice, current_position);
+                    acc.extend(new_positions);
+                    return acc;
+                });
+
+        return new_positions;
+    }
+
     fn parse_branch_group(
         &mut self,
         branch_group: BranchGroup,
         more_routes: Option<Routes>,
         current_position: Coordinate,
-    ) -> Vec<Coordinate> {
+    ) -> HashSet<Coordinate> {
         let BranchGroup(branches) = branch_group;
 
-        let choices: Vec<Routes> = match branches {
+        let new_positions: HashSet<Coordinate> = match branches {
             Branches::CanSkip(first_choice, other_choices) => {
-                // attempt to skip all these choices
-
-                match more_routes.clone() {
-                    None => {
-                        // nothing else to do
-                    }
-                    Some(more_routes) => {
-                        self.parse_routes(more_routes, current_position);
-                    }
-                }
-
                 let mut choices = vec![*first_choice];
                 choices.extend(other_choices);
-                choices
+                let mut new_positions = self.generate_positions(choices, current_position);
+
+                // all of these choices could be skipped, so current_position can be a position to start from
+                new_positions.insert(current_position);
+
+                new_positions
             }
             Branches::CannotSkip(first_choice, other_choices) => {
                 let mut choices = vec![*first_choice];
                 choices.extend(other_choices);
-                choices
+
+                self.generate_positions(choices, current_position)
             }
         };
-
-        // generate new positions for every choice taken
-
-        let new_positions: Vec<Coordinate> =
-            choices.into_iter().fold(vec![], |mut acc, routes_choice| {
-                let new_positions = self.parse_routes(routes_choice, current_position);
-                acc.extend(new_positions);
-                return acc;
-            });
 
         // for each new positions, continue taking more_routes
 
@@ -639,24 +645,31 @@ impl Map {
                 return new_positions;
             }
             Some(more_routes) => {
-                return new_positions
-                    .into_iter()
-                    .fold(vec![], |mut acc, position: Coordinate| {
+                return new_positions.into_iter().fold(
+                    HashSet::new(),
+                    |mut acc, position: Coordinate| {
                         let new_positions = self.parse_routes(more_routes.clone(), position);
                         acc.extend(new_positions);
                         return acc;
-                    });
+                    },
+                );
             }
         }
     }
 
-    fn parse_routes(&mut self, routes: Routes, current_position: Coordinate) -> Vec<Coordinate> {
+    fn parse_routes(
+        &mut self,
+        routes: Routes,
+        current_position: Coordinate,
+    ) -> HashSet<Coordinate> {
         match routes {
             Routes::Route(route, more_routes) => {
                 let new_position = self.parse_route(route, current_position);
                 match *more_routes {
                     None => {
-                        return vec![new_position];
+                        let mut set = HashSet::new();
+                        set.insert(new_position);
+                        return set;
                     }
                     Some(more_routes) => {
                         return self.parse_routes(more_routes, new_position);
@@ -680,23 +693,14 @@ impl Map {
 }
 
 fn main() {
-    // let input_string = include_str!("input.txt");
-
-    let input_string = "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$";
-
-    // let input_string = "^N(E|W)N$";
+    let input_string = include_str!("input.txt");
 
     let directions = parse_input(input_string);
     let mut map = Map::new();
     map.parse_directions(directions);
 
-    println!("{}", map.distance_to_farthest_room());
+    println!("Part 1: {}", map.distance_to_farthest_room());
 
-    // println!("{:?}", result);
-
-    // assert_eq!(directions.to_string(), input_string);
-
-    // println!("{}", directions.to_string());
 }
 
 #[cfg(test)]
