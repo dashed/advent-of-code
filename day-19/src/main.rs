@@ -575,24 +575,39 @@ fn main() {
     //
     // OpcodeInstruction(Mulr, 3, 1, Two)
     // reg[2] = reg[3] * reg[1]
+    //
+    // part of if block guard
 
     // instruction 4:
     //
     // OpcodeInstruction(Eqrr, 2, 5, Two)
     //
     // reg[2] = reg[2] == reg[5]
+    //
+    // if block guard result
 
     // instruction 5:
     //
     // OpcodeInstruction(Addr, 2, 4, Four)
     //
     // reg[4] = reg[2] + reg[4]
+    //
+    // if reg[2] == 0, go to instruction 6 (if block)
+    // if reg[2] == 1, go to instruction 7 (else block)
 
     // instruction 6:
     //
     // OpcodeInstruction(Addi, 4, 1, Four)
     //
     // reg[4] = reg[4] + 1
+    //
+    // go to instruction 8
+
+    // instruction 7:
+    //
+    // addr 3 0 0
+    //
+    // reg[0] = reg[3] + reg[0]
 
     // instruction 8:
     //
@@ -617,7 +632,7 @@ fn main() {
     // reg[4] = reg[4] + reg[2]
     //
     // if reg[2] == 0, go to instruction 11,
-    // otherwise, go to instruction 12 (loop exit)
+    // otherwise if reg[2] == 1, go to instruction 12 (loop exit)
 
     // instruction 11:
     //
@@ -629,7 +644,10 @@ fn main() {
     //
 
     // instruction 12:
+    //
     // addi 3 1 3
+    //
+    // reg[3] = reg[3] + 1
 
     /*
 
@@ -638,6 +656,8 @@ fn main() {
     do {
 
         reg[2] = reg[3] * reg[1]
+        reg[2] = reg[2] == reg[5]
+        reg[4] = reg[2] + reg[4]
 
     } while ( !( reg[1] > reg[5] ) )
 
