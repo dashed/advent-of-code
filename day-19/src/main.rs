@@ -592,8 +592,8 @@ fn main() {
     //
     // reg[4] = reg[2] + reg[4]
     //
-    // if reg[2] == 0, go to instruction 6 (if block)
-    // if reg[2] == 1, go to instruction 7 (else block)
+    // if reg[2] == 0, go to instruction 6 (else block)
+    // if reg[2] == 1, go to instruction 7 (if block)
 
     // instruction 6:
     //
@@ -602,12 +602,16 @@ fn main() {
     // reg[4] = reg[4] + 1
     //
     // go to instruction 8
+    //
+    // NOTE: notice that there is no else block; the if-block was skipped
 
     // instruction 7:
     //
     // addr 3 0 0
     //
     // reg[0] = reg[3] + reg[0]
+    //
+    // if block
 
     // instruction 8:
     //
@@ -623,7 +627,7 @@ fn main() {
     //
     // reg[2] = reg[1] > reg[5]
     //
-    // do while loop guard
+    // part of do while loop guard
 
     // instruction 10:
     //
@@ -631,8 +635,8 @@ fn main() {
     //
     // reg[4] = reg[4] + reg[2]
     //
-    // if reg[2] == 0, go to instruction 11,
-    // otherwise if reg[2] == 1, go to instruction 12 (loop exit)
+    // if reg[2] == 0, go to instruction 11, (this is like a not operation on the while-loop guard)
+    // otherwise if reg[2] == 1, go to instruction 12 (exit the loop)
 
     // instruction 11:
     //
@@ -655,9 +659,11 @@ fn main() {
 
     do {
 
-        reg[2] = reg[3] * reg[1]
-        reg[2] = reg[2] == reg[5]
-        reg[4] = reg[2] + reg[4]
+        if(reg[3] * reg[1] == reg[5]) {
+            reg[0] = reg[3] + reg[0]
+        }
+
+        reg[1] = reg[1] + 1
 
     } while ( !( reg[1] > reg[5] ) )
 
