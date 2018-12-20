@@ -184,6 +184,8 @@ fn parse_branches(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<
         Some(token) => {
             if token == &Tokens::BranchOr {
                 current_position += 1;
+            } else {
+                return None;
             }
         }
     }
@@ -242,8 +244,9 @@ fn parse_branch_group(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseRes
         Some(token) => {
             if token == &Tokens::ParenOpen {
                 current_position += 1;
+            } else {
+                return None;
             }
-            return None;
         }
     }
 
@@ -267,8 +270,9 @@ fn parse_branch_group(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseRes
         Some(token) => {
             if token == &Tokens::ParenClose {
                 current_position += 1;
+            } else {
+                return None;
             }
-            return None;
         }
     }
 
@@ -415,17 +419,57 @@ impl Map {
 
         println!("{:?}", routes);
 
-        // TODO: parse ending token
+        // parse ending token
+        match parse_end(&tokenized, current_position) {
+            None => {
+                panic!("Expect starting token: $");
+            }
+            Some((_, next_position)) => {
+                current_position = next_position;
+            }
+        }
     }
-
-    // parse route starting from the current position
-    fn parse_route(&self, current_position: Coordinate) {}
 }
 
 fn main() {
     let input_string = include_str!("input.txt");
 
+    // let input_string = "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$";
     let map = Map::new();
 
     map.parse_input(input_string);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_examples() {
+        let input_string = "^WNE$";
+        let map = Map::new();
+
+        map.parse_input(input_string);
+
+        let input_string = "^ENWWW(NEEE|SSE(EE|N))$";
+        let map = Map::new();
+
+        map.parse_input(input_string);
+
+        let input_string = "^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$";
+        let map = Map::new();
+
+        map.parse_input(input_string);
+
+        let input_string = "^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$";
+        let map = Map::new();
+
+        map.parse_input(input_string);
+
+        let input_string = "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$";
+        let map = Map::new();
+
+        map.parse_input(input_string);
+    }
+
 }
