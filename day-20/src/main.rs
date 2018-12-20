@@ -7,8 +7,51 @@ use std::collections::HashSet;
 
 // code
 
+/*
+
+Based on https://adriann.github.io/rust_parser.html
+
+Grammar:
+
+branches
+    routes | routes
+    routes |            (with an empty option)
+
+branch_group
+    ( branches )
+
+routes
+    branch_group routes
+    route routes
+    route
+    branch_group
+
+route
+    direction route
+    direction
+
+direction:
+    N, S, W, E
+
+start := ^
+end := $
+input -> start routes end
+
+*/
+
+#[derive(Debug)]
+enum GrammarItem {
+    Start,
+    End,
+    OpenDirection(OpenDirections),
+    ParenOpen,
+    ParenClose,
+    BranchOr
+}
+
 type Distance = i32;
 
+#[derive(Debug)]
 enum OpenDirections {
     North,
     South,
