@@ -7,6 +7,8 @@ use std::collections::HashSet;
 
 // code
 
+type Distance = i32;
+
 enum OpenDirections {
     North,
     South,
@@ -63,6 +65,9 @@ struct Map {
     // a coordinate indicates a room;
     // and from this room indicates possible directions to go into
     map: HashMap<Coordinate, HashSet<OpenDirections>>,
+
+    // the fewest number of doors to pass through to reach room defined by Coordinate
+    room_distance: HashMap<Coordinate, Distance>,
 }
 
 // invariant: the routes will take you through every door in the facility at least once
@@ -71,12 +76,34 @@ impl Map {
     fn new() -> Self {
         Map {
             map: HashMap::new(),
+
+            room_distance: HashMap::new(),
         }
     }
 
     fn parse_input(&self, input_string: &str) {
-        println!("{}", input_string);
+        let input_string = input_string.trim();
+
+        if input_string.len() <= 2 {
+            return;
+        }
+
+        let mut iter = input_string.trim().chars();
+
+        // start
+        assert!(iter.next().unwrap() == '^');
+
+        for direction in input_string.trim().chars() {
+            println!("{}", direction);
+
+            if direction == '$' {
+                break;
+            }
+        }
     }
+
+    // parse route starting from the current position
+    fn parse_route(&self, current_position: Coordinate) {}
 }
 
 fn main() {
