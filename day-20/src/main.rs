@@ -65,8 +65,24 @@ struct Map {
     map: HashMap<Coordinate, HashSet<OpenDirections>>,
 }
 
+// invariant: the routes will take you through every door in the facility at least once
+
+impl Map {
+    fn new() -> Self {
+        Map {
+            map: HashMap::new(),
+        }
+    }
+
+    fn parse_input(&self, input_string: &str) {
+        println!("{}", input_string);
+    }
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
-    println!("{}", input_string);
+    let map = Map::new();
+
+    map.parse_input(input_string);
 }
