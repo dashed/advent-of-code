@@ -70,17 +70,22 @@ fn tokenize(input_string: &str) -> Vec<Tokens> {
 #[derive(Debug)]
 struct Route(Vec<OpenDirections>);
 
+#[derive(Debug)]
 enum Branches {
     // invariant: branches must have at least one option
     CanSkip(Box<Routes>, Vec<Routes>),
     CannotSkip(Box<Routes>, Vec<Routes>),
 }
 
+#[derive(Debug)]
 struct BranchGroup(Branches);
 
+// NOTE: wrap in box because recursive types is illegal in Rust
+// https://stackoverflow.com/questions/25296195/why-are-recursive-struct-types-illegal-in-rust
+#[derive(Debug)]
 enum Routes {
-    Route(Route, Vec<Routes>),
-    Branch(BranchGroup, Vec<Routes>),
+    Route(Route, Box<Option<Routes>>),
+    Branch(BranchGroup, Box<Option<Routes>>),
 }
 
 // keep track where in the token stream to start reading tokens from
@@ -157,9 +162,17 @@ fn parse_routes(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Ro
     let parse_result = parse_route(tokens, start_at);
 
     if parse_result.is_some() {
-        let route = parse_result.unwrap();
-
-        println!("{:?}", route);
+        let (starting_route, next_position) = parse_result.unwrap();
+        match parse_routes(tokens, next_position) {
+            None => {
+                let result = Routes::Route(starting_route, Box::new(None));
+                return Some((result, next_position));
+            }
+            Some((routes, next_position)) => {
+                let result = Routes::Route(starting_route, Box::new(Some(routes)));
+                return Some((result, next_position));
+            }
+        }
     }
 
     return None;
@@ -267,6 +280,8 @@ impl Map {
                 routes
             }
         };
+
+        println!("{:?}", routes);
 
         // TODO: parse ending token
     }
