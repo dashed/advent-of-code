@@ -40,7 +40,7 @@ input -> start routes end
 */
 
 // https://en.wikipedia.org/wiki/Lexical_analysis#Tokenization
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum Tokens {
     Start,
     End,
@@ -65,9 +65,46 @@ fn tokenize(input_string: &str) -> Vec<Tokens> {
         .collect();
 }
 
+// keep track where in the token stream to start reading tokens from
+type TokenPosition = usize;
+
+// after parsing/consuming a portion of the token stream; a result T might be generated.
+// the starting position of the token stream for the next parse is also returned
+type ParseResult<T> = (T, TokenPosition);
+
+fn parse_start(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()> {
+    match tokens.get(start_at) {
+        None => {
+            unreachable!();
+        }
+        Some(token) => {
+            if token == &Tokens::Start {
+                return ((), start_at + 1);
+            }
+
+            unreachable!();
+        }
+    }
+}
+
+fn parse_end(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()> {
+    match tokens.get(start_at) {
+        None => {
+            unreachable!();
+        }
+        Some(token) => {
+            if token == &Tokens::End {
+                return ((), start_at + 1);
+            }
+
+            unreachable!();
+        }
+    }
+}
+
 type Distance = i32;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum OpenDirections {
     North,
     South,
@@ -141,24 +178,11 @@ impl Map {
     }
 
     fn parse_input(&self, input_string: &str) {
-        let input_string = input_string.trim();
+        let tokenized = tokenize(input_string);
 
-        if input_string.len() <= 2 {
-            return;
-        }
-
-        let mut iter = input_string.trim().chars();
-
-        // start
-        assert!(iter.next().unwrap() == '^');
-
-        for direction in input_string.trim().chars() {
-            // println!("{}", direction);
-
-            if direction == '$' {
-                break;
-            }
-        }
+        let (_, next_position) = parse_start(
+            &tokenized, 0, /* starting position in the token stream */
+        );
     }
 
     // parse route starting from the current position
@@ -168,11 +192,7 @@ impl Map {
 fn main() {
     let input_string = include_str!("input.txt");
 
-    // let map = Map::new();
+    let map = Map::new();
 
-    // map.parse_input(input_string);
-
-    let tokenized = tokenize(input_string);
-
-    println!("{:?}", tokenized);
+    map.parse_input(input_string);
 }
