@@ -592,25 +592,52 @@ impl Map {
         branch_group: BranchGroup,
         more_routes: Option<Routes>,
         current_position: Coordinate,
-    ) {
+    ) -> Vec<Coordinate> {
+        let BranchGroup(branches) = branch_group;
 
+        let choices: Vec<Routes> = match branches {
+            Branches::CanSkip(first_choice, other_choices) => {
+                // attempt to skip all these choices
+
+                match more_routes {
+                    None => {
+                        // nothing else to do
+                    }
+                    Some(more_routes) => {
+                        self.parse_routes(more_routes, current_position);
+                    }
+                }
+
+                let mut choices = vec![*first_choice];
+                choices.extend(other_choices);
+                choices
+            }
+            Branches::CannotSkip(first_choice, other_choices) => {
+                let mut choices = vec![*first_choice];
+                choices.extend(other_choices);
+                choices
+            }
+        };
+
+        // remove
+        return vec![];
     }
 
-    fn parse_routes(&mut self, routes: Routes, current_position: Coordinate) {
+    fn parse_routes(&mut self, routes: Routes, current_position: Coordinate) -> Vec<Coordinate> {
         match routes {
             Routes::Route(route, more_routes) => {
                 let new_position = self.parse_route(route, current_position);
                 match *more_routes {
                     None => {
-                        return;
+                        return vec![new_position];
                     }
                     Some(more_routes) => {
-                        self.parse_routes(more_routes, new_position);
+                        return self.parse_routes(more_routes, new_position);
                     }
                 }
             }
             Routes::Branch(branch_group, more_routes) => {
-                self.parse_branch_group(branch_group, *more_routes, current_position);
+                return self.parse_branch_group(branch_group, *more_routes, current_position);
             }
         }
     }
@@ -626,9 +653,9 @@ impl Map {
 }
 
 fn main() {
-    let input_string = include_str!("input.txt");
+    // let input_string = include_str!("input.txt");
 
-    // let input_string = "^(SWSSE(N|ES(ENSW|)WWW(NNNWESSS|)|)|)$";
+    let input_string = "^(SWSSE(N|ES(ENSW|)WWW(NNNWESSS|)|)|)$";
 
     // let input_string = "^N(E|W)N$";
 
