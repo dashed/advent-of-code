@@ -14,8 +14,10 @@ Based on https://adriann.github.io/rust_parser.html
 Grammar:
 
 branches
+    routes |            (with a skip option; i.e. the entire branch group can be effectively skipped)
     routes | routes
-    routes |            (with an empty option)
+    routes | branches
+
 
 branch_group
     ( branches )
@@ -67,10 +69,15 @@ fn tokenize(input_string: &str) -> Vec<Tokens> {
 
 struct Route(Vec<OpenDirections>);
 
-enum Branches {}
+enum Branches {
+    // invariant: branches must have at least one option
+    CanSkip(Routes, Vec<Routes>),
+    CannotSkip(Routes, Vec<Routes>),
+}
 
 struct BranchGroup(Branches);
 
+// TODO: flesh out
 enum Routes {
     Route,
     Branch,
@@ -193,9 +200,17 @@ impl Map {
     fn parse_input(&self, input_string: &str) {
         let tokenized = tokenize(input_string);
 
-        let (_, next_position) = parse_start(
-            &tokenized, 0, /* starting position in the token stream */
-        );
+        // starting position in the token stream
+        let mut current_position = 0;
+
+        match parse_start(&tokenized, current_position) {
+            None => {
+                panic!("Expect starting token: ^");
+            }
+            Some((_, next_position)) => {
+                current_position = next_position;
+            }
+        }
     }
 
     // parse route starting from the current position
