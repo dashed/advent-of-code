@@ -39,14 +39,30 @@ input -> start routes end
 
 */
 
+// https://en.wikipedia.org/wiki/Lexical_analysis#Tokenization
 #[derive(Debug)]
-enum GrammarItem {
+enum Tokens {
     Start,
     End,
     OpenDirection(OpenDirections),
     ParenOpen,
     ParenClose,
-    BranchOr
+    BranchOr,
+}
+
+fn tokenize(input_string: &str) -> Vec<Tokens> {
+    return input_string
+        .trim()
+        .chars()
+        .map(|c| match c {
+            '^' => Tokens::Start,
+            '$' => Tokens::End,
+            '(' => Tokens::ParenOpen,
+            ')' => Tokens::ParenClose,
+            '|' => Tokens::BranchOr,
+            _ => Tokens::OpenDirection(OpenDirections::from_char(c)),
+        })
+        .collect();
 }
 
 type Distance = i32;
@@ -137,7 +153,7 @@ impl Map {
         assert!(iter.next().unwrap() == '^');
 
         for direction in input_string.trim().chars() {
-            println!("{}", direction);
+            // println!("{}", direction);
 
             if direction == '$' {
                 break;
@@ -152,7 +168,11 @@ impl Map {
 fn main() {
     let input_string = include_str!("input.txt");
 
-    let map = Map::new();
+    // let map = Map::new();
 
-    map.parse_input(input_string);
+    // map.parse_input(input_string);
+
+    let tokenized = tokenize(input_string);
+
+    println!("{:?}", tokenized);
 }
