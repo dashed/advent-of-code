@@ -489,7 +489,10 @@ impl Program {
             self.instruction_pointer,
         );
 
-        println!("{:?}", instruction);
+        use std::thread;
+        use std::time::Duration;
+        thread::sleep(Duration::from_millis(100));
+        println!("{:?}", self.instruction_pointer);
 
         // execute instruction
         let opcode = instruction.opcode();
@@ -565,28 +568,62 @@ fn main() {
     println!("Part 2: {}", other_program.registers.get(RegisterID::Zero));
 
     // part 2 spends quite a lot of time on these instructions
+
+    // instruction 3:
+    //
     // OpcodeInstruction(Mulr, 3, 1, Two)
     // reg[2] = reg[3] * reg[1]
 
+    // instruction 4:
+    //
     // OpcodeInstruction(Eqrr, 2, 5, Two)
+    //
     // reg[2] = reg[2] == reg[5]
 
+    // instruction 5:
+    //
     // OpcodeInstruction(Addr, 2, 4, Four)
+    //
     // reg[4] = reg[2] + reg[4]
 
+    // instruction 6:
+    //
     // OpcodeInstruction(Addi, 4, 1, Four)
+    //
     // reg[4] = reg[4] + 1
 
+    // instruction 8:
+    //
     // OpcodeInstruction(Addi, 1, 1, One)
+    //
     // reg[1] = reg[1] + 1
 
+    // instruction 9:
+    //
     // OpcodeInstruction(Gtrr, 1, 5, Two)
     // reg[2] = reg[1] > reg[5]
 
+    // instruction 10:
+    //
     // OpcodeInstruction(Addr, 4, 2, Four)
+    //
     // reg[4] = reg[4] + reg[2]
+    //
+    // if reg[2] == 0, go to instruction 11,
+    // otherwise, go to instruction 12 (loop exit)
 
+    // instruction 11:
+    //
     // OpcodeInstruction(Seti, 2, 9, Four)
+    //
     // reg[4] = 2
+    //
+    // go to instruction 3 (i.e. run )
+    //
 
+    /*
+
+    reg[2] = (reg[3] * reg[1]) == reg[5]
+
+    */
 }
