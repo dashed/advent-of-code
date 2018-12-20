@@ -73,7 +73,11 @@ struct Route(Vec<OpenDirections>);
 #[derive(Debug)]
 enum Branches {
     // invariant: branches must have at least one option
+
+    // this allows any of the options to be skipped
     CanSkip(Box<Routes>, Vec<Routes>),
+
+    // only one of the options must be chosen
     CannotSkip(Box<Routes>, Vec<Routes>),
 }
 
@@ -156,6 +160,43 @@ fn parse_route(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Rou
     let result = Route(route);
 
     return Some((result, next_position));
+}
+
+fn parse_branch_group(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Routes> {
+    let mut current_position = start_at;
+
+    // parse opening parentheses
+
+    match tokens.get(current_position) {
+        None => {
+            return None;
+        }
+        Some(token) => {
+            if token == &Tokens::ParenOpen {
+                current_position += 1;
+            }
+            return None;
+        }
+    }
+
+    // parse branches
+
+    // parse closing parentheses
+
+    match tokens.get(current_position) {
+        None => {
+            return None;
+        }
+        Some(token) => {
+            if token == &Tokens::ParenClose {
+                current_position += 1;
+            }
+            return None;
+        }
+    }
+
+    // TODO: fix
+    return None;
 }
 
 fn parse_routes(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Routes> {
