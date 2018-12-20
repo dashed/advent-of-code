@@ -599,7 +599,7 @@ impl Map {
             Branches::CanSkip(first_choice, other_choices) => {
                 // attempt to skip all these choices
 
-                match more_routes {
+                match more_routes.clone() {
                     None => {
                         // nothing else to do
                     }
@@ -619,8 +619,31 @@ impl Map {
             }
         };
 
-        // remove
-        return vec![];
+        // generate new positions for every choice taken
+
+        let new_positions: Vec<Coordinate> =
+            choices.into_iter().fold(vec![], |mut acc, routes_choice| {
+                let new_positions = self.parse_routes(routes_choice, current_position);
+                acc.extend(new_positions);
+                return acc;
+            });
+
+        // for each new positions, continue taking more_routes
+
+        match more_routes {
+            None => {
+                return new_positions;
+            }
+            Some(more_routes) => {
+                return new_positions
+                    .into_iter()
+                    .fold(vec![], |mut acc, position: Coordinate| {
+                        let new_positions = self.parse_routes(more_routes.clone(), position);
+                        acc.extend(new_positions);
+                        return acc;
+                    });
+            }
+        }
     }
 
     fn parse_routes(&mut self, routes: Routes, current_position: Coordinate) -> Vec<Coordinate> {
