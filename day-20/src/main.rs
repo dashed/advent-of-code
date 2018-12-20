@@ -163,10 +163,9 @@ fn parse_route(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Rou
 }
 
 fn parse_branches(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Branches> {
-
     let mut current_position = start_at;
 
-    let routes: Routes = match parse_routes(tokens, current_position) {
+    let starting_routes: Routes = match parse_routes(tokens, current_position) {
         None => {
             return None;
         }
@@ -187,6 +186,24 @@ fn parse_branches(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<
                 current_position += 1;
             }
             return None;
+        }
+    }
+
+    match parse_branches(tokens, current_position) {
+        None => {}
+        Some((branches, next_position)) => {
+            let result = match branches {
+                Branches::CanSkip(routes, other_routes) => {
+                    let foo: Vec<Routes> = vec![];
+                    Branches::CanSkip(Box::new(starting_routes), foo)
+                }
+                Branches::CannotSkip(routes, other_routes) => {
+                    let foo: Vec<Routes> = vec![];
+                    Branches::CannotSkip(Box::new(starting_routes), foo)
+                }
+            };
+
+            return Some((result, next_position));
         }
     }
 
