@@ -4,7 +4,6 @@
 
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::collections::LinkedList;
 
 // code
 
@@ -14,22 +13,22 @@ Based on https://adriann.github.io/rust_parser.html
 
 Grammar:
 
-branches
+branches:
     routes |            (with a skip option; i.e. the entire branch group can be effectively skipped)
     routes | routes
     routes | branches
 
 
-branch_group
+branch_group:
     ( branches )
 
-routes
+routes:
     route
     branch_group
     route routes
     branch_group routes
 
-route
+route:
     direction route
     direction
 
@@ -38,7 +37,8 @@ direction:
 
 start := ^
 end := $
-input -> start routes end
+input:
+    start routes end
 
 */
 
@@ -85,10 +85,10 @@ enum Branches {
     // invariant: branches must have at least one option
 
     // this allows any of the options to be skipped
-    CanSkip(Box<Routes>, LinkedList<Routes>),
+    CanSkip(Box<Routes>, Vec<Routes>),
 
     // only one of the options must be chosen
-    CannotSkip(Box<Routes>, LinkedList<Routes>),
+    CannotSkip(Box<Routes>, Vec<Routes>),
 }
 
 impl Branches {
@@ -265,42 +265,67 @@ fn parse_branches(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<
         }
     }
 
-    match parse_branches(tokens, current_position) {
-        None => {
-            // implies either skippable, or routes terminates this list
+    let mut can_skip_all = true;
+    let mut rest_routes: Vec<Routes> = vec![];
+
+    loop {
+        match parse_routes(tokens, current_position) {
+            None => {
+                break;
+            }
+            Some((routes, next_position)) => {
+                current_position = next_position;
+                rest_routes.push(routes);
+            }
         }
-        Some((branches, next_position)) => {
-            let result = match branches {
-                Branches::CanSkip(routes_head, mut rest_routes) => {
-                    rest_routes.push_front(*routes_head);
 
-                    Branches::CanSkip(starting_routes, rest_routes)
+        match tokens.get(current_position) {
+            None => {
+                return None;
+            }
+            Some(token) => {
+                match token {
+                    Tokens::BranchOr => {
+                        current_position += 1;
+                        can_skip_all = true;
+                    }
+                    Tokens::ParenClose => {
+                        // this is a peek
+                        can_skip_all = false;
+                        break;
+                    }
+                    _ => {
+                        return None;
+                    }
                 }
-                Branches::CannotSkip(routes_head, mut rest_routes) => {
-                    rest_routes.push_front(*routes_head);
-
-                    Branches::CannotSkip(starting_routes, rest_routes)
-                }
-            };
-
-            return Some((result, next_position));
+            }
         }
     }
 
-    match parse_routes(tokens, current_position) {
+    // expect next token to be a closing ).
+    // peek on next token
+    match tokens.get(current_position) {
         None => {
-            // implies entire branch group is optional
+            return None;
         }
-        Some((other_routes, next_position)) => {
-            let mut list = LinkedList::new();
-            list.push_back(other_routes);
-
-            let result = Branches::CannotSkip(starting_routes, list);
-            return Some((result, next_position));
+        Some(token) => {
+            match token {
+                Tokens::ParenClose => {
+                    // this is a peek
+                }
+                _ => {
+                    return None;
+                }
+            }
         }
     }
 
-    let result = Branches::CanSkip(starting_routes, LinkedList::new());
+    let result = if can_skip_all {
+        Branches::CanSkip(starting_routes, rest_routes)
+    } else {
+        Branches::CannotSkip(starting_routes, rest_routes)
+    };
+
     return Some((result, current_position));
 }
 
@@ -353,26 +378,8 @@ fn parse_branch_group(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseRes
 }
 
 fn parse_routes(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Routes> {
-    let parse_result = parse_route(tokens, start_at);
-
-    if parse_result.is_some() {
-        let (starting_route, next_position) = parse_result.unwrap();
-        match parse_routes(tokens, next_position) {
-            None => {
-                let result = Routes::Route(starting_route, Box::new(None));
-                return Some((result, next_position));
-            }
-            Some((routes, next_position)) => {
-                let result = Routes::Route(starting_route, Box::new(Some(routes)));
-                return Some((result, next_position));
-            }
-        }
-    }
-
     match parse_branch_group(tokens, start_at) {
-        None => {
-            return None;
-        }
+        None => {}
         Some((branch_group, next_position)) => match parse_routes(tokens, next_position) {
             None => {
                 let result = Routes::Branch(branch_group, Box::new(None));
@@ -380,6 +387,22 @@ fn parse_routes(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Ro
             }
             Some((routes, next_position)) => {
                 let result = Routes::Branch(branch_group, Box::new(Some(routes)));
+                return Some((result, next_position));
+            }
+        },
+    }
+
+    match parse_route(tokens, start_at) {
+        None => {
+            return None;
+        }
+        Some((starting_route, next_position)) => match parse_routes(tokens, next_position) {
+            None => {
+                let result = Routes::Route(starting_route, Box::new(None));
+                return Some((result, next_position));
+            }
+            Some((routes, next_position)) => {
+                let result = Routes::Route(starting_route, Box::new(Some(routes)));
                 return Some((result, next_position));
             }
         },
@@ -515,7 +538,7 @@ impl Map {
 fn main() {
     let input_string = include_str!("input.txt");
 
-    // let input_string = "^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$";
+    // let input_string = "^(SWSSE(N|ES(ENSW|)WWW(NNNWESSS|)|)|)$";
     // let map = Map::new();
 
     // map.parse_input(input_string);
