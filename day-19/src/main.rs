@@ -464,6 +464,10 @@ impl Program {
             // hard-coded program for part 2:
             // check if instruction_pointer starts at instruction 2 (i.e. about to run instruction #3)
             if self.instruction_pointer == 2 && self.registers.get(RegisterID::Three) != 0 {
+                // instruction: seti 1 9 1
+                // i.e. reg[1] = 1
+                self.registers.set(RegisterID::One, 1);
+
                 let reg_5 = self.registers.get(RegisterID::Five);
                 let reg_3 = self.registers.get(RegisterID::Three);
 
@@ -473,8 +477,16 @@ impl Program {
                     self.registers.set(RegisterID::Zero, reg_0);
                 }
 
+                // we unroll the loop, and know that register 1 will eventually
+                // be the value of regiser 5
                 self.registers.set(RegisterID::One, reg_5);
 
+                // gtrr 1 5 2
+                // i.e. reg[2] = reg[1] > reg[5]
+                // this is the do-while loop guard
+                self.registers.set(RegisterID::Two, 1);
+
+                // addr 4 2 4
                 self.instruction_pointer = 12;
                 continue;
             }
@@ -506,11 +518,6 @@ impl Program {
             self.instruction_pointer_bound.clone(),
             self.instruction_pointer,
         );
-
-        use std::thread;
-        use std::time::Duration;
-        thread::sleep(Duration::from_millis(100));
-        println!("{:?}", self.instruction_pointer);
 
         // execute instruction
         let opcode = instruction.opcode();
@@ -583,8 +590,11 @@ fn main() {
     other_program.registers.set(RegisterID::Zero, 1);
     other_program.run_program();
 
-    println!("Part 2: {}", other_program.registers.get(RegisterID::Zero));
+    let part_2 = other_program.registers.get(RegisterID::Zero);
+    println!("Part 2: {}", part_2);
+    assert_eq!(part_2, 10628484);
 
+    // without unrolling the loop,
     // part 2 spends quite a lot of time on these instructions
 
     // instruction 2:
