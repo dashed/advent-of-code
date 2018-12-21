@@ -1,5 +1,9 @@
 // https://adventofcode.com/2018/day/21
 
+// code
+
 fn main() {
-    println!("Hello, world!");
+    let input_string = include_str!("input.txt");
+
+    println!("{}", input_string);
 }
