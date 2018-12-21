@@ -459,6 +459,16 @@ impl Program {
         }
     }
 
+    fn fork(&self) -> Self {
+        Program {
+            // The instruction pointer starts at 0.
+            instruction_pointer: 0,
+            instruction_pointer_bound: self.instruction_pointer_bound.clone(),
+            registers: Registers::new(),
+            instructions: self.instructions.clone(),
+        }
+    }
+
     fn run_program(&mut self) {
         loop {
             // hard-coded program for part 2:
@@ -535,9 +545,7 @@ impl Program {
     }
 }
 
-fn main() {
-    let input_string = include_str!("input.txt");
-
+fn parse_input(input_string: &str) -> Program {
     let mut input_iter = input_string.trim().lines().map(|s| s.trim());
 
     let instruction_pointer_bound: RegisterID = {
@@ -575,7 +583,15 @@ fn main() {
         instructions.push(opcode_instruction);
     }
 
-    let mut program = Program::new(instruction_pointer_bound.clone(), instructions.clone());
+    let program = Program::new(instruction_pointer_bound.clone(), instructions.clone());
+
+    return program;
+}
+
+fn main() {
+    let input_string = include_str!("input.txt");
+
+    let mut program = parse_input(input_string);
 
     program.run_program();
 
@@ -585,7 +601,7 @@ fn main() {
     // It appears identical, but on closer inspection, you notice that this time,
     // register 0 started with the value 1.
 
-    let mut other_program = Program::new(instruction_pointer_bound, instructions);
+    let mut other_program = program.fork();
 
     other_program.registers.set(RegisterID::Zero, 1);
     other_program.run_program();
