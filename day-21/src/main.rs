@@ -567,20 +567,70 @@ fn has_halted(mut program: Program, num_of_instructions: i32) -> bool {
     return false;
 }
 
-fn part_1(program: Program) {
-    for input in 0..300000 {
-        let mut program = program.clone();
-        program.registers.set(RegisterID::Zero, input);
+/*
+#ip 1
+seti 123 0 5            0 reg[5] = 123
+bani 5 456 5            1 reg[5] = reg[5] & 456.        note: 123 & 456 is 72
+eqri 5 72 5             2 reg[5] = reg[5] == 72
+addr 5 1 1              3 reg[1] = reg[5] + reg[1]
+seti 0 0 1              4 reg[1] = 0
+seti 0 7 5              5 reg[5] = 0
+bori 5 65536 4
+seti 13159625 6 5
+bani 4 255 3
+addr 5 3 5
+bani 5 16777215 5
+muli 5 65899 5
+bani 5 16777215 5
+gtir 256 4 3
+addr 3 1 1
+addi 1 1 1
+seti 27 9 1
+seti 0 0 3
+addi 3 1 2
+muli 2 256 2
+gtrr 2 4 2
+addr 2 1 1
+addi 1 1 1
+seti 25 0 1
+addi 3 1 3
+seti 17 4 1
+setr 3 3 4
+seti 7 5 1
+eqrr 5 0 3
+addr 3 1 1
+seti 5 6 1
+*/
 
-        let halted = has_halted(program, 10000);
+fn part_1(mut program: Program) {
+    // for input in 0..300000 {
+    //     let mut program = program.clone();
+    //     program.registers.set(RegisterID::Zero, input);
 
-        if halted {
-            println!("Part 1: {}", input);
-            return;
+    //     let halted = has_halted(program, 10000);
+
+    //     if halted {
+    //         println!("Part 1: {}", input);
+    //         return;
+    //     }
+    // }
+
+    // println!(":(");
+
+    while program.instruction_pointer <= 6 {
+        println!("{}: {:?}", program.instruction_pointer, program.registers);
+        let result = program.execute_instruction();
+        match result {
+            Status::Halted => {
+                break;
+            }
+            _ => {}
         }
-    }
 
-    println!(":(");
+        println!("{}: {:?}", program.instruction_pointer, program.registers);
+
+        println!("--------");
+    }
 }
 
 fn main() {
