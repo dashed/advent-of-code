@@ -438,6 +438,7 @@ enum Status {
     NotHalted,
 }
 
+#[derive(Debug, Clone)]
 struct Program {
     // current value of the instruction pointer
     instruction_pointer: i32,
@@ -466,48 +467,6 @@ impl Program {
             instruction_pointer_bound: self.instruction_pointer_bound.clone(),
             registers: Registers::new(),
             instructions: self.instructions.clone(),
-        }
-    }
-
-    fn run_program(&mut self) {
-        loop {
-            // hard-coded program for part 2:
-            // check if instruction_pointer starts at instruction 2 (i.e. about to run instruction #3)
-            if self.instruction_pointer == 2 && self.registers.get(RegisterID::Three) != 0 {
-                // instruction: seti 1 9 1
-                // i.e. reg[1] = 1
-                self.registers.set(RegisterID::One, 1);
-
-                let reg_5 = self.registers.get(RegisterID::Five);
-                let reg_3 = self.registers.get(RegisterID::Three);
-
-                if reg_5 % reg_3 == 0 {
-                    let mut reg_0 = self.registers.get(RegisterID::Zero);
-                    reg_0 += reg_3;
-                    self.registers.set(RegisterID::Zero, reg_0);
-                }
-
-                // we unroll the loop, and know that register 1 will eventually
-                // be the value of regiser 5
-                self.registers.set(RegisterID::One, reg_5);
-
-                // gtrr 1 5 2
-                // i.e. reg[2] = reg[1] > reg[5]
-                // this is the do-while loop guard
-                self.registers.set(RegisterID::Two, 1);
-
-                // addr 4 2 4
-                self.instruction_pointer = 12;
-                continue;
-            }
-
-            let result = self.execute_instruction();
-            match result {
-                Status::Halted => {
-                    break;
-                }
-                _ => {}
-            }
         }
     }
 
@@ -588,14 +547,76 @@ fn parse_input(input_string: &str) -> Program {
     return program;
 }
 
+fn part_1(mut program: Program) {
+    loop {
+        let result = program.execute_instruction();
+        match result {
+            Status::Halted => {
+                break;
+            }
+            _ => {}
+        }
+    }
+
+    let part_1 = program.registers.get(RegisterID::Zero);
+
+    println!("Part 1: {}", part_1);
+    assert_eq!(part_1, 930);
+}
+
+fn part_2(mut program: Program) {
+    loop {
+        // hard-coded program for part 2:
+        // check if instruction_pointer starts at instruction 2 (i.e. about to run instruction #3)
+        if program.instruction_pointer == 2 && program.registers.get(RegisterID::Three) != 0 {
+            // instruction: seti 1 9 1
+            // i.e. reg[1] = 1
+            program.registers.set(RegisterID::One, 1);
+
+            let reg_5 = program.registers.get(RegisterID::Five);
+            let reg_3 = program.registers.get(RegisterID::Three);
+
+            if reg_5 % reg_3 == 0 {
+                let mut reg_0 = program.registers.get(RegisterID::Zero);
+                reg_0 += reg_3;
+                program.registers.set(RegisterID::Zero, reg_0);
+            }
+
+            // we unroll the loop, and know that register 1 will eventually
+            // be the value of regiser 5
+            program.registers.set(RegisterID::One, reg_5);
+
+            // gtrr 1 5 2
+            // i.e. reg[2] = reg[1] > reg[5]
+            // this is the do-while loop guard
+            program.registers.set(RegisterID::Two, 1);
+
+            // addr 4 2 4
+            program.instruction_pointer = 12;
+            continue;
+        }
+
+        let result = program.execute_instruction();
+        match result {
+            Status::Halted => {
+                break;
+            }
+            _ => {}
+        }
+    }
+
+    let part_2 = program.registers.get(RegisterID::Zero);
+
+    println!("Part 2: {}", part_2);
+    assert_eq!(part_2, 10628484);
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
-    let mut program = parse_input(input_string);
+    let program = parse_input(input_string);
 
-    program.run_program();
-
-    println!("Part 1: {}", program.registers.get(RegisterID::Zero));
+    part_1(program.clone());
 
     // A new background process immediately spins up in its place.
     // It appears identical, but on closer inspection, you notice that this time,
@@ -604,11 +625,7 @@ fn main() {
     let mut other_program = program.fork();
 
     other_program.registers.set(RegisterID::Zero, 1);
-    other_program.run_program();
-
-    let part_2 = other_program.registers.get(RegisterID::Zero);
-    println!("Part 2: {}", part_2);
-    assert_eq!(part_2, 10628484);
+    part_2(other_program);
 
     // without unrolling the loop,
     // part 2 spends quite a lot of time on these instructions
