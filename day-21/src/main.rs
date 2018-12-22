@@ -617,31 +617,38 @@ bani 4 255 3            8 reg[3] = reg[4] & 255
 addr 5 3 5              9 reg[5] = reg[5] + reg[3]
 bani 5 16777215 5      10 reg[5] = reg[5] & 16777215
 muli 5 65899 5         11 reg[5] = reg[5] * 65899
-bani 5 16777215 5      13 reg[5] = reg[5] & 16777215
-gtir 256 4 3           14 reg[3] = 256 > reg[4]
-addr 3 1 1             15 reg[1] = reg[3] + reg[1]
-addi 1 1 1             16 reg[1] = reg[1] + reg[1]
-seti 27 9 1            17 reg[1] = 27
+bani 5 16777215 5      12 reg[5] = reg[5] & 16777215
+gtir 256 4 3           13 reg[3] = 256 > reg[4]
+addr 3 1 1             14 reg[1] = reg[3] + reg[1]
+addi 1 1 1             15 reg[1] = reg[1] + reg[1]
+seti 27 9 1            16 reg[1] = 27
 
 
 
-seti 0 0 3             18 reg[3] = 0                            reg_3 = 0
-addi 3 1 2             19 reg[2] = reg[3] + 1                   part of loop exit condition
-muli 2 256 2           20 reg[2] = reg[2] * 256                 part of loop exit condition
-gtrr 2 4 2             21 reg[2] = reg[2] > reg[4]              loop exit condition := (reg_3 + 1) * 256 > reg_4
-addr 2 1 1             22 reg[1] = reg[2] + reg[1]              if exit condition == 1, start from lp=23 (exit),
-                                                                otherwise start from lp=22 (re-run the loop)
-addi 1 1 1             23 reg[1] = reg[1] + 1
-seti 25 0 1            24 reg[1] = 25                           exit loop; start from lp=25
-addi 3 1 3             25 reg[3] = reg[3] + 1
+seti 0 0 3             17 reg[3] = 0                            reg_3 = 0
+
+                                                                while loop guard:
+addi 3 1 2             18 reg[2] = reg[3] + 1                   part of loop exit condition
+muli 2 256 2           19 reg[2] = reg[2] * 256                 part of loop exit condition
+gtrr 2 4 2             20 reg[2] = reg[2] > reg[4]              loop exit condition := (reg_3 + 1) * 256 > reg_4
 
 
-seti 17 4 1            26 reg[1] = 17
-setr 3 3 4             27 reg[4] = reg[3]
-seti 7 5 1             28 reg[1] = 7
-eqrr 5 0 3             29 reg[3] = reg[5] == reg[0]
-addr 3 1 1             30 reg[1] = reg[3] + reg[1]
-seti 5 6 1             31 reg[1] = 5
+addr 2 1 1             21 reg[1] = reg[2] + reg[1]              if exit condition == 1, start from lp=22 (exit),
+                                                                otherwise start from lp=21 (re-run loop)
+
+addi 1 1 1             22 reg[1] = reg[1] + 1                   continue loop: start from lp=23
+
+seti 25 0 1            23 reg[1] = 25                           exit loop; start from lp=25
+
+addi 3 1 3             24 reg[3] = reg[3] + 1                   loop body: reg_3 = reg_3 + 1
+
+seti 17 4 1            25 reg[1] = 17                           re-run loop: start from lp=17
+
+setr 3 3 4             26 reg[4] = reg[3]
+seti 7 5 1             27 reg[1] = 7
+eqrr 5 0 3             28 reg[3] = reg[5] == reg[0]
+addr 3 1 1             29 reg[1] = reg[3] + reg[1]
+seti 5 6 1             30 reg[1] = 5
 
 */
 
