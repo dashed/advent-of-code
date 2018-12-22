@@ -583,23 +583,23 @@ bani 5 16777215 5      10 reg[5] = reg[5] & 16777215
 muli 5 65899 5         11 reg[5] = reg[5] * 65899
 bani 5 16777215 5      13 reg[5] = reg[5] & 16777215
 gtir 256 4 3           14 reg[3] = 256 > reg[4]
-addr 3 1 1             15 reg[x] =
-addi 1 1 1             16 reg[x] =
-seti 27 9              17 reg[x] =
-seti 0 0 3             18 reg[x] =
-addi 3 1 2             19 reg[x] =
-muli 2 256 2           20 reg[x] =
-gtrr 2 4 2             21 reg[x] =
-addr 2 1 1             22 reg[x] =
-addi 1 1 1             23 reg[x] =
-seti 25 0              24 reg[x] =
-addi 3 1 3             25 reg[x] =
-seti 17 4              26 reg[x] =
-setr 3 3 4             27 reg[x] =
-seti 7 5 1             28 reg[x] =
-eqrr 5 0 3             29 reg[x] =
-addr 3 1 1             30 reg[x] =
-seti 5 6 1             31 reg[x] =
+addr 3 1 1             15 reg[1] = reg[3] + reg[1]
+addi 1 1 1             16 reg[1] = reg[1] + reg[1]
+seti 27 9 1            17 reg[1] = 27
+seti 0 0 3             18 reg[3] = 0
+addi 3 1 2             19 reg[2] = reg[3] + 1
+muli 2 256 2           20 reg[2] = reg[2] * 256
+gtrr 2 4 2             21 reg[2] = reg[2] * reg[4]
+addr 2 1 1             22 reg[1] = reg[2] + reg[1]
+addi 1 1 1             23 reg[1] = reg[1] + 1
+seti 25 0 1            24 reg[1] = 25
+addi 3 1 3             25 reg[3] = reg[3] + 1
+seti 17 4 1            26 reg[1] = 17
+setr 3 3 4             27 reg[4] = reg[3]
+seti 7 5 1             28 reg[1] = 7
+eqrr 5 0 3             29 reg[3] = reg[5] == reg[0]
+addr 3 1 1             30 reg[1] = reg[3] + reg[1]
+seti 5 6 1             31 reg[1] = 5
 */
 
 fn part_1(mut program: Program) {
