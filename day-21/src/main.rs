@@ -575,31 +575,31 @@ eqri 5 72 5             2 reg[5] = reg[5] == 72
 addr 5 1 1              3 reg[1] = reg[5] + reg[1]
 seti 0 0 1              4 reg[1] = 0
 seti 0 7 5              5 reg[5] = 0
-bori 5 65536 4
-seti 13159625 6 5
-bani 4 255 3
-addr 5 3 5
-bani 5 16777215 5
-muli 5 65899 5
-bani 5 16777215 5
-gtir 256 4 3
-addr 3 1 1
-addi 1 1 1
-seti 27 9 1
-seti 0 0 3
-addi 3 1 2
-muli 2 256 2
-gtrr 2 4 2
-addr 2 1 1
-addi 1 1 1
-seti 25 0 1
-addi 3 1 3
-seti 17 4 1
-setr 3 3 4
-seti 7 5 1
-eqrr 5 0 3
-addr 3 1 1
-seti 5 6 1
+bori 5 65536 4          6 reg[4] = reg[5] | 65536
+seti 13159625 6 5       7 reg[5] = 13159625
+bani 4 255 3            8 reg[3] = reg[4] & 255
+addr 5 3 5              9 reg[5] = reg[5] + reg[3]
+bani 5 16777215 5      10 reg[5] = reg[5] & 16777215
+muli 5 65899 5         11 reg[5] = reg[5] * 65899
+bani 5 16777215 5      13 reg[5] = reg[5] & 16777215
+gtir 256 4 3           14 reg[3] = 256 > reg[4]
+addr 3 1 1             15 reg[x] =
+addi 1 1 1             16 reg[x] =
+seti 27 9              17 reg[x] =
+seti 0 0 3             18 reg[x] =
+addi 3 1 2             19 reg[x] =
+muli 2 256 2           20 reg[x] =
+gtrr 2 4 2             21 reg[x] =
+addr 2 1 1             22 reg[x] =
+addi 1 1 1             23 reg[x] =
+seti 25 0              24 reg[x] =
+addi 3 1 3             25 reg[x] =
+seti 17 4              26 reg[x] =
+setr 3 3 4             27 reg[x] =
+seti 7 5 1             28 reg[x] =
+eqrr 5 0 3             29 reg[x] =
+addr 3 1 1             30 reg[x] =
+seti 5 6 1             31 reg[x] =
 */
 
 fn part_1(mut program: Program) {
@@ -617,7 +617,7 @@ fn part_1(mut program: Program) {
 
     // println!(":(");
 
-    while program.instruction_pointer <= 6 {
+    while program.instruction_pointer <= 7 {
         println!("{}: {:?}", program.instruction_pointer, program.registers);
         let result = program.execute_instruction();
         match result {
