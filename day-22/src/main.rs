@@ -3,10 +3,12 @@
 // imports
 
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 // code
 
-enum CurrentTool {
+#[derive(Debug, Eq, PartialEq, Hash)]
+enum Tool {
     None, // neither
     Torch,
     ClimbingGear,
@@ -74,6 +76,28 @@ impl RegionType {
         };
         return result.to_string();
     }
+
+    fn required_tools(&self) -> HashSet<Tool> {
+        let mut set = HashSet::new();
+
+        match self {
+            RegionType::Rocky => {
+                set.insert(Tool::ClimbingGear);
+                set.insert(Tool::Torch);
+                return set;
+            }
+            RegionType::Wet => {
+                set.insert(Tool::ClimbingGear);
+                set.insert(Tool::None);
+                return set;
+            }
+            RegionType::Narrow => {
+                set.insert(Tool::None);
+                set.insert(Tool::Torch);
+                return set;
+            }
+        }
+    }
 }
 
 struct Cave {
@@ -81,7 +105,7 @@ struct Cave {
     target: Coordinate,
     geologic_indices: HashMap<Coordinate, GeologicIndex>,
     region_types: HashMap<Coordinate, RegionType>,
-    current_tool: CurrentTool,
+    current_tool: Tool,
 
     // shortest amount of time to reach the region defined by Coordinate
     shortest_time: HashMap<Coordinate, Time>,
@@ -101,7 +125,7 @@ impl Cave {
         geologic_indices.insert(target, 0);
 
         // You start at 0,0 (the mouth of the cave) with the torch equipped
-        let current_tool = CurrentTool::Torch;
+        let current_tool = Tool::Torch;
 
         Cave {
             depth,
