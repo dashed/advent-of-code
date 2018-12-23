@@ -584,9 +584,9 @@ fn compiled_program(reg_0: i32) {
     let reg_0 = reg_0;
     // let mut reg_1 = 0;
     let mut reg_2 = 0;
-    let mut reg_3 = 0;
-    let mut reg_4 = 0;
-    let mut reg_5 = 0;
+    let mut reg_3;
+    let mut reg_4;
+    let mut reg_5;
 
     // start of program
 
@@ -675,6 +675,8 @@ fn compiled_program(reg_0: i32) {
             loop {
                 // loop A
 
+                // while loop guard
+
                 // addi 3 1 2
                 reg_2 = reg_3 + 1;
                 num_of_instructions_executed += 1;
@@ -726,15 +728,15 @@ fn compiled_program(reg_0: i32) {
         reg_3 = if reg_5 == reg_0 { 1 } else { 0 };
         num_of_instructions_executed += 1;
 
-        // match lookup.get(&reg_5) {
-        //     None => {
-        //         lookup.insert(reg_5, num_of_instructions_executed);
-        //         // println!("reg_5 = {}; num_of_instructions_executed = {}", reg_5, num_of_instructions_executed);
-        //     }
-        //     Some(_) => {
-        //         reg_3 = 1;
-        //     }
-        // }
+        match lookup.get(&reg_5) {
+            None => {
+                lookup.insert(reg_5, num_of_instructions_executed);
+                // println!("reg_5 = {}; num_of_instructions_executed = {}", reg_5, num_of_instructions_executed);
+            }
+            Some(_) => {
+                reg_3 = 1;
+            }
+        }
 
         // addr 3 1 1
         num_of_instructions_executed += 1;
@@ -756,7 +758,7 @@ fn compiled_program(reg_0: i32) {
         return *value;
     });
 
-    // println!("lol: {:?}", lol);
+    println!("Best: {:?}", lol);
 
     println!(
         "num_of_instructions_executed: {}",
@@ -917,6 +919,7 @@ fn part_1(mut program: Program, reg_0: i32) {
         }
 
         num_of_instructions_executed += 1;
+        // println!("num_of_instructions_executed: {}", num_of_instructions_executed);
     }
 
     println!("Part 1: {}", num_of_instructions_executed);
