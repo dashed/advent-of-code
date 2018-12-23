@@ -465,16 +465,7 @@ impl Program {
         }
     }
 
-    fn fork(&self) -> Self {
-        Program {
-            // The instruction pointer starts at 0.
-            instruction_pointer: 0,
-            instruction_pointer_bound: self.instruction_pointer_bound.clone(),
-            registers: Registers::new(),
-            instructions: self.instructions.clone(),
-        }
-    }
-
+    #[allow(dead_code)]
     fn print_next_intstruction(&self) {
         let instruction = self.instructions.get(self.instruction_pointer as usize);
         println!("{:?}", instruction);
@@ -557,33 +548,13 @@ fn parse_input(input_string: &str) -> Program {
     return program;
 }
 
-fn has_halted(mut program: Program, num_of_instructions: i32) -> bool {
-    // has the program halted within num_of_instructions?
-
-    let mut current_instructions = 1;
-
-    while current_instructions <= num_of_instructions {
-        let result = program.execute_instruction();
-        match result {
-            Status::Halted => {
-                return true;
-            }
-            _ => {}
-        }
-
-        current_instructions += 1;
-    }
-
-    return false;
-}
-
 fn compiled_program(reg_0: i32) {
     let mut num_of_instructions_executed: i128 = 0;
 
     // registers
     let reg_0 = reg_0;
     // let mut reg_1 = 0;
-    let mut reg_2 = 0;
+    let mut reg_2;
     let mut reg_3;
     let mut reg_4;
     let mut reg_5;
