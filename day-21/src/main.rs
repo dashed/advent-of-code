@@ -625,11 +625,12 @@ fn compiled_program(reg_0: i32) {
 
         // bori 5 65536 4
         reg_4 = reg_5 | 65536;
+        num_of_instructions_executed += 1;
 
         // seti 13159625 6 5
         reg_5 = 13159625;
 
-        num_of_instructions_executed += 2;
+        num_of_instructions_executed += 1;
 
         loop {
             // loop C
@@ -742,6 +743,10 @@ fn compiled_program(reg_0: i32) {
         num_of_instructions_executed += 1;
         if reg_3 == 1 {
             // program exit
+
+            // technically lp=30 will be attempted
+            num_of_instructions_executed += 1;
+
             break;
         } else {
             // seti 5 6 1
@@ -751,24 +756,28 @@ fn compiled_program(reg_0: i32) {
     }
 
     // println!("{}", reg_5);
-    // println!("{}", num_of_instructions_executed);
-
-    let lol = lookup.iter().min_by_key(|item: &(&i32, &i64)| -> i64 {
-        let (_key, value) = *item;
-        return *value;
-    });
-
-    println!("Best: {:?}", lol);
-
     println!(
         "num_of_instructions_executed: {}",
         num_of_instructions_executed
     );
 
+    let (best_reg_0_value, min_num_of_instructions) = lookup
+        .iter()
+        .min_by_key(|item: &(&i32, &i64)| -> i64 {
+            let (_key, value) = *item;
+            return *value;
+        })
+        .unwrap();
+
     println!(
-        "Registers Registers({}, {}, {}, {}, {}, {})",
-        reg_0, "_", reg_2, reg_3, reg_4, reg_5
+        "reg_0 should be {} which executes at minimum {} instructions",
+        best_reg_0_value, min_num_of_instructions
     );
+
+    // println!(
+    //     "Registers Registers({}, {}, {}, {}, {}, {})",
+    //     reg_0, "_", reg_2, reg_3, reg_4, reg_5
+    // );
 }
 
 /*
@@ -898,8 +907,28 @@ fn part_1(mut program: Program, reg_0: i32) {
             let mut reg_3 = program.registers.get(RegisterID::Three);
             let reg_4 = program.registers.get(RegisterID::Four);
 
-            while (reg_3 + 1) * 256 > reg_4 {
+            loop {
+                // addi 3 1 2
+                // muli 2 256 2
+                // gtrr 2 4 2
+                // addr 2 1 1
+                num_of_instructions_executed += 4;
+                if (reg_3 + 1) * 256 > reg_4 {
+                    // seti 25 0 1
+                    num_of_instructions_executed += 1;
+                    break;
+                }
+                // addi 1 1 1
+                // continue loop body
+                num_of_instructions_executed += 1;
+
+                // addi 3 1 3
+                num_of_instructions_executed += 1;
                 reg_3 += 1;
+
+                // seti 17 4 1
+                num_of_instructions_executed += 1;
+                // re-run loop
             }
 
             program.registers.set(RegisterID::Three, reg_3);
@@ -911,19 +940,20 @@ fn part_1(mut program: Program, reg_0: i32) {
         }
 
         let result = program.execute_instruction();
+        num_of_instructions_executed += 1;
         match result {
             Status::Halted => {
                 break;
             }
             _ => {}
         }
-
-        num_of_instructions_executed += 1;
-        // println!("num_of_instructions_executed: {}", num_of_instructions_executed);
     }
 
-    println!("Part 1: {}", num_of_instructions_executed);
-    println!("Registers {:?}", program.registers);
+    println!(
+        "Verification by executing program. num_of_instructions_executed: {}",
+        num_of_instructions_executed
+    );
+    // println!("Registers {:?}", program.registers);
 }
 
 fn main() {
