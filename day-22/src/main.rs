@@ -7,6 +7,8 @@ use std::collections::HashSet;
 
 // code
 
+type StateChange = (Tool /* current tool */, Tool /* next tool */);
+
 // takes 7 minutes to switch tools
 const TIME_TO_SWITCH_TOOL: Time = 7;
 
@@ -111,7 +113,7 @@ struct Cave {
     current_tool: Tool,
 
     // shortest amount of time to reach the region defined by Coordinate
-    shortest_time: HashMap<(Coordinate, Tool), Time>,
+    shortest_time: HashMap<StateChange, Time>,
 }
 
 impl Cave {
@@ -125,7 +127,6 @@ impl Cave {
 
         // The region at 0,0 (the mouth of the cave) has a geologic index of 0.
         geologic_indices.insert(MOUTH_OF_CAVE, 0);
-        shortest_time.insert((MOUTH_OF_CAVE, current_tool.clone()), 0);
 
         // The region at the coordinates of the target has a geologic index of 0.
         geologic_indices.insert(target, 0);
@@ -168,7 +169,19 @@ impl Cave {
         return result;
     }
 
-    fn projected_time_to_move(&mut self, coord: &Coordinate) -> Time {
+    fn get_adjacent_squares(&self, coord: &Coordinate) -> Vec<Coordinate> {
+        let adjacent = vec![coord.left(), coord.right(), coord.up(), coord.down()];
+
+        return adjacent
+            .into_iter()
+            .filter(|coord| {
+                let (x, y) = coord;
+                return x >= &0 && y >= &0;
+            })
+            .collect();
+    }
+
+    fn projected_time_to_move(&mut self, coord: &Coordinate) -> Vec<(StateChange, Time)> {
         // how long would it hypothetically take to move into this region?
 
         let mut total_time = 0;
@@ -185,18 +198,28 @@ impl Cave {
                 total_time += TIME_TO_SWITCH_TOOL;
             }
 
-            return total_time;
+            return vec![((self.current_tool.clone(), Tool::Torch), total_time)];
         }
 
         let required_tools = self.get_region_type(coord).required_tools();
 
         if required_tools.contains(&self.current_tool) {
-            return total_time;
+            return vec![(
+                (self.current_tool.clone(), self.current_tool.clone()),
+                total_time,
+            )];
         }
 
-        // TODO: fix
+        // takes 7 minutes to switch tools
 
-        return total_time;
+        total_time += 7;
+
+        return required_tools
+            .iter()
+            .map(|next_tool| -> (StateChange, Time) {
+                return ((self.current_tool.clone(), next_tool.clone()), total_time);
+            })
+            .collect();
     }
 
     fn get_erosion_level(&mut self, coord: &Coordinate) -> ErosionLevel {
