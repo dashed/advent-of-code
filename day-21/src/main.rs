@@ -578,7 +578,6 @@ fn has_halted(mut program: Program, num_of_instructions: i32) -> bool {
 }
 
 fn compiled_program(reg_0: i32) {
-
     let mut num_of_instructions_executed: i64 = 0;
 
     // registers
@@ -589,7 +588,6 @@ fn compiled_program(reg_0: i32) {
     let mut reg_4 = 0;
     let mut reg_5 = 0;
 
-
     // start of program
 
     // seti 123 0 5
@@ -597,14 +595,13 @@ fn compiled_program(reg_0: i32) {
     num_of_instructions_executed += 1;
 
     loop {
-
         // bani 5 456 5
         reg_5 = reg_5 & 456;
         num_of_instructions_executed += 1;
 
         // eqri 5 72 5
         num_of_instructions_executed += 1;
-        reg_5 = if reg_5 == 72 {1} else {0};
+        reg_5 = if reg_5 == 72 { 1 } else { 0 };
 
         // addr 5 1 1
         num_of_instructions_executed += 1;
@@ -615,7 +612,6 @@ fn compiled_program(reg_0: i32) {
             num_of_instructions_executed += 1;
             continue;
         }
-
     }
 
     // seti 0 7 5
@@ -656,20 +652,17 @@ fn compiled_program(reg_0: i32) {
             num_of_instructions_executed += 5;
 
             // gtir 256 4 3
-            reg_3 = if 256 > reg_4 {1} else {0};
+            reg_3 = if 256 > reg_4 { 1 } else { 0 };
             num_of_instructions_executed += 1;
 
             // addr 3 1 1
             num_of_instructions_executed += 1;
             if reg_3 == 1 {
-
                 // seti 27 9 1
                 // break out of loop C
                 num_of_instructions_executed += 1;
                 break;
-
-            }  else {
-
+            } else {
                 // addi 1 1 1
                 // continue loop C
                 num_of_instructions_executed += 1;
@@ -691,7 +684,7 @@ fn compiled_program(reg_0: i32) {
                 num_of_instructions_executed += 1;
 
                 // gtrr 2 4 2
-                reg_2 = if reg_2 > reg_4 {1} else {0};
+                reg_2 = if reg_2 > reg_4 { 1 } else { 0 };
                 num_of_instructions_executed += 1;
 
                 // addr 2 1 1
@@ -718,7 +711,6 @@ fn compiled_program(reg_0: i32) {
                 num_of_instructions_executed += 1;
             }
 
-
             // setr 3 3 4
             reg_4 = reg_3;
             num_of_instructions_executed += 1;
@@ -731,7 +723,7 @@ fn compiled_program(reg_0: i32) {
         // do-while loop guard for loop B:
 
         // eqrr 5 0 3
-        reg_3 = if reg_5 == reg_0 {1} else {0};
+        reg_3 = if reg_5 == reg_0 { 1 } else { 0 };
         num_of_instructions_executed += 1;
 
         // match lookup.get(&reg_5) {
@@ -754,7 +746,6 @@ fn compiled_program(reg_0: i32) {
             num_of_instructions_executed += 1;
             // continue loop
         }
-
     }
 
     // println!("{}", reg_5);
@@ -767,9 +758,15 @@ fn compiled_program(reg_0: i32) {
 
     // println!("lol: {:?}", lol);
 
-    println!("num_of_instructions_executed: {}", num_of_instructions_executed);
+    println!(
+        "num_of_instructions_executed: {}",
+        num_of_instructions_executed
+    );
 
-    println!("Registers Registers({}, {}, {}, {}, {}, {})", reg_0, "_", reg_2, reg_3, reg_4, reg_5);
+    println!(
+        "Registers Registers({}, {}, {}, {}, {}, {})",
+        reg_0, "_", reg_2, reg_3, reg_4, reg_5
+    );
 }
 
 /*
@@ -890,16 +887,12 @@ loop B end
 */
 
 fn part_1(mut program: Program, reg_0: i32) {
-
     program.registers.set(RegisterID::Zero, reg_0);
 
     let mut num_of_instructions_executed = 0;
 
     loop {
-
-
         if program.instruction_pointer == 18 {
-
             let mut reg_3 = program.registers.get(RegisterID::Three);
             let reg_4 = program.registers.get(RegisterID::Four);
 
@@ -924,10 +917,7 @@ fn part_1(mut program: Program, reg_0: i32) {
         }
 
         num_of_instructions_executed += 1;
-
     }
-
-
 
     println!("Part 1: {}", num_of_instructions_executed);
     println!("Registers {:?}", program.registers);
