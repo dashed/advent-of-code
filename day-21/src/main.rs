@@ -578,7 +578,7 @@ fn has_halted(mut program: Program, num_of_instructions: i32) -> bool {
 }
 
 fn compiled_program(reg_0: i32) {
-    let mut num_of_instructions_executed: i64 = 0;
+    let mut num_of_instructions_executed: i128 = 0;
 
     // registers
     let reg_0 = reg_0;
@@ -618,7 +618,7 @@ fn compiled_program(reg_0: i32) {
     reg_5 = 0;
     num_of_instructions_executed += 1;
 
-    let mut lookup: HashMap<i32, i64> = HashMap::new();
+    let mut lookup: HashMap<i32, i128> = HashMap::new();
 
     loop {
         // loop B
@@ -763,15 +763,28 @@ fn compiled_program(reg_0: i32) {
 
     let (best_reg_0_value, min_num_of_instructions) = lookup
         .iter()
-        .min_by_key(|item: &(&i32, &i64)| -> i64 {
+        .min_by_key(|item: &(&i32, &i128)| -> i128 {
             let (_key, value) = *item;
             return *value;
         })
         .unwrap();
 
     println!(
-        "reg_0 should be {} which executes at minimum {} instructions",
+        "reg_0 should be {} which halts after executing at minimum {} instructions",
         best_reg_0_value, min_num_of_instructions
+    );
+
+    let (lol, max_num_of_instructions) = lookup
+        .iter()
+        .max_by_key(|item: &(&i32, &i128)| -> i128 {
+            let (_key, value) = *item;
+            return *value;
+        })
+        .unwrap();
+
+    println!(
+        "reg_0 should be {} which halts after executing at  maximum {} instructions",
+        lol, max_num_of_instructions
     );
 
     // println!(
@@ -949,6 +962,8 @@ fn part_1(mut program: Program, reg_0: i32) {
         }
     }
 
+    println!("-----");
+
     println!(
         "Verification by executing program. num_of_instructions_executed: {}",
         num_of_instructions_executed
@@ -957,7 +972,7 @@ fn part_1(mut program: Program, reg_0: i32) {
 }
 
 fn main() {
-    compiled_program(3941014);
+    compiled_program(0);
 
     let input_string = include_str!("input.txt");
     let program = parse_input(input_string);
