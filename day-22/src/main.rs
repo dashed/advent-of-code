@@ -6,6 +6,12 @@ use std::collections::HashMap;
 
 // code
 
+enum CurrentTool {
+    None, // neither
+    Torch,
+    ClimbingGear,
+}
+
 type Coordinate = (i32, i32);
 type GeologicIndex = i32;
 type RiskLevel = i32;
@@ -72,6 +78,7 @@ struct Cave {
     depth: Depth,
     target: Coordinate,
     geologic_indices: HashMap<Coordinate, GeologicIndex>,
+    current_tool: CurrentTool,
 }
 
 impl Cave {
@@ -84,10 +91,14 @@ impl Cave {
         // The region at the coordinates of the target has a geologic index of 0.
         geologic_indices.insert(target, 0);
 
+        // You start at 0,0 (the mouth of the cave) with the torch equipped
+        let current_tool = CurrentTool::Torch;
+
         Cave {
             depth,
             target,
             geologic_indices,
+            current_tool,
         }
     }
 
