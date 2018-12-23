@@ -7,6 +7,9 @@ use std::collections::HashSet;
 
 // code
 
+// takes 7 minutes to switch tools
+const TIME_TO_SWITCH_TOOL: Time = 7;
+
 #[derive(Debug, Eq, PartialEq, Hash, Clone)]
 enum Tool {
     None, // neither
@@ -173,10 +176,19 @@ impl Cave {
         // Moving to an adjacent region takes one minute.
         total_time += 1;
 
-        // TODO:
-        // Finally, once you reach the target, you need the torch equipped before you can find him in the dark.
-        // The target is always in a rocky region, so if you arrive there with climbing gear equipped,
-        // you will need to spend seven minutes switching to your torch.
+        if *coord == self.target {
+            // Finally, once you reach the target, you need the torch equipped before you can find him in the dark.
+            // The target is always in a rocky region, so if you arrive there with climbing gear equipped,
+            // you will need to spend seven minutes switching to your torch.
+
+            if self.current_tool != Tool::Torch {
+                total_time += TIME_TO_SWITCH_TOOL;
+            }
+
+            return total_time;
+        }
+
+        let required_tools = self.get_region_type(coord).required_tools();
 
         return total_time;
     }
