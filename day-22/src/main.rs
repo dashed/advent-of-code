@@ -2,10 +2,29 @@
 
 // imports
 
+use std::cmp::Ordering;
+use std::collections::BinaryHeap;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
 // code
+
+#[derive(PartialEq, Hash, Eq, Clone, Debug)]
+struct TimeCoordinate(Time, Coordinate);
+
+impl PartialOrd for TimeCoordinate {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        // reversed for the binary heap which is a max-heap
+        return other.0.partial_cmp(&self.0);
+    }
+}
+
+impl Ord for TimeCoordinate {
+    fn cmp(&self, other: &Self) -> Ordering {
+        let ord = self.partial_cmp(other).unwrap();
+        return ord;
+    }
+}
 
 type StateChange = (Tool /* current tool */, Tool /* next tool */);
 
@@ -112,8 +131,8 @@ struct Cave {
     region_types: HashMap<Coordinate, RegionType>,
     current_tool: Tool,
 
-    // shortest amount of time to reach the region defined by Coordinate
-    shortest_time: HashMap<StateChange, Time>,
+    // shortest amount of time to reach the region defined by Coordinate and the state change
+    shortest_time: HashMap<Coordinate, Time>,
 }
 
 impl Cave {
@@ -224,6 +243,20 @@ impl Cave {
 
     fn get_erosion_level(&mut self, coord: &Coordinate) -> ErosionLevel {
         return (self.get_geologic_index(coord) + self.depth) % 20183;
+    }
+
+    fn find_target(&mut self) {
+        let mut visited = vec![MOUTH_OF_CAVE];
+
+        let mut available_squares: BinaryHeap<TimeCoordinate> = BinaryHeap::new();
+        // keep track of the best minimum time spent for a coordinate
+        let mut time_costs: HashMap<Coordinate, Time> = HashMap::new();
+        let mut best_edges: HashMap<Coordinate, Coordinate> = HashMap::new();
+
+        available_squares.push(TimeCoordinate(0, MOUTH_OF_CAVE));
+        time_costs.insert(MOUTH_OF_CAVE, 0);
+
+        while let Some(current_coord) = available_squares.pop() {}
     }
 
     fn get_geologic_index(&mut self, coord: &Coordinate) -> GeologicIndex {
