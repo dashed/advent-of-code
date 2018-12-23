@@ -251,12 +251,53 @@ impl Cave {
         let mut available_squares: BinaryHeap<TimeCoordinate> = BinaryHeap::new();
         // keep track of the best minimum time spent for a coordinate
         let mut time_costs: HashMap<Coordinate, Time> = HashMap::new();
-        let mut best_edges: HashMap<Coordinate, Coordinate> = HashMap::new();
 
         available_squares.push(TimeCoordinate(0, MOUTH_OF_CAVE));
         time_costs.insert(MOUTH_OF_CAVE, 0);
 
-        while let Some(current_coord) = available_squares.pop() {}
+        while let Some(current_square) = available_squares.pop() {
+
+            let TimeCoordinate(current_cost, current_position) = current_square;
+
+            if current_position == self.target {
+                // TODO: generate cost
+                break;
+            }
+
+            match time_costs.get(&current_position) {
+                None => {
+                    unreachable!();
+                }
+                Some(best_time_cost) => {
+                    if current_cost > *best_time_cost {
+                        continue;
+                    }
+                }
+            }
+
+            for adjacent_square in self.get_adjacent_squares(&current_position) {
+
+                match time_costs.get(&adjacent_square) {
+                    None => {
+                        // time_costs.insert(adjacent_square, adjacent_distance);
+                        // available_squares.push(DistanceCoordinate(adjacent_distance, adjacent_square));
+                    }
+                    Some(best_distance) => {
+                        // NOTE: this potentially adds duplicates to the available_squares min-heap;
+                        // but that's fine :P
+                        // see: https://www3.cs.stonybrook.edu/~rezaul/papers/TR-07-54.pdf
+
+                        // if adjacent_distance < *best_distance {
+                        //     distances.insert(adjacent_square, adjacent_distance);
+                        //     available_squares
+                        //         .push(DistanceCoordinate(adjacent_distance, adjacent_square));
+                        //     best_edges.insert(adjacent_square, current_position);
+                        // }
+                    }
+                }
+            }
+
+        }
     }
 
     fn get_geologic_index(&mut self, coord: &Coordinate) -> GeologicIndex {
