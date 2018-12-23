@@ -14,6 +14,35 @@ type Depth = i32;
 
 const MOUTH_OF_CAVE: Coordinate = (0, 0);
 
+trait Transitions {
+    fn up(&self) -> Coordinate;
+    fn down(&self) -> Coordinate;
+    fn left(&self) -> Coordinate;
+    fn right(&self) -> Coordinate;
+}
+
+impl Transitions for Coordinate {
+    fn up(&self) -> Coordinate {
+        let (x, y) = self;
+        return (*x, y - 1);
+    }
+
+    fn down(&self) -> Coordinate {
+        let (x, y) = self;
+        return (*x, y + 1);
+    }
+
+    fn left(&self) -> Coordinate {
+        let (x, y) = self;
+        return (x - 1, *y);
+    }
+
+    fn right(&self) -> Coordinate {
+        let (x, y) = self;
+        return (x + 1, *y);
+    }
+}
+
 enum RegionType {
     Rocky,
     Narrow,
@@ -113,7 +142,7 @@ impl Cave {
         } else {
             // Otherwise, the region's geologic index is
             // the result of multiplying the erosion levels of the regions at X-1,Y and X,Y-1.
-            self.get_erosion_level(&(x - 1, *y)) * self.get_erosion_level(&(*x, y - 1))
+            self.get_erosion_level(&coord.left()) * self.get_erosion_level(&coord.up())
         };
 
         self.geologic_indices.insert(*coord, geologic_index);
@@ -178,12 +207,11 @@ fn part_1(depth: Depth, target: Coordinate) -> RiskLevel {
 fn main() {
     // input
 
-   let depth = 4002;
+    let depth = 4002;
     let target: Coordinate = (5, 746);
 
     let part_1 = part_1(depth, target);
     println!("Part 1: {}", part_1);
-
 
     // let cave = Cave::new(depth, target);
 }
