@@ -50,6 +50,7 @@ impl Transitions for Coordinate {
     }
 }
 
+#[derive(Debug, Clone)]
 enum RegionType {
     Rocky,
     Narrow,
@@ -79,6 +80,7 @@ struct Cave {
     depth: Depth,
     target: Coordinate,
     geologic_indices: HashMap<Coordinate, GeologicIndex>,
+    region_types: HashMap<Coordinate, RegionType>,
     current_tool: CurrentTool,
 
     // shortest amount of time to reach the region defined by Coordinate
@@ -89,6 +91,7 @@ impl Cave {
     fn new(depth: Depth, target: Coordinate) -> Self {
         let mut geologic_indices = HashMap::new();
         let mut shortest_time = HashMap::new();
+        let region_types = HashMap::new();
 
         // The region at 0,0 (the mouth of the cave) has a geologic index of 0.
         geologic_indices.insert(MOUTH_OF_CAVE, 0);
@@ -106,6 +109,7 @@ impl Cave {
             geologic_indices,
             current_tool,
             shortest_time,
+            region_types,
         }
     }
 
@@ -114,16 +118,38 @@ impl Cave {
     }
 
     fn get_region_type(&mut self, coord: &Coordinate) -> RegionType {
+        match self.region_types.get(coord) {
+            Some(region_type) => {
+                return region_type.clone();
+            }
+            None => {}
+        }
+
         let result = self.get_erosion_level(coord) % 3;
 
-        match result {
+        let result = match result {
             0 => RegionType::Rocky,
             1 => RegionType::Wet,
             2 => RegionType::Narrow,
             _ => {
                 unreachable!();
             }
-        }
+        };
+
+        self.region_types.insert(*coord, result.clone());
+
+        return result;
+    }
+
+    fn projected_time_to_move(&self, coord: &Coordinate) -> Time {
+        // how long would it hypothetically take to move into this region?
+
+        let mut total_time = 0;
+
+        // Moving to an adjacent region takes one minute.
+        total_time += 1;
+
+        return total_time;
     }
 
     fn get_erosion_level(&mut self, coord: &Coordinate) -> ErosionLevel {
