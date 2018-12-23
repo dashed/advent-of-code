@@ -9,8 +9,10 @@ use std::collections::HashSet;
 
 // code
 
+type ToolCoordinate = (Tool, Coordinate);
+
 #[derive(PartialEq, Hash, Eq, Clone, Debug)]
-struct TimeCoordinate(Time, Coordinate);
+struct TimeCoordinate(Time, ToolCoordinate);
 
 impl PartialOrd for TimeCoordinate {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
@@ -26,7 +28,8 @@ impl Ord for TimeCoordinate {
     }
 }
 
-type StateChange = (Tool /* current tool */, Tool /* next tool */);
+// TODO: remove
+// type StateChange = (Tool /* current tool */, Tool /* next tool */);
 
 // takes 7 minutes to switch tools
 const TIME_TO_SWITCH_TOOL: Time = 7;
@@ -129,7 +132,7 @@ struct Cave {
     target: Coordinate,
     geologic_indices: HashMap<Coordinate, GeologicIndex>,
     region_types: HashMap<Coordinate, RegionType>,
-    current_tool: Tool,
+    initial_tool: Tool,
 
     // shortest amount of time to reach the region defined by Coordinate and the state change
     shortest_time: HashMap<Coordinate, Time>,
@@ -142,7 +145,7 @@ impl Cave {
         let region_types = HashMap::new();
 
         // You start at 0,0 (the mouth of the cave) with the torch equipped
-        let current_tool = Tool::Torch;
+        let initial_tool = Tool::Torch;
 
         // The region at 0,0 (the mouth of the cave) has a geologic index of 0.
         geologic_indices.insert(MOUTH_OF_CAVE, 0);
@@ -154,7 +157,7 @@ impl Cave {
             depth,
             target,
             geologic_indices,
-            current_tool,
+            initial_tool,
             shortest_time,
             region_types,
         }
@@ -200,7 +203,11 @@ impl Cave {
             .collect();
     }
 
-    fn projected_time_to_move(&mut self, coord: &Coordinate) -> Vec<(StateChange, Time)> {
+    fn projected_time_to_move(
+        &mut self,
+        current_tool: Tool,
+        new_position: Coordinate,
+    ) -> Vec<(Tool, Time)> {
         // how long would it hypothetically take to move into this region?
 
         let mut total_time = 0;
@@ -208,25 +215,22 @@ impl Cave {
         // Moving to an adjacent region takes one minute.
         total_time += 1;
 
-        if *coord == self.target {
+        if new_position == self.target {
             // Finally, once you reach the target, you need the torch equipped before you can find him in the dark.
             // The target is always in a rocky region, so if you arrive there with climbing gear equipped,
             // you will need to spend seven minutes switching to your torch.
 
-            if self.current_tool != Tool::Torch {
+            if current_tool != Tool::Torch {
                 total_time += TIME_TO_SWITCH_TOOL;
             }
 
-            return vec![((self.current_tool.clone(), Tool::Torch), total_time)];
+            return vec![((Tool::Torch), total_time)];
         }
 
-        let required_tools = self.get_region_type(coord).required_tools();
+        let required_tools = self.get_region_type(&new_position).required_tools();
 
-        if required_tools.contains(&self.current_tool) {
-            return vec![(
-                (self.current_tool.clone(), self.current_tool.clone()),
-                total_time,
-            )];
+        if required_tools.contains(&current_tool) {
+            return vec![((current_tool.clone()), total_time)];
         }
 
         // takes 7 minutes to switch tools
@@ -235,8 +239,8 @@ impl Cave {
 
         return required_tools
             .iter()
-            .map(|next_tool| -> (StateChange, Time) {
-                return ((self.current_tool.clone(), next_tool.clone()), total_time);
+            .map(|next_tool| -> (Tool, Time) {
+                return ((next_tool.clone()), total_time);
             })
             .collect();
     }
@@ -252,12 +256,14 @@ impl Cave {
         // keep track of the best minimum time spent for a coordinate
         let mut time_costs: HashMap<Coordinate, Time> = HashMap::new();
 
-        available_squares.push(TimeCoordinate(0, MOUTH_OF_CAVE));
+        available_squares.push(TimeCoordinate(
+            0,
+            (self.initial_tool.clone(), MOUTH_OF_CAVE),
+        ));
         time_costs.insert(MOUTH_OF_CAVE, 0);
 
         while let Some(current_square) = available_squares.pop() {
-
-            let TimeCoordinate(current_cost, current_position) = current_square;
+            let TimeCoordinate(current_cost, (current_tool, current_position)) = current_square;
 
             if current_position == self.target {
                 // TODO: generate cost
@@ -276,7 +282,6 @@ impl Cave {
             }
 
             for adjacent_square in self.get_adjacent_squares(&current_position) {
-
                 match time_costs.get(&adjacent_square) {
                     None => {
                         // time_costs.insert(adjacent_square, adjacent_distance);
@@ -296,7 +301,6 @@ impl Cave {
                     }
                 }
             }
-
         }
     }
 
