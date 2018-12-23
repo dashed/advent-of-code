@@ -93,6 +93,14 @@ impl Cave {
             }
         }
 
+        if *coord == MOUTH_OF_CAVE {
+            return 0;
+        }
+
+        if *coord == self.target {
+            return 0;
+        }
+
         let (x, y) = coord;
         let geologic_index = if *y == 0 {
             // If the region's Y coordinate is 0,
@@ -101,7 +109,7 @@ impl Cave {
         } else if *x == 0 {
             // If the region's X coordinate is 0,
             // the geologic index is its Y coordinate times 48271.
-            y * 16807
+            y * 48271
         } else {
             // Otherwise, the region's geologic index is
             // the result of multiplying the erosion levels of the regions at X-1,Y and X,Y-1.
@@ -153,8 +161,8 @@ fn part_1(depth: Depth, target: Coordinate) -> RiskLevel {
 
     let mut total_risk: RiskLevel = 0;
 
-    for x in 0..target_x {
-        for y in 0..target_y {
+    for x in 0..=target_x {
+        for y in 0..=target_y {
             let coord = (x, y);
 
             total_risk += cave.get_risk_level(&coord);
