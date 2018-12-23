@@ -10,6 +10,7 @@ type Coordinate = (i32, i32);
 type GeologicIndex = i32;
 type RiskLevel = i32;
 type ErosionLevel = i32;
+type Depth = i32;
 
 const MOUTH_OF_CAVE: Coordinate = (0, 0);
 
@@ -30,11 +31,12 @@ impl RegionType {
 }
 
 struct Cave {
+    depth: Depth,
     geologic_indices: HashMap<Coordinate, GeologicIndex>,
 }
 
 impl Cave {
-    fn new(target: Coordinate) -> Self {
+    fn new(depth: Depth, target: Coordinate) -> Self {
         let mut geologic_indices = HashMap::new();
 
         // The region at 0,0 (the mouth of the cave) has a geologic index of 0.
@@ -43,7 +45,10 @@ impl Cave {
         // The region at the coordinates of the target has a geologic index of 0.
         geologic_indices.insert(target, 0);
 
-        Cave { geologic_indices }
+        Cave {
+            depth,
+            geologic_indices,
+        }
     }
 
     fn get_erosion_level(&self, coord: &Coordinate) -> ErosionLevel {
@@ -93,5 +98,5 @@ fn main() {
     let depth = 4002;
     let target: Coordinate = (5, 746);
 
-    let cave = Cave::new(target);
+    let cave = Cave::new(depth, target);
 }
