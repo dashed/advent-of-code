@@ -628,7 +628,9 @@ bori 5 65536 4          6 reg[4] = reg[5] | 65536
 
 seti 13159625 6 5       7 reg[5] = 13159625
 
-start of some loop??
+---------
+loop C start:
+
 bani 4 255 3            8 reg[3] = reg[4] & 255
 addr 5 3 5              9 reg[5] = reg[5] + reg[3]
 bani 5 16777215 5      10 reg[5] = reg[5] & 16777215
@@ -638,9 +640,9 @@ bani 5 16777215 5      12 reg[5] = reg[5] & 16777215    (((13159625 + ((reg_5 | 
 gtir 256 4 3           13 reg[3] = 256 > reg[4]                 condition: reg_3 = 256 > (reg_5 | 65536)
 addr 3 1 1             14 reg[1] = reg[3] + reg[1]              if condition == 1, start from lp=15,
                                                                 otherwise, start from lp=14
-addi 1 1 1             15 reg[1] = reg[1] + reg[1]              else start from lp=30 (program exit) (loop break)
+addi 1 1 1             15 reg[1] = reg[1] + 1.                  if body: start from lp=16 (execute loop A sequence)
 
-seti 27 9 1            16 reg[1] = 27                           start from lp=27
+seti 27 9 1            16 reg[1] = 27                           start from lp=27 (loop break?)
 
 
 
@@ -649,7 +651,7 @@ seti 0 0 3             17 reg[3] = 0                            reg_3 = 0
 ---------
 loop A start:
 
-                                                                while loop guard:
+                                                                while loop guard for loop A:
 addi 3 1 2             18 reg[2] = reg[3] + 1                   part of loop exit condition
 muli 2 256 2           19 reg[2] = reg[2] * 256                 part of loop exit condition
 gtrr 2 4 2             20 reg[2] = reg[2] > reg[4]              loop exit condition := (reg_3 + 1) * 256 > reg_4
@@ -672,7 +674,10 @@ loop A end
 setr 3 3 4             26 reg[4] = reg[3]                       set temp variable
 seti 7 5 1             27 reg[1] = 7                            start from lp=7
 
-do-while loop guard:
+loop C end
+---------
+
+do-while loop guard for loop B:
 eqrr 5 0 3             28 reg[3] = reg[5] == reg[0]             condition: reg_5 == reg_0
 addr 3 1 1             29 reg[1] = reg[3] + reg[1].             if condition == 1, start at lp=30 (program exit),
                                                                 otherwise, start from lp=30 (do-while loop re-run)
@@ -737,6 +742,8 @@ fn part_1(mut program: Program) {
         println!("instruction_pointer: {}", program.instruction_pointer);
         program.print_next_intstruction();
 
+        println!("{}: {:?}", program.instruction_pointer, program.registers);
+
         let result = program.execute_instruction();
         match result {
             Status::Halted => {
@@ -744,6 +751,9 @@ fn part_1(mut program: Program) {
             }
             _ => {}
         }
+
+        println!("{}: {:?}", program.instruction_pointer, program.registers);
+        println!("--------");
     }
 
     let part_1 = program.registers.get(RegisterID::Zero);
