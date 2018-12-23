@@ -21,9 +21,29 @@ struct Cave {
     geologic_indices: HashMap<Coordinate, GeologicIndex>,
 }
 
+impl Cave {
+
+    fn new(target: Coordinate) -> Self {
+
+        let mut geologic_indices = HashMap::new();
+
+        // The region at 0,0 (the mouth of the cave) has a geologic index of 0.
+        geologic_indices.insert(MOUTH_OF_CAVE, 0);
+
+        // The region at the coordinates of the target has a geologic index of 0.
+        geologic_indices.insert(target, 0);
+
+        Cave {
+            geologic_indices,
+        }
+    }
+}
+
 fn main() {
     // input
 
     let depth = 4002;
     let target: Coordinate = (5, 746);
+
+    let cave = Cave::new(target);
 }
