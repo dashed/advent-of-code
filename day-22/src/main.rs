@@ -7,7 +7,7 @@ use std::collections::HashSet;
 
 // code
 
-#[derive(Debug, Eq, PartialEq, Hash)]
+#[derive(Debug, Eq, PartialEq, Hash, Clone)]
 enum Tool {
     None, // neither
     Torch,
@@ -108,7 +108,7 @@ struct Cave {
     current_tool: Tool,
 
     // shortest amount of time to reach the region defined by Coordinate
-    shortest_time: HashMap<Coordinate, Time>,
+    shortest_time: HashMap<(Coordinate, Tool), Time>,
 }
 
 impl Cave {
@@ -117,15 +117,15 @@ impl Cave {
         let mut shortest_time = HashMap::new();
         let region_types = HashMap::new();
 
+        // You start at 0,0 (the mouth of the cave) with the torch equipped
+        let current_tool = Tool::Torch;
+
         // The region at 0,0 (the mouth of the cave) has a geologic index of 0.
         geologic_indices.insert(MOUTH_OF_CAVE, 0);
-        shortest_time.insert(MOUTH_OF_CAVE, 0);
+        shortest_time.insert((MOUTH_OF_CAVE, current_tool.clone()), 0);
 
         // The region at the coordinates of the target has a geologic index of 0.
         geologic_indices.insert(target, 0);
-
-        // You start at 0,0 (the mouth of the cave) with the torch equipped
-        let current_tool = Tool::Torch;
 
         Cave {
             depth,
@@ -172,6 +172,11 @@ impl Cave {
 
         // Moving to an adjacent region takes one minute.
         total_time += 1;
+
+        // TODO:
+        // Finally, once you reach the target, you need the torch equipped before you can find him in the dark.
+        // The target is always in a rocky region, so if you arrive there with climbing gear equipped,
+        // you will need to spend seven minutes switching to your torch.
 
         return total_time;
     }
