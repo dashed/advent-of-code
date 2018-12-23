@@ -282,10 +282,37 @@ impl Cave {
             }
 
             for adjacent_square in self.get_adjacent_squares(&current_position) {
+                let projected_time_costs =
+                    self.projected_time_to_move(current_tool.clone(), adjacent_square);
+
+                assert!(projected_time_costs.len() > 0);
+
                 match time_costs.get(&adjacent_square) {
                     None => {
-                        // time_costs.insert(adjacent_square, adjacent_distance);
-                        // available_squares.push(DistanceCoordinate(adjacent_distance, adjacent_square));
+                        {
+                            let (_tool, time_to_move_cost) = projected_time_costs
+                                .iter()
+                                .min_by_key(|item| {
+                                    let (_tool, time): &(Tool, Time) = *item;
+                                    return *time;
+                                })
+                                .unwrap();
+
+                            let adjacent_time_cost = current_cost + time_to_move_cost;
+
+                            time_costs.insert(adjacent_square, adjacent_time_cost);
+                        }
+
+                        for (next_tool, time_to_move_cost) in projected_time_costs {
+                            let adjacent_time_cost = current_cost + time_to_move_cost;
+
+                            // hypothetically move to this square with the next_tool
+
+                            available_squares.push(TimeCoordinate(
+                                adjacent_time_cost,
+                                (next_tool, adjacent_square),
+                            ));
+                        }
                     }
                     Some(best_distance) => {
                         // NOTE: this potentially adds duplicates to the available_squares min-heap;
