@@ -572,6 +572,80 @@ fn has_halted(mut program: Program, num_of_instructions: i32) -> bool {
     return false;
 }
 
+fn compiled_program(reg_0: i32) {
+
+    let mut num_of_instructions_executed = 0;
+
+    // registers
+    let mut reg_0 = reg_0;
+    let mut reg_1 = 0;
+    let mut reg_2 = 0;
+    let mut reg_3 = 0;
+    let mut reg_4 = 0;
+    let mut reg_5 = 0;
+
+
+    // start of program
+
+    // seti 123 0 5
+    reg_5 = 123;
+    num_of_instructions_executed += 1;
+
+    loop {
+
+        // bani 5 456 5
+        reg_5 = reg_5 & 456;
+
+        // eqri 5 72 5
+        reg_5 = if reg_5 == 72 {1} else {0};
+
+        num_of_instructions_executed += 2;
+
+        // addr 5 1 1
+        if reg_5 == 1 {
+            num_of_instructions_executed += 1;
+            break;
+        } else {
+            // seti 0 0 1
+            num_of_instructions_executed += 2;
+            continue;
+        }
+
+    }
+
+    // seti 0 7 5
+    reg_5 = 0;
+    num_of_instructions_executed += 1;
+
+    loop {
+        // loop B
+
+        // bori 5 65536 4
+        reg_4 = reg_5 | 65536;
+
+        // seti 13159625 6 5
+        reg_5 = 13159625;
+
+        num_of_instructions_executed += 2;
+
+        loop {
+            // loop C
+
+            // bani 4 255 3
+            reg_3 = reg_4 & 255;
+
+            // addr 5 3 5
+            reg_5 = reg_5 + reg_3;
+
+            // bani 5 16777215 5
+            reg_5 = reg_5 & 16777215;
+        }
+    }
+
+    println!("{}", reg_5);
+    println!("{}", num_of_instructions_executed);
+}
+
 /*
 
 #ip 1
@@ -765,7 +839,9 @@ fn part_1(mut program: Program) {
 fn main() {
     let input_string = include_str!("input.txt");
 
-    let program = parse_input(input_string);
+    compiled_program(0);
 
-    part_1(program.clone());
+    // let program = parse_input(input_string);
+
+    // part_1(program.clone());
 }
