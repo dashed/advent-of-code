@@ -1,8 +1,13 @@
 // https://adventofcode.com/2018/day/21
 
+// imports
+
+use std::collections::HashMap;
+
 // code
 
 #[derive(Debug, Clone)]
+
 enum RegisterID {
     Zero,
     One,
@@ -574,11 +579,11 @@ fn has_halted(mut program: Program, num_of_instructions: i32) -> bool {
 
 fn compiled_program(reg_0: i32) {
 
-    let mut num_of_instructions_executed = 0;
+    let mut num_of_instructions_executed: i64 = 0;
 
     // registers
-    let mut reg_0 = reg_0;
-    let mut reg_1 = 0;
+    let reg_0 = reg_0;
+    // let mut reg_1 = 0;
     let mut reg_2 = 0;
     let mut reg_3 = 0;
     let mut reg_4 = 0;
@@ -595,19 +600,19 @@ fn compiled_program(reg_0: i32) {
 
         // bani 5 456 5
         reg_5 = reg_5 & 456;
+        num_of_instructions_executed += 1;
 
         // eqri 5 72 5
+        num_of_instructions_executed += 1;
         reg_5 = if reg_5 == 72 {1} else {0};
 
-        num_of_instructions_executed += 2;
-
         // addr 5 1 1
+        num_of_instructions_executed += 1;
         if reg_5 == 1 {
-            num_of_instructions_executed += 1;
             break;
         } else {
             // seti 0 0 1
-            num_of_instructions_executed += 2;
+            num_of_instructions_executed += 1;
             continue;
         }
 
@@ -616,6 +621,8 @@ fn compiled_program(reg_0: i32) {
     // seti 0 7 5
     reg_5 = 0;
     num_of_instructions_executed += 1;
+
+    let mut lookup: HashMap<i32, i64> = HashMap::new();
 
     loop {
         // loop B
@@ -639,11 +646,130 @@ fn compiled_program(reg_0: i32) {
 
             // bani 5 16777215 5
             reg_5 = reg_5 & 16777215;
+
+            // muli 5 65899 5
+            reg_5 = reg_5 * 65899;
+
+            // bani 5 16777215 5
+            reg_5 = reg_5 & 16777215;
+
+            num_of_instructions_executed += 5;
+
+            // gtir 256 4 3
+            reg_3 = if 256 > reg_4 {1} else {0};
+            num_of_instructions_executed += 1;
+
+            // addr 3 1 1
+            num_of_instructions_executed += 1;
+            if reg_3 == 1 {
+
+                // seti 27 9 1
+                // break out of loop C
+                num_of_instructions_executed += 1;
+                break;
+
+            }  else {
+
+                // addi 1 1 1
+                // continue loop C
+                num_of_instructions_executed += 1;
+            }
+
+            // seti 0 0 3
+            reg_3 = 0;
+            num_of_instructions_executed += 1;
+
+            loop {
+                // loop A
+
+                // addi 3 1 2
+                reg_2 = reg_3 + 1;
+                num_of_instructions_executed += 1;
+
+                // muli 2 256 2
+                reg_2 = reg_2 * 256;
+                num_of_instructions_executed += 1;
+
+                // gtrr 2 4 2
+                reg_2 = if reg_2 > reg_4 {1} else {0};
+                num_of_instructions_executed += 1;
+
+                // addr 2 1 1
+                num_of_instructions_executed += 1;
+                if reg_2 == 1 {
+                    // break out of loop A
+
+                    // seti 25 0 1
+                    num_of_instructions_executed += 1;
+                    break;
+                } else {
+                    // addi 1 1 1
+                    num_of_instructions_executed += 1;
+                    // continue loop A
+                }
+
+                // loop body
+                // addi 3 1 3
+                reg_3 = reg_3 + 1;
+                num_of_instructions_executed += 1;
+
+                // rerun loop A
+                // seti 17 4 1
+                num_of_instructions_executed += 1;
+            }
+
+
+            // setr 3 3 4
+            reg_4 = reg_3;
+            num_of_instructions_executed += 1;
+
+            // seti 7 5 1
+            // continue loop C
+            num_of_instructions_executed += 1;
         }
+
+        // do-while loop guard for loop B:
+
+        // eqrr 5 0 3
+        reg_3 = if reg_5 == reg_0 {1} else {0};
+        num_of_instructions_executed += 1;
+
+        // match lookup.get(&reg_5) {
+        //     None => {
+        //         lookup.insert(reg_5, num_of_instructions_executed);
+        //         // println!("reg_5 = {}; num_of_instructions_executed = {}", reg_5, num_of_instructions_executed);
+        //     }
+        //     Some(_) => {
+        //         reg_3 = 1;
+        //     }
+        // }
+
+        // addr 3 1 1
+        num_of_instructions_executed += 1;
+        if reg_3 == 1 {
+            // program exit
+            break;
+        } else {
+            // seti 5 6 1
+            num_of_instructions_executed += 1;
+            // continue loop
+        }
+
     }
 
-    println!("{}", reg_5);
-    println!("{}", num_of_instructions_executed);
+    // println!("{}", reg_5);
+    // println!("{}", num_of_instructions_executed);
+
+    let lol = lookup.iter().min_by_key(|item: &(&i32, &i64)| -> i64 {
+        let (_key, value) = *item;
+        return *value;
+    });
+
+    // println!("lol: {:?}", lol);
+
+    println!("num_of_instructions_executed: {}", num_of_instructions_executed);
+
+    println!("Registers Registers({}, {}, {}, {}, {}, {})", reg_0, "_", reg_2, reg_3, reg_4, reg_5);
 }
 
 /*
@@ -716,7 +842,7 @@ addr 3 1 1             14 reg[1] = reg[3] + reg[1]              if condition == 
                                                                 otherwise, start from lp=14
 addi 1 1 1             15 reg[1] = reg[1] + 1.                  if body: start from lp=16 (execute loop A sequence)
 
-seti 27 9 1            16 reg[1] = 27                           start from lp=27 (loop break?)
+seti 27 9 1            16 reg[1] = 27                           start from lp=27 (break loop C)
 
 
 
@@ -746,7 +872,7 @@ loop A end
 ---------
 
 setr 3 3 4             26 reg[4] = reg[3]                       set temp variable
-seti 7 5 1             27 reg[1] = 7                            start from lp=7
+seti 7 5 1             27 reg[1] = 7                            start from lp=7 (continue loop C)
 
 loop C end
 ---------
@@ -763,38 +889,14 @@ loop B end
 
 */
 
-fn part_1(mut program: Program) {
+fn part_1(mut program: Program, reg_0: i32) {
 
-    // for input in 0..300000 {
-    //     let mut program = program.clone();
-    //     program.registers.set(RegisterID::Zero, input);
+    program.registers.set(RegisterID::Zero, reg_0);
 
-    //     let halted = has_halted(program, 10000);
-
-    //     if halted {
-    //         println!("Part 1: {}", input);
-    //         return;
-    //     }
-    // }
-
-    // println!(":(");
-
-    // while program.instruction_pointer <= 7 {
-    //     println!("{}: {:?}", program.instruction_pointer, program.registers);
-    //     let result = program.execute_instruction();
-    //     match result {
-    //         Status::Halted => {
-    //             break;
-    //         }
-    //         _ => {}
-    //     }
-
-    //     println!("{}: {:?}", program.instruction_pointer, program.registers);
-
-    //     println!("--------");
-    // }
+    let mut num_of_instructions_executed = 0;
 
     loop {
+
 
         if program.instruction_pointer == 18 {
 
@@ -813,11 +915,6 @@ fn part_1(mut program: Program) {
             continue;
         }
 
-        println!("instruction_pointer: {}", program.instruction_pointer);
-        program.print_next_intstruction();
-
-        println!("{}: {:?}", program.instruction_pointer, program.registers);
-
         let result = program.execute_instruction();
         match result {
             Status::Halted => {
@@ -826,22 +923,20 @@ fn part_1(mut program: Program) {
             _ => {}
         }
 
-        println!("{}: {:?}", program.instruction_pointer, program.registers);
-        println!("--------");
+        num_of_instructions_executed += 1;
+
     }
 
-    let part_1 = program.registers.get(RegisterID::Zero);
 
-    println!("Part 1: {}", part_1);
-    assert_eq!(part_1, 930);
+
+    println!("Part 1: {}", num_of_instructions_executed);
+    println!("Registers {:?}", program.registers);
 }
 
 fn main() {
+    compiled_program(3941014);
+
     let input_string = include_str!("input.txt");
-
-    compiled_program(0);
-
-    // let program = parse_input(input_string);
-
-    // part_1(program.clone());
+    let program = parse_input(input_string);
+    part_1(program.clone(), 3941014);
 }
