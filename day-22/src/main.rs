@@ -17,6 +17,7 @@ type GeologicIndex = i32;
 type RiskLevel = i32;
 type ErosionLevel = i32;
 type Depth = i32;
+type Time = i32;
 
 const MOUTH_OF_CAVE: Coordinate = (0, 0);
 
@@ -79,14 +80,19 @@ struct Cave {
     target: Coordinate,
     geologic_indices: HashMap<Coordinate, GeologicIndex>,
     current_tool: CurrentTool,
+
+    // shortest amount of time to reach the region defined by Coordinate
+    shortest_time: HashMap<Coordinate, Time>,
 }
 
 impl Cave {
     fn new(depth: Depth, target: Coordinate) -> Self {
         let mut geologic_indices = HashMap::new();
+        let mut shortest_time = HashMap::new();
 
         // The region at 0,0 (the mouth of the cave) has a geologic index of 0.
         geologic_indices.insert(MOUTH_OF_CAVE, 0);
+        shortest_time.insert(MOUTH_OF_CAVE, 0);
 
         // The region at the coordinates of the target has a geologic index of 0.
         geologic_indices.insert(target, 0);
@@ -99,6 +105,7 @@ impl Cave {
             target,
             geologic_indices,
             current_tool,
+            shortest_time,
         }
     }
 
