@@ -470,6 +470,11 @@ impl Program {
         }
     }
 
+    fn print_next_intstruction(&self) {
+        let instruction = self.instructions.get(self.instruction_pointer as usize);
+        println!("{:?}", instruction);
+    }
+
     fn execute_instruction(&mut self) -> Status {
         // get next instruction
         let instruction = self.instructions.get(self.instruction_pointer as usize);
@@ -613,28 +618,36 @@ addr 5 1 1              3 reg[1] = reg[5] + reg[1]      if condition == 1, start
 
 seti 0 0 1              4 reg[1] = 0                    start from lp=0
 
-seti 0 7 5              5 reg[5] = 0
 
+seti 0 7 5              5 reg[5] = 0                    reg_5 = 0
+
+---------
+loop B start:
 
 bori 5 65536 4          6 reg[4] = reg[5] | 65536
+
 seti 13159625 6 5       7 reg[5] = 13159625
+
+start of some loop??
 bani 4 255 3            8 reg[3] = reg[4] & 255
 addr 5 3 5              9 reg[5] = reg[5] + reg[3]
 bani 5 16777215 5      10 reg[5] = reg[5] & 16777215
 muli 5 65899 5         11 reg[5] = reg[5] * 65899
 bani 5 16777215 5      12 reg[5] = reg[5] & 16777215    (((13159625 + ((reg_5 | 65536) & 255)) & 16777215) * 65899) & 16777215
 
-gtir 256 4 3           13 reg[3] = 256 > reg[4]
+gtir 256 4 3           13 reg[3] = 256 > reg[4]                 condition: reg_3 = 256 > (reg_5 | 65536)
+addr 3 1 1             14 reg[1] = reg[3] + reg[1]              if condition == 1, start from lp=15,
+                                                                otherwise, start from lp=14
+addi 1 1 1             15 reg[1] = reg[1] + reg[1]              else start from lp=30 (program exit) (loop break)
 
-
-
-addr 3 1 1             14 reg[1] = reg[3] + reg[1]
-addi 1 1 1             15 reg[1] = reg[1] + reg[1]
 seti 27 9 1            16 reg[1] = 27                           start from lp=27
 
 
 
 seti 0 0 3             17 reg[3] = 0                            reg_3 = 0
+
+---------
+loop A start:
 
                                                                 while loop guard:
 addi 3 1 2             18 reg[2] = reg[3] + 1                   part of loop exit condition
@@ -653,11 +666,21 @@ addi 3 1 3             24 reg[3] = reg[3] + 1                   loop body: reg_3
 
 seti 17 4 1            25 reg[1] = 17                           re-run loop: start from lp=17
 
-setr 3 3 4             26 reg[4] = reg[3]
-seti 7 5 1             27 reg[1] = 7
-eqrr 5 0 3             28 reg[3] = reg[5] == reg[0]
-addr 3 1 1             29 reg[1] = reg[3] + reg[1]
+loop A end
+---------
+
+setr 3 3 4             26 reg[4] = reg[3]                       set temp variable
+seti 7 5 1             27 reg[1] = 7                            start from lp=7
+
+do-while loop guard:
+eqrr 5 0 3             28 reg[3] = reg[5] == reg[0]             condition: reg_5 == reg_0
+addr 3 1 1             29 reg[1] = reg[3] + reg[1].             if condition == 1, start at lp=30 (program exit),
+                                                                otherwise, start from lp=30 (do-while loop re-run)
+
 seti 5 6 1             30 reg[1] = 5                            start from lp=5
+
+loop B end
+---------
 
 */
 
@@ -677,40 +700,8 @@ fn part_1(mut program: Program) {
 
     // println!(":(");
 
-    while program.instruction_pointer <= 7 {
-        println!("{}: {:?}", program.instruction_pointer, program.registers);
-        let result = program.execute_instruction();
-        match result {
-            Status::Halted => {
-                break;
-            }
-            _ => {}
-        }
-
-        println!("{}: {:?}", program.instruction_pointer, program.registers);
-
-        println!("--------");
-    }
-
-    // loop {
-
-    //     if program.instruction_pointer == 18 {
-
-    //         let mut reg_3 = program.registers.get(RegisterID::Three);
-    //         let reg_4 = program.registers.get(RegisterID::Four);
-
-    //         while (reg_3 + 1) * 256 > reg_4 {
-    //             reg_3 += 1;
-    //         }
-
-    //         program.registers.set(RegisterID::Three, reg_3);
-    //         program.registers.set(RegisterID::Two, 1);
-
-    //         program.instruction_pointer = 26;
-
-    //         continue;
-    //     }
-
+    // while program.instruction_pointer <= 7 {
+    //     println!("{}: {:?}", program.instruction_pointer, program.registers);
     //     let result = program.execute_instruction();
     //     match result {
     //         Status::Halted => {
@@ -718,12 +709,47 @@ fn part_1(mut program: Program) {
     //         }
     //         _ => {}
     //     }
+
+    //     println!("{}: {:?}", program.instruction_pointer, program.registers);
+
+    //     println!("--------");
     // }
 
-    // let part_1 = program.registers.get(RegisterID::Zero);
+    loop {
 
-    // println!("Part 1: {}", part_1);
-    // assert_eq!(part_1, 930);
+        if program.instruction_pointer == 18 {
+
+            let mut reg_3 = program.registers.get(RegisterID::Three);
+            let reg_4 = program.registers.get(RegisterID::Four);
+
+            while (reg_3 + 1) * 256 > reg_4 {
+                reg_3 += 1;
+            }
+
+            program.registers.set(RegisterID::Three, reg_3);
+            program.registers.set(RegisterID::Two, 1);
+
+            program.instruction_pointer = 26;
+
+            continue;
+        }
+
+        println!("instruction_pointer: {}", program.instruction_pointer);
+        program.print_next_intstruction();
+
+        let result = program.execute_instruction();
+        match result {
+            Status::Halted => {
+                break;
+            }
+            _ => {}
+        }
+    }
+
+    let part_1 = program.registers.get(RegisterID::Zero);
+
+    println!("Part 1: {}", part_1);
+    assert_eq!(part_1, 930);
 }
 
 fn main() {
