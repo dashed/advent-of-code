@@ -168,7 +168,7 @@ impl Cave {
         return result;
     }
 
-    fn projected_time_to_move(&self, coord: &Coordinate) -> Time {
+    fn projected_time_to_move(&mut self, coord: &Coordinate) -> Time {
         // how long would it hypothetically take to move into this region?
 
         let mut total_time = 0;
@@ -189,6 +189,12 @@ impl Cave {
         }
 
         let required_tools = self.get_region_type(coord).required_tools();
+
+        if required_tools.contains(&self.current_tool) {
+            return total_time;
+        }
+
+        // TODO: fix
 
         return total_time;
     }
