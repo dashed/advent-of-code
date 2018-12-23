@@ -121,6 +121,7 @@ impl Cave {
         return geologic_index;
     }
 
+    #[allow(dead_code)]
     fn to_string(&mut self) -> String {
         let (target_x, target_y) = self.target;
 
@@ -169,7 +170,7 @@ fn part_1(depth: Depth, target: Coordinate) -> RiskLevel {
         }
     }
 
-    println!("{}", cave.to_string());
+    // println!("{}", cave.to_string());
 
     return total_risk;
 }
@@ -177,11 +178,12 @@ fn part_1(depth: Depth, target: Coordinate) -> RiskLevel {
 fn main() {
     // input
 
-    let part_1 = part_1(510, (10, 10));
+   let depth = 4002;
+    let target: Coordinate = (5, 746);
+
+    let part_1 = part_1(depth, target);
     println!("Part 1: {}", part_1);
 
-    // let depth = 4002;
-    // let target: Coordinate = (5, 746);
 
     // let cave = Cave::new(depth, target);
 }
