@@ -303,8 +303,14 @@ impl Cave {
             let current_position = current_square.position;
             let current_tool = current_square.tool.clone();
 
-            if current_position == self.target && current_tool == Tool::Torch {
-                return Some(current_square.time);
+            let current_region = self.get_region_type(&current_position);
+
+            if current_region == RegionType::Rocky && current_tool == Tool::None {
+                continue;
+            } else if current_region == RegionType::Wet && current_tool == Tool::Torch {
+                continue;
+            } else if current_region == RegionType::Narrow && current_tool == Tool::ClimbingGear {
+                continue;
             }
 
             if best_costs
@@ -319,6 +325,10 @@ impl Cave {
                 (current_tool.clone(), current_position),
                 current_square.time,
             );
+
+            if current_position == self.target && current_tool == Tool::Torch {
+                return Some(current_square.time);
+            }
 
             // add all possible movements
             for adjacent_square in self.get_adjacent_squares(&current_position) {
@@ -343,26 +353,6 @@ impl Cave {
                     available_squares.push(next);
                 }
             }
-
-            // ....
-
-            // for adjacent_square in self.get_adjacent_squares(&current_position) {
-            //     let projected_time_costs =
-            //         self.projected_time_to_move(current_tool.clone(), adjacent_square);
-
-            //     assert!(projected_time_costs.len() > 0);
-
-            //     for (next_tool, time_to_move_cost) in projected_time_costs {
-            //         let next = current_square.next(
-            //             get_manhattan_distance(adjacent_square, self.target),
-            //             next_tool,
-            //             time_to_move_cost,
-            //             adjacent_square,
-            //         );
-
-            //         available_squares.push(next);
-            //     }
-            // }
         }
 
         return None;
