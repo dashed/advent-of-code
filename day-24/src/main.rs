@@ -8,6 +8,18 @@ use std::collections::HashSet;
 
 // code
 
+fn target_order(first_group: &Group, second_group: &Group) -> Ordering {
+    // group with higher effective power is first
+    if first_group.effective_power() != second_group.effective_power() {
+        return first_group
+            .effective_power()
+            .cmp(&second_group.effective_power());
+    }
+
+    // in a tie, the group with the higher initiative is first.
+    return first_group.initiative.cmp(&second_group.initiative);
+}
+
 #[derive(Debug, Eq, PartialEq)]
 struct Group {
     num_of_units: i32,
@@ -33,13 +45,7 @@ impl Group {
 
 impl Ord for Group {
     fn cmp(&self, other: &Self) -> Ordering {
-        // In decreasing order of effective power, groups choose their targets;
-        if self.effective_power() != other.effective_power() {
-            return self.effective_power().cmp(&self.effective_power());
-        }
-
-        // in a tie, the group with the higher initiative chooses first.
-        return self.initiative.cmp(&other.initiative);
+        return target_order(self, other);
     }
 }
 
