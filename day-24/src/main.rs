@@ -109,6 +109,7 @@ impl PartialOrd for Group {
     }
 }
 
+#[derive(Debug)]
 struct Battle {
     groups: BinaryHeap<Group>,
 }
@@ -253,15 +254,23 @@ fn parse_input(input_string: &str) {
 
     let mut parser = (
         immunity_start,
-        many1::<Vec<Group>, _>(parse_group(Race::Immunity)),
+        many1::<Vec<Group>, _>(parse_group.clone()(Race::Immunity)),
         skip_spaces(),
         infection_start,
+        many1::<Vec<Group>, _>(parse_group(Race::Infection)),
     )
-        .map(|(_, _, _, _)| {
-            return ();
+        .map(|(_, immunities, _, _, infections)| {
+
+            let mut groups = BinaryHeap::new();
+
+            groups.extend(immunities);
+            groups.extend(infections);
+return Battle {
+    groups
+};
         });
 
-    let result: Result<((), &str), easy::ParseError<&str>> = parser.easy_parse(input_string);
+    let result: Result<(Battle, &str), easy::ParseError<&str>> = parser.easy_parse(input_string);
 
     match result {
         Ok((value, _remaining_input)) => {
