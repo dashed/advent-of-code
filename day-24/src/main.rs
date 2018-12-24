@@ -21,7 +21,15 @@ fn target_order(first_group: &Group, second_group: &Group) -> Ordering {
 }
 
 #[derive(Debug, Eq, PartialEq)]
+enum Race {
+    Immunity,
+    Infection,
+}
+
+#[derive(Debug, Eq, PartialEq)]
 struct Group {
+    race: Race,
+
     num_of_units: i32,
     hit_points: i32,
 
@@ -38,13 +46,28 @@ impl Group {
         return self.attack_damage * self.num_of_units;
     }
 
+    fn immune_to(&self, attack_type: &String) -> bool {
+        return self.immunities.contains(attack_type);
+    }
+
+    fn weak_to(&self, attack_type: &String) -> bool {
+        return self.weaknesses.contains(attack_type);
+    }
+
     fn calculate_damage_to_group(&self, other_group: &Self) -> i32 {
-        return 0;
+        if other_group.immune_to(&self.attack_type) {
+            return 0;
+        }
+
+        if other_group.weak_to(&self.attack_type) {
+            return 2 * self.attack_damage;
+        }
+
+        return self.attack_damage;
     }
 
     // take damage from other_group
     fn take_damage(&mut self, other_group: &Self) {
-
         let damage_taken = other_group.calculate_damage_to_group(self);
 
         let num_of_units_dead: i32 = damage_taken / self.num_of_units;
@@ -63,6 +86,10 @@ impl PartialOrd for Group {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         return Some(self.cmp(other));
     }
+}
+
+struct Battle {
+    groups: BinaryHeap<Group>,
 }
 
 fn get_attackable_target() {}
