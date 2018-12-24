@@ -9,31 +9,15 @@ use std::collections::HashSet;
 
 // code
 
-type Distance = i32;
-
-fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> Distance {
-    let (a, b) = start;
-    let (c, d) = end;
-
-    return (a - c).abs() + (b - d).abs();
-}
-
 type ToolCoordinate = (Tool, Coordinate);
 
 #[derive(PartialEq, Hash, Eq, Clone, Debug)]
-struct TimeCoordinate(Time, Distance, ToolCoordinate);
+struct TimeCoordinate(Time, ToolCoordinate);
 
 impl PartialOrd for TimeCoordinate {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         // reversed for the binary heap which is a max-heap
-
-        let other_time = other.0;
-        let other_distance = other.1;
-        let other_result = other_time + other_distance;
-
-        let this_result = self.0 + self.1;
-
-        return Some(other_result.cmp(&this_result));
+        return Some(other.0.cmp(&self.0));
     }
 }
 
@@ -251,15 +235,16 @@ impl Cave {
 
         // You start at 0,0 (the mouth of the cave) with the torch equipped
 
-        available_squares.push(TimeCoordinate(0, 0, (Tool::Torch, self.target)));
-        time_costs.insert((Tool::Torch, self.target), 0);
+        available_squares.push(TimeCoordinate(0, (Tool::Torch, MOUTH_OF_CAVE)));
+        time_costs.insert((Tool::Torch, MOUTH_OF_CAVE), 0);
 
         while let Some(current_square) = available_squares.pop() {
-            let TimeCoordinate(current_cost, current_distance, (current_tool, current_position)) =
-                current_square;
+            let TimeCoordinate(current_cost, (current_tool, current_position)) = current_square;
 
-            if current_position == MOUTH_OF_CAVE && current_tool == Tool::Torch {
-                return time_costs.get(&(current_tool, MOUTH_OF_CAVE)).map(|x| *x);
+            if current_position == self.target && current_tool == Tool::Torch {
+                return time_costs.get(&(current_tool, self.target)).map(|time| {
+                    return *time;
+                });
             }
 
             match time_costs.get(&(current_tool.clone(), current_position)) {
@@ -274,8 +259,6 @@ impl Cave {
             }
 
             for adjacent_square in self.get_adjacent_squares(&current_position) {
-                let adjacent_distance = current_distance + 1;
-
                 let projected_time_costs =
                     self.projected_time_to_move(current_tool.clone(), adjacent_square);
 
@@ -293,7 +276,6 @@ impl Cave {
 
                             available_squares.push(TimeCoordinate(
                                 adjacent_time_cost,
-                                adjacent_distance,
                                 (next_tool, adjacent_square),
                             ));
                         }
@@ -308,7 +290,6 @@ impl Cave {
 
                                 available_squares.push(TimeCoordinate(
                                     adjacent_time_cost,
-                                    adjacent_distance,
                                     (next_tool.clone(), adjacent_square),
                                 ));
                             }
@@ -463,10 +444,10 @@ mod tests {
         let mut available_squares: BinaryHeap<TimeCoordinate> = BinaryHeap::new();
 
         let items = vec![
-            TimeCoordinate(5, 10, (Tool::Torch, (1, 26))),
-            TimeCoordinate(1, 45, (Tool::Torch, (2, 25))),
-            TimeCoordinate(4, 1, (Tool::Torch, (2, 30))),
-            TimeCoordinate(1, 1, (Tool::Torch, (2, 25))),
+            TimeCoordinate(5, (Tool::Torch, (1, 26))),
+            TimeCoordinate(1, (Tool::Torch, (2, 25))),
+            TimeCoordinate(4, (Tool::Torch, (2, 30))),
+            TimeCoordinate(1, (Tool::Torch, (2, 25))),
         ];
         available_squares.extend(items);
 
@@ -476,10 +457,10 @@ mod tests {
         }
 
         let expected = vec![
-            TimeCoordinate(1, 1, (Tool::Torch, (2, 25))),
-            TimeCoordinate(4, 1, (Tool::Torch, (2, 30))),
-            TimeCoordinate(5, 10, (Tool::Torch, (1, 26))),
-            TimeCoordinate(1, 45, (Tool::Torch, (2, 25))),
+            TimeCoordinate(1, (Tool::Torch, (2, 25))),
+            TimeCoordinate(1, (Tool::Torch, (2, 25))),
+            TimeCoordinate(4, (Tool::Torch, (2, 30))),
+            TimeCoordinate(5, (Tool::Torch, (1, 26))),
         ];
 
         assert_eq!(actual, expected);
