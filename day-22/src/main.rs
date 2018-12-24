@@ -9,6 +9,15 @@ use std::collections::HashSet;
 
 // code
 
+type Distance = i32;
+
+fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> Distance {
+    let (a, b) = start;
+    let (c, d) = end;
+
+    return (a - c).abs() + (b - d).abs();
+}
+
 type ToolCoordinate = (Tool, Coordinate);
 
 #[derive(PartialEq, Hash, Eq, Clone, Debug)]
@@ -27,9 +36,6 @@ impl Ord for TimeCoordinate {
         return ord;
     }
 }
-
-// TODO: remove
-// type StateChange = (Tool /* current tool */, Tool /* next tool */);
 
 // takes 7 minutes to switch tools
 const TIME_TO_SWITCH_TOOL: Time = 7;
@@ -210,6 +216,14 @@ impl Cave {
         // Moving to an adjacent region takes one minute.
         total_time += 1;
 
+        if new_position == MOUTH_OF_CAVE {
+            if current_tool != Tool::Torch {
+                total_time += TIME_TO_SWITCH_TOOL;
+            }
+
+            return vec![((Tool::Torch), total_time)];
+        }
+
         if new_position == self.target {
             // Finally, once you reach the target, you need the torch equipped before you can find him in the dark.
             // The target is always in a rocky region, so if you arrive there with climbing gear equipped,
@@ -230,7 +244,7 @@ impl Cave {
 
         // takes 7 minutes to switch tools
 
-        total_time += 7;
+        total_time += TIME_TO_SWITCH_TOOL;
 
         return required_tools
             .iter()
@@ -247,23 +261,23 @@ impl Cave {
     fn find_target(&mut self) -> Option<Time> {
         let mut available_squares: BinaryHeap<TimeCoordinate> = BinaryHeap::new();
         // keep track of the best minimum time spent for a coordinate
-        let mut time_costs: HashMap<Coordinate, Time> = HashMap::new();
+        let mut time_costs: HashMap<(Tool, Coordinate), Time> = HashMap::new();
         let mut best_edges: HashMap<Coordinate, Coordinate> = HashMap::new();
 
         available_squares.push(TimeCoordinate(
             0,
             (self.initial_tool.clone(), MOUTH_OF_CAVE),
         ));
-        time_costs.insert(MOUTH_OF_CAVE, 0);
+        time_costs.insert((Tool::Torch, MOUTH_OF_CAVE), 0);
 
         while let Some(current_square) = available_squares.pop() {
             let TimeCoordinate(current_cost, (current_tool, current_position)) = current_square;
 
-            if current_position == self.target {
-                return time_costs.get(&self.target).map(|x| *x);
+            if current_position == self.target && current_tool == Tool::Torch {
+                return time_costs.get(&(current_tool, self.target)).map(|x| *x);
             }
 
-            match time_costs.get(&current_position) {
+            match time_costs.get(&(current_tool.clone(), current_position)) {
                 None => {
                     unreachable!();
                 }
@@ -280,50 +294,33 @@ impl Cave {
 
                 assert!(projected_time_costs.len() > 0);
 
-                let (_tool, time_to_move_cost) = projected_time_costs
-                    .iter()
-                    .min_by_key(|item| {
-                        let (_tool, time): &(Tool, Time) = *item;
-                        return *time;
-                    })
-                    .unwrap();
+                for (next_tool, time_to_move_cost) in projected_time_costs {
+                    let adjacent_time_cost = current_cost + time_to_move_cost;
 
-                let adjacent_time_cost = current_cost + time_to_move_cost;
+                    match time_costs.get(&(next_tool.clone(), adjacent_square)) {
+                        None => {
+                            best_edges.insert(adjacent_square, current_position);
 
-                match time_costs.get(&adjacent_square) {
-                    None => {
-                        best_edges.insert(adjacent_square, current_position);
-
-                        time_costs.insert(adjacent_square, adjacent_time_cost);
-
-                        for (next_tool, time_to_move_cost) in projected_time_costs {
-                            let adjacent_time_cost = current_cost + time_to_move_cost;
-
-                            // hypothetically move to this square with the next_tool
+                            time_costs
+                                .insert((next_tool.clone(), adjacent_square), adjacent_time_cost);
 
                             available_squares.push(TimeCoordinate(
                                 adjacent_time_cost,
                                 (next_tool, adjacent_square),
                             ));
                         }
-                    }
-                    Some(best_time_cost) => {
-                        // NOTE: this potentially adds duplicates to the available_squares min-heap;
-                        // but that's fine :P
-                        // see: https://www3.cs.stonybrook.edu/~rezaul/papers/TR-07-54.pdf
+                        Some(best_time_cost) => {
+                            if adjacent_time_cost < *best_time_cost {
+                                best_edges.insert(adjacent_square, current_position);
 
-                        if adjacent_time_cost < *best_time_cost {
-                            best_edges.insert(adjacent_square, current_position);
-                            time_costs.insert(adjacent_square, adjacent_time_cost);
-
-                            for (next_tool, time_to_move_cost) in projected_time_costs {
-                                let adjacent_time_cost = current_cost + time_to_move_cost;
-
-                                // hypothetically move to this square with the next_tool
+                                time_costs.insert(
+                                    (next_tool.clone(), adjacent_square),
+                                    adjacent_time_cost,
+                                );
 
                                 available_squares.push(TimeCoordinate(
                                     adjacent_time_cost,
-                                    (next_tool, adjacent_square),
+                                    (next_tool.clone(), adjacent_square),
                                 ));
                             }
                         }
@@ -438,8 +435,11 @@ fn part_2(depth: Depth, target: Coordinate) -> Option<Time> {
 fn main() {
     // input
 
-    let depth = 4002;
-    let target: Coordinate = (5, 746);
+    // let depth = 4002;
+    // let target: Coordinate = (5, 746);
+
+    let depth = 11820;
+    let target: Coordinate = (7, 782);
 
     let part_1 = part_1(depth, target);
     println!("Part 1: {}", part_1);
