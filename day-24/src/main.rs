@@ -41,6 +41,16 @@ impl Group {
     fn calculate_damage_to_group(&self, other_group: &Self) -> i32 {
         return 0;
     }
+
+    // take damage from other_group
+    fn take_damage(&mut self, other_group: &Self) {
+
+        let damage_taken = other_group.calculate_damage_to_group(self);
+
+        let num_of_units_dead: i32 = damage_taken / self.num_of_units;
+
+        self.num_of_units = self.num_of_units - num_of_units_dead;
+    }
 }
 
 impl Ord for Group {
