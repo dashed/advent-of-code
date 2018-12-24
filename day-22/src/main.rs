@@ -417,7 +417,7 @@ fn main() {
     let part_2 = part_2(depth, target);
     // not: 1064 (too high)
     // not: 1027 (too low)
-    // ???: 1034
+    // not 1034 (too high)
     println!("Part 2: {:?}", part_2);
 }
 
