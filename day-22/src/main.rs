@@ -211,47 +211,29 @@ impl Cave {
     ) -> Vec<(Tool, Time)> {
         // how long would it hypothetically take to move into this region?
 
-        let mut total_time = 0;
-
-        // Moving to an adjacent region takes one minute.
-        total_time += 1;
-
-        if new_position == MOUTH_OF_CAVE {
-            if current_tool != Tool::Torch {
-                total_time += TIME_TO_SWITCH_TOOL;
-            }
-
-            return vec![((Tool::Torch), total_time)];
-        }
-
-        if new_position == self.target {
+        if new_position == self.target || new_position == MOUTH_OF_CAVE {
             // Finally, once you reach the target, you need the torch equipped before you can find him in the dark.
             // The target is always in a rocky region, so if you arrive there with climbing gear equipped,
             // you will need to spend seven minutes switching to your torch.
 
             if current_tool != Tool::Torch {
-                total_time += TIME_TO_SWITCH_TOOL;
+                return vec![((Tool::Torch), 1 + TIME_TO_SWITCH_TOOL)];
             }
 
-            return vec![((Tool::Torch), total_time)];
+            return vec![((Tool::Torch), 1)];
         }
 
         let required_tools = self.get_region_type(&new_position).required_tools();
 
-        if required_tools.contains(&current_tool) {
-            return vec![((current_tool.clone()), total_time)];
-        }
-
-        // takes 7 minutes to switch tools
-
-        total_time += TIME_TO_SWITCH_TOOL;
-
-        return required_tools
-            .iter()
+        return required_tools.into_iter()
             .map(|next_tool| -> (Tool, Time) {
-                return ((next_tool.clone()), total_time);
-            })
-            .collect();
+
+                if current_tool == next_tool {
+                    return ((next_tool.clone()), 1);
+                }
+
+                return ((next_tool.clone()), 1 + TIME_TO_SWITCH_TOOL);
+            }).collect();
     }
 
     fn get_erosion_level(&mut self, coord: &Coordinate) -> ErosionLevel {
@@ -266,15 +248,15 @@ impl Cave {
 
         available_squares.push(TimeCoordinate(
             0,
-            (self.initial_tool.clone(), MOUTH_OF_CAVE),
+            (self.initial_tool.clone(), self.target),
         ));
-        time_costs.insert((Tool::Torch, MOUTH_OF_CAVE), 0);
+        time_costs.insert((Tool::Torch, self.target), 0);
 
         while let Some(current_square) = available_squares.pop() {
             let TimeCoordinate(current_cost, (current_tool, current_position)) = current_square;
 
-            if current_position == self.target && current_tool == Tool::Torch {
-                return time_costs.get(&(current_tool, self.target)).map(|x| *x);
+            if current_position == MOUTH_OF_CAVE && current_tool == Tool::Torch {
+                return time_costs.get(&(current_tool, MOUTH_OF_CAVE)).map(|x| *x);
             }
 
             match time_costs.get(&(current_tool.clone(), current_position)) {
@@ -435,17 +417,15 @@ fn part_2(depth: Depth, target: Coordinate) -> Option<Time> {
 fn main() {
     // input
 
-    // let depth = 4002;
-    // let target: Coordinate = (5, 746);
-
-    let depth = 11820;
-    let target: Coordinate = (7, 782);
+    let depth = 4002;
+    let target: Coordinate = (5, 746);
 
     let part_1 = part_1(depth, target);
     println!("Part 1: {}", part_1);
 
     let part_2 = part_2(depth, target);
-    // not: 1064
+    // not: 1064 (too high)
+    // not: 1027 (too low)
     println!("Part 2: {:?}", part_2);
 }
 
