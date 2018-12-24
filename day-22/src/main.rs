@@ -405,11 +405,11 @@ fn part_2(depth: Depth, target: Coordinate) -> Option<Time> {
 fn main() {
     // input
 
-    // let depth = 4002;
-    // let target: Coordinate = (5, 746);
+    let depth = 4002;
+    let target: Coordinate = (5, 746);
 
-    let depth = 11820;
-    let target: Coordinate = (7, 782);
+    // let depth = 11820;
+    // let target: Coordinate = (7, 782);
 
     let part_1 = part_1(depth, target);
     println!("Part 1: {}", part_1);
@@ -427,9 +427,8 @@ mod tests {
 
     #[test]
     fn test_part_1() {
-        let part_1 = part_1(510, (10, 10));
-
-        assert_eq!(part_1, 114);
+        assert_eq!(part_1(510, (10, 10)), 114);
+        assert_eq!(part_1(4002, (5, 746)), 4479);
     }
 
     #[test]
