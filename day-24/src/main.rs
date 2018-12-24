@@ -18,6 +18,12 @@ struct Group {
     weaknesses: HashSet<String>,
 }
 
+impl Group {
+    fn effective_power(&self) -> i32 {
+        return self.attack_damage * self.num_of_units;
+    }
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
