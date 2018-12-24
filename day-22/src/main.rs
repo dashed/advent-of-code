@@ -9,22 +9,48 @@ use std::collections::HashSet;
 
 // code
 
-type ToolCoordinate = (Tool, Coordinate);
+// adapted from day 6
+// https://math.stackexchange.com/a/139604/10247
+type Distance = i32;
+fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> Distance {
+    let (a, b) = start;
+    let (c, d) = end;
+
+    return (a - c).abs() + (b - d).abs();
+}
 
 #[derive(PartialEq, Hash, Eq, Clone, Debug)]
-struct TimeCoordinate(Time, ToolCoordinate);
+struct TimeCoordinate {
+    time: Time,
+    distance: Distance,
+    position: Coordinate,
+    tool: Tool,
+}
 
-impl PartialOrd for TimeCoordinate {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        // reversed for the binary heap which is a max-heap
-        return Some(other.0.cmp(&self.0));
+impl TimeCoordinate {
+    fn new(time: Time, distance: Distance, position: Coordinate, tool: Tool) -> Self {
+        return TimeCoordinate {
+            time,
+            distance,
+            position,
+            tool,
+        };
     }
 }
 
 impl Ord for TimeCoordinate {
     fn cmp(&self, other: &Self) -> Ordering {
-        let ord = self.partial_cmp(other).unwrap();
-        return ord;
+        // reversed for the binary heap which is a max-heap
+        return (self.time + self.distance)
+            .cmp(&(other.time + other.distance))
+            .reverse();
+    }
+}
+
+impl PartialOrd for TimeCoordinate {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        // reversed for the binary heap which is a max-heap
+        return Some(self.cmp(other));
     }
 }
 
