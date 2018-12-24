@@ -2,6 +2,13 @@
 
 // imports
 
+extern crate combine;
+use combine::combinator::token;
+use combine::parser::char::{char, digit, letter, spaces};
+use combine::stream::easy;
+use combine::{any, tokens};
+use combine::{between, choice, many1, sep_by, Parser};
+
 use core::cmp::Ordering;
 use std::collections::BinaryHeap;
 use std::collections::HashSet;
@@ -94,8 +101,49 @@ struct Battle {
 
 fn get_attackable_target() {}
 
+fn parse_input(input_string: &str) {
+    let input_string = input_string.trim();
+
+    let skip_spaces = spaces().silent();
+
+    let constant = |needle: String| {
+        let chars: Vec<char> = needle.chars().into_iter().collect();
+        return tokens(|l, r| l.eq_ignore_ascii_case(&r), "error".into(), chars).map(move |_| {
+            return needle.clone();
+        });
+    };
+
+    let integer = many1(digit()).map(|string: String| -> i32 {
+        return string.parse::<i32>().unwrap();
+    });
+
+    let immunity_start = (constant("Immune System:".to_string()), skip_spaces);
+
+    // let infection_start = many1(any()).and_then(|word: String| {
+    //     if word == "Infection:" {
+    //         Ok(word)
+    //     } else {
+    //         Err(easy::Error::Expected(easy::Info::Borrowed("Infection:")))
+    //     }
+    // });
+
+    let mut parser = (immunity_start).map(|(_)| {
+        return ();
+    });
+
+    let result: Result<((), &str), easy::ParseError<&str>> = parser.easy_parse(input_string);
+
+    match result {
+        Ok((value, _remaining_input)) => {
+            println!("{:?}", value);
+            println!("{}", _remaining_input);
+        }
+        Err(err) => println!("{}", err),
+    }
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
-    println!("{}", input_string);
+    parse_input(input_string);
 }

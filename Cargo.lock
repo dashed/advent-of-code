@@ -161,6 +161,9 @@ dependencies = [
 [[package]]
 name = "day-24"
 version = "0.1.0"
+dependencies = [
+ "combine 3.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "day-3"
