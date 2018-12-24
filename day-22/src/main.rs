@@ -133,15 +133,11 @@ struct Cave {
     geologic_indices: HashMap<Coordinate, GeologicIndex>,
     region_types: HashMap<Coordinate, RegionType>,
     initial_tool: Tool,
-
-    // shortest amount of time to reach the region defined by Coordinate and the state change
-    shortest_time: HashMap<Coordinate, Time>,
 }
 
 impl Cave {
     fn new(depth: Depth, target: Coordinate) -> Self {
         let mut geologic_indices = HashMap::new();
-        let mut shortest_time = HashMap::new();
         let region_types = HashMap::new();
 
         // You start at 0,0 (the mouth of the cave) with the torch equipped
@@ -158,7 +154,6 @@ impl Cave {
             target,
             geologic_indices,
             initial_tool,
-            shortest_time,
             region_types,
         }
     }
@@ -249,12 +244,11 @@ impl Cave {
         return (self.get_geologic_index(coord) + self.depth) % 20183;
     }
 
-    fn find_target(&mut self) {
-        let mut visited = vec![MOUTH_OF_CAVE];
-
+    fn find_target(&mut self) -> Option<Time> {
         let mut available_squares: BinaryHeap<TimeCoordinate> = BinaryHeap::new();
         // keep track of the best minimum time spent for a coordinate
         let mut time_costs: HashMap<Coordinate, Time> = HashMap::new();
+        let mut best_edges: HashMap<Coordinate, Coordinate> = HashMap::new();
 
         available_squares.push(TimeCoordinate(
             0,
@@ -266,8 +260,7 @@ impl Cave {
             let TimeCoordinate(current_cost, (current_tool, current_position)) = current_square;
 
             if current_position == self.target {
-                // TODO: generate cost
-                break;
+                return time_costs.get(&self.target).map(|x| *x);
             }
 
             match time_costs.get(&current_position) {
@@ -287,21 +280,21 @@ impl Cave {
 
                 assert!(projected_time_costs.len() > 0);
 
+                let (_tool, time_to_move_cost) = projected_time_costs
+                    .iter()
+                    .min_by_key(|item| {
+                        let (_tool, time): &(Tool, Time) = *item;
+                        return *time;
+                    })
+                    .unwrap();
+
+                let adjacent_time_cost = current_cost + time_to_move_cost;
+
                 match time_costs.get(&adjacent_square) {
                     None => {
-                        {
-                            let (_tool, time_to_move_cost) = projected_time_costs
-                                .iter()
-                                .min_by_key(|item| {
-                                    let (_tool, time): &(Tool, Time) = *item;
-                                    return *time;
-                                })
-                                .unwrap();
+                        best_edges.insert(adjacent_square, current_position);
 
-                            let adjacent_time_cost = current_cost + time_to_move_cost;
-
-                            time_costs.insert(adjacent_square, adjacent_time_cost);
-                        }
+                        time_costs.insert(adjacent_square, adjacent_time_cost);
 
                         for (next_tool, time_to_move_cost) in projected_time_costs {
                             let adjacent_time_cost = current_cost + time_to_move_cost;
@@ -314,21 +307,32 @@ impl Cave {
                             ));
                         }
                     }
-                    Some(best_distance) => {
+                    Some(best_time_cost) => {
                         // NOTE: this potentially adds duplicates to the available_squares min-heap;
                         // but that's fine :P
                         // see: https://www3.cs.stonybrook.edu/~rezaul/papers/TR-07-54.pdf
 
-                        // if adjacent_distance < *best_distance {
-                        //     distances.insert(adjacent_square, adjacent_distance);
-                        //     available_squares
-                        //         .push(DistanceCoordinate(adjacent_distance, adjacent_square));
-                        //     best_edges.insert(adjacent_square, current_position);
-                        // }
+                        if adjacent_time_cost < *best_time_cost {
+                            best_edges.insert(adjacent_square, current_position);
+                            time_costs.insert(adjacent_square, adjacent_time_cost);
+
+                            for (next_tool, time_to_move_cost) in projected_time_costs {
+                                let adjacent_time_cost = current_cost + time_to_move_cost;
+
+                                // hypothetically move to this square with the next_tool
+
+                                available_squares.push(TimeCoordinate(
+                                    adjacent_time_cost,
+                                    (next_tool, adjacent_square),
+                                ));
+                            }
+                        }
                     }
                 }
             }
         }
+
+        return None;
     }
 
     fn get_geologic_index(&mut self, coord: &Coordinate) -> GeologicIndex {
@@ -423,6 +427,16 @@ fn part_1(depth: Depth, target: Coordinate) -> RiskLevel {
     return total_risk;
 }
 
+fn part_2(depth: Depth, target: Coordinate) -> Option<Time> {
+    let mut cave = Cave::new(depth, target);
+
+    let part_2 = cave.find_target();
+
+    println!("Part 2: {:?}", part_2);
+
+    return part_2;
+}
+
 fn main() {
     // input
 
@@ -432,7 +446,7 @@ fn main() {
     let part_1 = part_1(depth, target);
     println!("Part 1: {}", part_1);
 
-    // let cave = Cave::new(depth, target);
+    part_2(510, (10, 10));
 }
 
 #[cfg(test)]
@@ -444,6 +458,13 @@ mod tests {
         let part_1 = part_1(510, (10, 10));
 
         assert_eq!(part_1, 114);
+    }
+
+    #[test]
+    fn test_part_2() {
+        let part_2 = part_2(510, (10, 10));
+
+        assert_eq!(part_2, Some(45));
     }
 
 }
