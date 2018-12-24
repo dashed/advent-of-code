@@ -3,17 +3,27 @@
 // imports
 
 extern crate combine;
-use combine::combinator::{skip, token};
+use combine::combinator::token;
 use combine::parser::char::{char, digit, letter, spaces};
 use combine::stream::easy;
 use combine::{between, choice, many1, sep_by, Parser};
 
 // code
 
+// adapted from day 6
+// https://math.stackexchange.com/a/139604/10247
+type Distance = i32;
+fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> Distance {
+    let (a, b, e) = start;
+    let (c, d, f) = end;
+
+    return (a - c).abs() + (b - d).abs() + (e - f).abs();
+}
+
 type Radius = i32;
 type Coordinate = (i32, i32, i32);
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct NanoBot {
     position: Coordinate,
     radius: Radius,
@@ -85,5 +95,22 @@ fn main() {
         .map(|s| parse_nanobot(s))
         .collect();
 
-    println!("{:?}", nanobots);
+    let strongest_nanobot: NanoBot = nanobots
+        .iter()
+        .max_by_key(|b| {
+            return b.radius;
+        })
+        .unwrap()
+        .clone();
+
+    let num_in_range: Vec<NanoBot> = nanobots
+        .iter()
+        .filter(|bot| {
+            return get_manhattan_distance(bot.position, strongest_nanobot.position)
+                <= strongest_nanobot.radius;
+        })
+        .map(|b| b.clone())
+        .collect();
+
+    println!("Part 1: {}", num_in_range.len());
 }
