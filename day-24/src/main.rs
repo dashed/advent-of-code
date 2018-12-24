@@ -14,7 +14,7 @@ struct Group {
     attack_type: String,
     initiative: i32,
 
-    immunity: HashSet<String>,
+    immunities: HashSet<String>,
     weaknesses: HashSet<String>,
 }
 
