@@ -43,14 +43,28 @@ impl TimeCoordinate {
         return self.distance + self.time;
     }
 
-    fn next(&self, target: Coordinate, tool: Tool, time_to_move_cost: Time, new_position: Coordinate) -> Self {
+    fn move_to_square(&self, distance: Distance, new_position: Coordinate) -> Self {
+        assert!(get_manhattan_distance(new_position, self.position) == 1);
+        assert!(distance >= 0);
 
         let mut next = self.clone();
 
-        next.tool = tool;
-        next.time += time_to_move_cost;
+        next.distance = distance;
         next.position = new_position;
-        next.distance = get_manhattan_distance(new_position, target);
+        next.time += 1;
+
+        return next;
+    }
+
+    fn switch_tool(&self, next_tool: Tool) -> Self {
+        assert!(next_tool != self.tool);
+
+        let mut next = self.clone();
+
+        next.tool = next_tool;
+        next.time += TIME_TO_SWITCH_TOOL;
+
+        assert!(next.time > self.time);
 
         return next;
     }
@@ -118,7 +132,7 @@ impl Transitions for Coordinate {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 enum RegionType {
     Rocky,
     Narrow,
@@ -272,16 +286,20 @@ impl Cave {
     fn find_target(&mut self) -> Option<Time> {
         let mut available_squares: BinaryHeap<TimeCoordinate> = BinaryHeap::new();
         // keep track of the best minimum time spent for a coordinate
-        let mut best_costs: HashMap<(Tool, Coordinate), Cost> = HashMap::new();
-        let mut best_edges: HashMap<Coordinate, Coordinate> = HashMap::new();
+        let mut best_costs: HashMap<(Tool, Coordinate), Time> = HashMap::new();
 
         // You start at 0,0 (the mouth of the cave) with the torch equipped
 
-        available_squares.push(TimeCoordinate::new(0, 0, MOUTH_OF_CAVE, Tool::Torch));
+        available_squares.push(TimeCoordinate::new(
+            0,
+            get_manhattan_distance(MOUTH_OF_CAVE, self.target),
+            MOUTH_OF_CAVE,
+            Tool::Torch,
+        ));
 
         while let Some(current_square) = available_squares.pop() {
             // let current_time_cost = current_square.time;
-            let current_cost = current_square.get_cost();
+            // let current_cost = current_square.get_cost();
             let current_position = current_square.position;
             let current_tool = current_square.tool.clone();
 
@@ -289,61 +307,62 @@ impl Cave {
                 return Some(current_square.time);
             }
 
-            match best_costs.get(&(current_tool.clone(), current_position)) {
-                None => {
-                    best_costs.insert((current_tool.clone(), current_position), current_cost);
-                }
-                Some(best_cost) => {
-                    if current_cost > *best_cost {
-                        continue;
-                    }
-
-                    best_costs.insert((current_tool.clone(), current_position), current_cost);
-                }
+            if best_costs
+                .get(&(current_tool.clone(), current_position))
+                .unwrap_or(&i32::max_value())
+                <= &current_square.time
+            {
+                continue;
             }
 
+            best_costs.insert(
+                (current_tool.clone(), current_position),
+                current_square.time,
+            );
+
+            // add all possible movements
             for adjacent_square in self.get_adjacent_squares(&current_position) {
-                let projected_time_costs =
-                    self.projected_time_to_move(current_tool.clone(), adjacent_square);
+                let next = current_square.move_to_square(
+                    get_manhattan_distance(adjacent_square, self.target),
+                    adjacent_square,
+                );
 
-                assert!(projected_time_costs.len() > 0);
+                available_squares.push(next);
+            }
 
-                for (next_tool, time_to_move_cost) in projected_time_costs {
+            // switch tools
 
-                    let lol = current_square.next(self.target, next_tool, time_to_move_cost, adjacent_square);
+            let required_tools = self
+                .get_region_type(&current_square.position)
+                .required_tools();
 
-                    available_squares.push(lol);
+            for next_tool in required_tools {
+                if next_tool != current_square.tool {
+                    let next = current_square.switch_tool(next_tool);
 
-                    // match time_costs.get(&(next_tool.clone(), adjacent_square)) {
-                    //     None => {
-                    //         best_edges.insert(adjacent_square, current_position);
-
-                    //         time_costs
-                    //             .insert((next_tool.clone(), adjacent_square), adjacent_time_cost);
-
-                    //         available_squares.push(TimeCoordinate(
-                    //             adjacent_time_cost,
-                    //             (next_tool, adjacent_square),
-                    //         ));
-                    //     }
-                    //     Some(best_time_cost) => {
-                    //         if adjacent_time_cost < *best_time_cost {
-                    //             best_edges.insert(adjacent_square, current_position);
-
-                    //             time_costs.insert(
-                    //                 (next_tool.clone(), adjacent_square),
-                    //                 adjacent_time_cost,
-                    //             );
-
-                    //             available_squares.push(TimeCoordinate(
-                    //                 adjacent_time_cost,
-                    //                 (next_tool.clone(), adjacent_square),
-                    //             ));
-                    //         }
-                    //     }
-                    // }
+                    available_squares.push(next);
                 }
             }
+
+            // ....
+
+            // for adjacent_square in self.get_adjacent_squares(&current_position) {
+            //     let projected_time_costs =
+            //         self.projected_time_to_move(current_tool.clone(), adjacent_square);
+
+            //     assert!(projected_time_costs.len() > 0);
+
+            //     for (next_tool, time_to_move_cost) in projected_time_costs {
+            //         let next = current_square.next(
+            //             get_manhattan_distance(adjacent_square, self.target),
+            //             next_tool,
+            //             time_to_move_cost,
+            //             adjacent_square,
+            //         );
+
+            //         available_squares.push(next);
+            //     }
+            // }
         }
 
         return None;
@@ -444,6 +463,8 @@ fn part_1(depth: Depth, target: Coordinate) -> RiskLevel {
 fn part_2(depth: Depth, target: Coordinate) -> Option<Time> {
     let mut cave = Cave::new(depth, target);
 
+    assert!(cave.get_region_type(&target) == RegionType::Rocky);
+
     let part_2 = cave.find_target();
 
     return part_2;
@@ -452,11 +473,11 @@ fn part_2(depth: Depth, target: Coordinate) -> Option<Time> {
 fn main() {
     // input
 
-    let depth = 4002;
-    let target: Coordinate = (5, 746);
+    // let depth = 4002;
+    // let target: Coordinate = (5, 746);
 
-    // let depth = 11820;
-    // let target: Coordinate = (7, 782);
+    let depth = 11820;
+    let target: Coordinate = (7, 782);
 
     let part_1 = part_1(depth, target);
     println!("Part 1: {}", part_1);
