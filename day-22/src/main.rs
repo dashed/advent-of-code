@@ -246,39 +246,6 @@ impl Cave {
             .collect();
     }
 
-    fn projected_time_to_move(
-        &mut self,
-        current_tool: Tool,
-        new_position: Coordinate,
-    ) -> Vec<(Tool, Time)> {
-        // how long would it hypothetically take to move into this region?
-
-        if new_position == self.target || new_position == MOUTH_OF_CAVE {
-            // Finally, once you reach the target, you need the torch equipped before you can find him in the dark.
-            // The target is always in a rocky region, so if you arrive there with climbing gear equipped,
-            // you will need to spend seven minutes switching to your torch.
-
-            if current_tool != Tool::Torch {
-                return vec![((Tool::Torch), 1 + TIME_TO_SWITCH_TOOL)];
-            }
-
-            return vec![((Tool::Torch), 1)];
-        }
-
-        let required_tools = self.get_region_type(&new_position).required_tools();
-
-        return required_tools
-            .into_iter()
-            .map(|next_tool| -> (Tool, Time) {
-                if current_tool == next_tool {
-                    return ((next_tool.clone()), 1);
-                }
-
-                return ((next_tool.clone()), 1 + TIME_TO_SWITCH_TOOL);
-            })
-            .collect();
-    }
-
     fn get_erosion_level(&mut self, coord: &Coordinate) -> ErosionLevel {
         return (self.get_geologic_index(coord) + self.depth) % 20183;
     }
@@ -298,8 +265,6 @@ impl Cave {
         ));
 
         while let Some(current_square) = available_squares.pop() {
-            // let current_time_cost = current_square.time;
-            // let current_cost = current_square.get_cost();
             let current_position = current_square.position;
             let current_tool = current_square.tool.clone();
 
@@ -463,19 +428,16 @@ fn part_2(depth: Depth, target: Coordinate) -> Option<Time> {
 fn main() {
     // input
 
-    // let depth = 4002;
-    // let target: Coordinate = (5, 746);
+    let depth = 4002;
+    let target: Coordinate = (5, 746);
 
-    let depth = 11820;
-    let target: Coordinate = (7, 782);
+    // let depth = 11820;
+    // let target: Coordinate = (7, 782);
 
     let part_1 = part_1(depth, target);
     println!("Part 1: {}", part_1);
 
     let part_2 = part_2(depth, target);
-    // not: 1064 (too high)
-    // not: 1027 (too low)
-    // not 1034 (too high)
     println!("Part 2: {:?}", part_2);
 }
 
@@ -491,9 +453,8 @@ mod tests {
 
     #[test]
     fn test_part_2() {
-        let part_2 = part_2(510, (10, 10));
-
-        assert_eq!(part_2, Some(45));
+        assert_eq!(part_2(510, (10, 10)), Some(45));
+        // assert_eq!(part_2(11820, (7, 782)), Some(1075));
     }
 
     #[test]
