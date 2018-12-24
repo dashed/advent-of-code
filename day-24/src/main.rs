@@ -47,8 +47,10 @@ impl Trait {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 struct Group {
+    id: i32,
+
     race: Race,
 
     num_of_units: i32,
@@ -115,7 +117,27 @@ struct Battle {
 }
 
 impl Battle {
-    fn execute_fight_round(&mut self) {}
+    fn new(groups: BinaryHeap<Group>) -> Self {
+        let mut new_group = BinaryHeap::new();
+
+        let mut current_id = 0;
+        for mut group in groups {
+            group.id = current_id;
+            current_id += 1;
+
+            new_group.push(group);
+        }
+
+        Battle { groups: new_group }
+    }
+
+    fn execute_fight_round(&mut self) {
+
+        // target selection phase
+
+        // attack phase
+        // TODO
+    }
 }
 
 fn parse_input(input_string: &str) -> Battle {
@@ -238,6 +260,8 @@ fn parse_input(input_string: &str) -> Battle {
                         .unwrap_or((HashSet::new(), HashSet::new()));
 
                     return Group {
+                        id: 0,
+
                         race: race.clone(),
 
                         num_of_units,
@@ -266,7 +290,7 @@ fn parse_input(input_string: &str) -> Battle {
 
             groups.extend(immunities);
             groups.extend(infections);
-            return Battle { groups };
+            return Battle::new(groups);
         });
 
     let result: Result<(Battle, &str), easy::ParseError<&str>> = parser.easy_parse(input_string);
@@ -285,5 +309,7 @@ fn parse_input(input_string: &str) -> Battle {
 fn main() {
     let input_string = include_str!("input.txt");
 
-    parse_input(input_string);
+    let mut battle = parse_input(input_string);
+
+    battle.execute_fight_round();
 }
