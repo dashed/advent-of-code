@@ -7,6 +7,8 @@ use combine::combinator::token;
 use combine::parser::char::{char, digit, letter, spaces};
 use combine::stream::easy;
 use combine::{between, choice, many1, sep_by, Parser};
+use std::cmp;
+use std::collections::BTreeMap;
 
 // code
 
@@ -113,4 +115,49 @@ fn main() {
         .collect();
 
     println!("Part 1: {}", num_in_range.len());
+
+    // Part 2
+    // https://old.reddit.com/r/adventofcode/comments/a8s17l/2018_day_23_solutions/ecdqzdg/
+
+    // visualization
+    //       <===A===> <==B==>
+    // <==C==>             <==D==>
+    //     <======E======>
+    // 1111223222222221222122211110 :: Bot count per x-coordinate
+    //       ^                      :: Point of maximum intersection
+    //
+    // https://old.reddit.com/r/adventofcode/comments/a8s17l/2018_day_23_solutions/ecez07o/
+
+    let queue: Vec<(i32, i32)> = nanobots
+        .into_iter()
+        .map(|bot| {
+            let distance = get_manhattan_distance(bot.position, (0, 0, 0));
+
+            let segments = vec![
+                (cmp::max(0, distance - bot.radius), 1),
+                (distance + bot.radius + 1, -1),
+            ];
+
+            return segments;
+        })
+        .flat_map(|s| s.into_iter())
+        .collect();
+
+    let mut foo = BTreeMap::new();
+    foo.extend(queue);
+
+    let mut count = 0;
+    let mut max_count = 0;
+    let mut result = 0;
+
+    for (distance, e) in foo {
+        count += e;
+
+        if count > max_count {
+            result = distance;
+            max_count = count;
+        }
+    }
+
+    println!("Part 2: {}", result);
 }
