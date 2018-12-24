@@ -432,8 +432,6 @@ fn part_2(depth: Depth, target: Coordinate) -> Option<Time> {
 
     let part_2 = cave.find_target();
 
-    println!("Part 2: {:?}", part_2);
-
     return part_2;
 }
 
@@ -446,7 +444,8 @@ fn main() {
     let part_1 = part_1(depth, target);
     println!("Part 1: {}", part_1);
 
-    part_2(510, (10, 10));
+    let part_2 = part_2(depth, target);
+    println!("Part 2: {:?}", part_2);
 }
 
 #[cfg(test)]
