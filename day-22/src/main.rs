@@ -21,12 +21,19 @@ fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> Distance {
 type ToolCoordinate = (Tool, Coordinate);
 
 #[derive(PartialEq, Hash, Eq, Clone, Debug)]
-struct TimeCoordinate(Time, ToolCoordinate);
+struct TimeCoordinate(Time, Distance, ToolCoordinate);
 
 impl PartialOrd for TimeCoordinate {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         // reversed for the binary heap which is a max-heap
-        return other.0.partial_cmp(&self.0);
+
+        let other_time = other.0;
+        let other_distance = other.1;
+        let other_result = other_time + other_distance;
+
+        let this_result = self.0 + self.1;
+
+        return Some(other_result.cmp(&this_result));
     }
 }
 
@@ -138,16 +145,12 @@ struct Cave {
     target: Coordinate,
     geologic_indices: HashMap<Coordinate, GeologicIndex>,
     region_types: HashMap<Coordinate, RegionType>,
-    initial_tool: Tool,
 }
 
 impl Cave {
     fn new(depth: Depth, target: Coordinate) -> Self {
         let mut geologic_indices = HashMap::new();
         let region_types = HashMap::new();
-
-        // You start at 0,0 (the mouth of the cave) with the torch equipped
-        let initial_tool = Tool::Torch;
 
         // The region at 0,0 (the mouth of the cave) has a geologic index of 0.
         geologic_indices.insert(MOUTH_OF_CAVE, 0);
@@ -159,7 +162,6 @@ impl Cave {
             depth,
             target,
             geologic_indices,
-            initial_tool,
             region_types,
         }
     }
@@ -225,15 +227,16 @@ impl Cave {
 
         let required_tools = self.get_region_type(&new_position).required_tools();
 
-        return required_tools.into_iter()
+        return required_tools
+            .into_iter()
             .map(|next_tool| -> (Tool, Time) {
-
                 if current_tool == next_tool {
                     return ((next_tool.clone()), 1);
                 }
 
                 return ((next_tool.clone()), 1 + TIME_TO_SWITCH_TOOL);
-            }).collect();
+            })
+            .collect();
     }
 
     fn get_erosion_level(&mut self, coord: &Coordinate) -> ErosionLevel {
@@ -246,14 +249,14 @@ impl Cave {
         let mut time_costs: HashMap<(Tool, Coordinate), Time> = HashMap::new();
         let mut best_edges: HashMap<Coordinate, Coordinate> = HashMap::new();
 
-        available_squares.push(TimeCoordinate(
-            0,
-            (self.initial_tool.clone(), self.target),
-        ));
+        // You start at 0,0 (the mouth of the cave) with the torch equipped
+
+        available_squares.push(TimeCoordinate(0, 0, (Tool::Torch, self.target)));
         time_costs.insert((Tool::Torch, self.target), 0);
 
         while let Some(current_square) = available_squares.pop() {
-            let TimeCoordinate(current_cost, (current_tool, current_position)) = current_square;
+            let TimeCoordinate(current_cost, current_distance, (current_tool, current_position)) =
+                current_square;
 
             if current_position == MOUTH_OF_CAVE && current_tool == Tool::Torch {
                 return time_costs.get(&(current_tool, MOUTH_OF_CAVE)).map(|x| *x);
@@ -271,6 +274,8 @@ impl Cave {
             }
 
             for adjacent_square in self.get_adjacent_squares(&current_position) {
+                let adjacent_distance = current_distance + 1;
+
                 let projected_time_costs =
                     self.projected_time_to_move(current_tool.clone(), adjacent_square);
 
@@ -288,6 +293,7 @@ impl Cave {
 
                             available_squares.push(TimeCoordinate(
                                 adjacent_time_cost,
+                                adjacent_distance,
                                 (next_tool, adjacent_square),
                             ));
                         }
@@ -302,6 +308,7 @@ impl Cave {
 
                                 available_squares.push(TimeCoordinate(
                                     adjacent_time_cost,
+                                    adjacent_distance,
                                     (next_tool.clone(), adjacent_square),
                                 ));
                             }
@@ -417,8 +424,11 @@ fn part_2(depth: Depth, target: Coordinate) -> Option<Time> {
 fn main() {
     // input
 
-    let depth = 4002;
-    let target: Coordinate = (5, 746);
+    // let depth = 4002;
+    // let target: Coordinate = (5, 746);
+
+    let depth = 11820;
+    let target: Coordinate = (7, 782);
 
     let part_1 = part_1(depth, target);
     println!("Part 1: {}", part_1);
@@ -426,6 +436,7 @@ fn main() {
     let part_2 = part_2(depth, target);
     // not: 1064 (too high)
     // not: 1027 (too low)
+    // ???: 1034
     println!("Part 2: {:?}", part_2);
 }
 
@@ -452,9 +463,10 @@ mod tests {
         let mut available_squares: BinaryHeap<TimeCoordinate> = BinaryHeap::new();
 
         let items = vec![
-            TimeCoordinate(5, (Tool::Torch, (1, 26))),
-            TimeCoordinate(1, (Tool::Torch, (2, 25))),
-            TimeCoordinate(4, (Tool::Torch, (2, 30))),
+            TimeCoordinate(5, 10, (Tool::Torch, (1, 26))),
+            TimeCoordinate(1, 45, (Tool::Torch, (2, 25))),
+            TimeCoordinate(4, 1, (Tool::Torch, (2, 30))),
+            TimeCoordinate(1, 1, (Tool::Torch, (2, 25))),
         ];
         available_squares.extend(items);
 
@@ -464,9 +476,10 @@ mod tests {
         }
 
         let expected = vec![
-            TimeCoordinate(1, (Tool::Torch, (2, 25))),
-            TimeCoordinate(4, (Tool::Torch, (2, 30))),
-            TimeCoordinate(5, (Tool::Torch, (1, 26))),
+            TimeCoordinate(1, 1, (Tool::Torch, (2, 25))),
+            TimeCoordinate(4, 1, (Tool::Torch, (2, 30))),
+            TimeCoordinate(5, 10, (Tool::Torch, (1, 26))),
+            TimeCoordinate(1, 45, (Tool::Torch, (2, 25))),
         ];
 
         assert_eq!(actual, expected);
