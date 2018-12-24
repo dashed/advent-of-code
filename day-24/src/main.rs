@@ -114,8 +114,6 @@ struct Battle {
     groups: BinaryHeap<Group>,
 }
 
-fn get_attackable_target() {}
-
 fn parse_input(input_string: &str) {
     let input_string = input_string.trim();
 
@@ -260,14 +258,11 @@ fn parse_input(input_string: &str) {
         many1::<Vec<Group>, _>(parse_group(Race::Infection)),
     )
         .map(|(_, immunities, _, _, infections)| {
-
             let mut groups = BinaryHeap::new();
 
             groups.extend(immunities);
             groups.extend(infections);
-return Battle {
-    groups
-};
+            return Battle { groups };
         });
 
     let result: Result<(Battle, &str), easy::ParseError<&str>> = parser.easy_parse(input_string);
