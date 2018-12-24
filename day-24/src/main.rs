@@ -114,7 +114,11 @@ struct Battle {
     groups: BinaryHeap<Group>,
 }
 
-fn parse_input(input_string: &str) {
+impl Battle {
+    fn execute_fight_round(&mut self) {}
+}
+
+fn parse_input(input_string: &str) -> Battle {
     let input_string = input_string.trim();
 
     let skip_spaces = || spaces().silent();
@@ -136,7 +140,7 @@ fn parse_input(input_string: &str) {
     let infection_start = (constant("Infection:".to_string()), skip_spaces());
 
     let list_of_words = || {
-        sep_by::<HashSet<String>, _, _>(many1(letter()), spaces().skip(char(',')).skip(spaces()))
+        sep_by1::<HashSet<String>, _, _>(many1(letter()), spaces().skip(char(',')).skip(spaces()))
     };
 
     let parse_immunities = (
@@ -268,11 +272,13 @@ fn parse_input(input_string: &str) {
     let result: Result<(Battle, &str), easy::ParseError<&str>> = parser.easy_parse(input_string);
 
     match result {
-        Ok((value, _remaining_input)) => {
-            println!("{:?}", value);
-            println!("{}", _remaining_input);
+        Ok((value, remaining_input)) => {
+            assert!(remaining_input.trim().len() <= 0);
+            return value;
         }
-        Err(err) => println!("{}", err),
+        Err(err) => {
+            panic!("{}", err);
+        }
     }
 }
 
