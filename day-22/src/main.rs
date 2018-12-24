@@ -445,6 +445,7 @@ fn main() {
     println!("Part 1: {}", part_1);
 
     let part_2 = part_2(depth, target);
+    // not: 1064
     println!("Part 2: {:?}", part_2);
 }
 
@@ -464,6 +465,31 @@ mod tests {
         let part_2 = part_2(510, (10, 10));
 
         assert_eq!(part_2, Some(45));
+    }
+
+    #[test]
+    fn test_time_cost_min_heap() {
+        let mut available_squares: BinaryHeap<TimeCoordinate> = BinaryHeap::new();
+
+        let items = vec![
+            TimeCoordinate(5, (Tool::Torch, (1, 26))),
+            TimeCoordinate(1, (Tool::Torch, (2, 25))),
+            TimeCoordinate(4, (Tool::Torch, (2, 30))),
+        ];
+        available_squares.extend(items);
+
+        let mut actual: Vec<TimeCoordinate> = vec![];
+        while let Some(item) = available_squares.pop() {
+            actual.push(item);
+        }
+
+        let expected = vec![
+            TimeCoordinate(1, (Tool::Torch, (2, 25))),
+            TimeCoordinate(4, (Tool::Torch, (2, 30))),
+            TimeCoordinate(5, (Tool::Torch, (1, 26))),
+        ];
+
+        assert_eq!(actual, expected);
     }
 
 }
