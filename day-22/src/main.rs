@@ -9,6 +9,8 @@ use std::collections::HashSet;
 
 // code
 
+type Cost = i32;
+
 // adapted from day 6
 // https://math.stackexchange.com/a/139604/10247
 type Distance = i32;
@@ -36,14 +38,28 @@ impl TimeCoordinate {
             tool,
         };
     }
+
+    fn get_cost(&self) -> Cost {
+        return self.distance + self.time;
+    }
+
+    fn next(&self, target: Coordinate, tool: Tool, time_to_move_cost: Time, new_position: Coordinate) -> Self {
+
+        let mut next = self.clone();
+
+        next.tool = tool;
+        next.time += time_to_move_cost;
+        next.position = new_position;
+        next.distance = get_manhattan_distance(new_position, target);
+
+        return next;
+    }
 }
 
 impl Ord for TimeCoordinate {
     fn cmp(&self, other: &Self) -> Ordering {
         // reversed for the binary heap which is a max-heap
-        return (self.time + self.distance)
-            .cmp(&(other.time + other.distance))
-            .reverse();
+        return (self.get_cost()).cmp(&(other.get_cost())).reverse();
     }
 }
 
@@ -256,31 +272,33 @@ impl Cave {
     fn find_target(&mut self) -> Option<Time> {
         let mut available_squares: BinaryHeap<TimeCoordinate> = BinaryHeap::new();
         // keep track of the best minimum time spent for a coordinate
-        let mut time_costs: HashMap<(Tool, Coordinate), Time> = HashMap::new();
+        let mut best_costs: HashMap<(Tool, Coordinate), Cost> = HashMap::new();
         let mut best_edges: HashMap<Coordinate, Coordinate> = HashMap::new();
 
         // You start at 0,0 (the mouth of the cave) with the torch equipped
 
-        available_squares.push(TimeCoordinate(0, (Tool::Torch, MOUTH_OF_CAVE)));
-        time_costs.insert((Tool::Torch, MOUTH_OF_CAVE), 0);
+        available_squares.push(TimeCoordinate::new(0, 0, MOUTH_OF_CAVE, Tool::Torch));
 
         while let Some(current_square) = available_squares.pop() {
-            let TimeCoordinate(current_cost, (current_tool, current_position)) = current_square;
+            // let current_time_cost = current_square.time;
+            let current_cost = current_square.get_cost();
+            let current_position = current_square.position;
+            let current_tool = current_square.tool.clone();
 
             if current_position == self.target && current_tool == Tool::Torch {
-                return time_costs.get(&(current_tool, self.target)).map(|time| {
-                    return *time;
-                });
+                return Some(current_square.time);
             }
 
-            match time_costs.get(&(current_tool.clone(), current_position)) {
+            match best_costs.get(&(current_tool.clone(), current_position)) {
                 None => {
-                    unreachable!();
+                    best_costs.insert((current_tool.clone(), current_position), current_cost);
                 }
-                Some(best_time_cost) => {
-                    if current_cost > *best_time_cost {
+                Some(best_cost) => {
+                    if current_cost > *best_cost {
                         continue;
                     }
+
+                    best_costs.insert((current_tool.clone(), current_position), current_cost);
                 }
             }
 
@@ -291,36 +309,39 @@ impl Cave {
                 assert!(projected_time_costs.len() > 0);
 
                 for (next_tool, time_to_move_cost) in projected_time_costs {
-                    let adjacent_time_cost = current_cost + time_to_move_cost;
 
-                    match time_costs.get(&(next_tool.clone(), adjacent_square)) {
-                        None => {
-                            best_edges.insert(adjacent_square, current_position);
+                    let lol = current_square.next(self.target, next_tool, time_to_move_cost, adjacent_square);
 
-                            time_costs
-                                .insert((next_tool.clone(), adjacent_square), adjacent_time_cost);
+                    available_squares.push(lol);
 
-                            available_squares.push(TimeCoordinate(
-                                adjacent_time_cost,
-                                (next_tool, adjacent_square),
-                            ));
-                        }
-                        Some(best_time_cost) => {
-                            if adjacent_time_cost < *best_time_cost {
-                                best_edges.insert(adjacent_square, current_position);
+                    // match time_costs.get(&(next_tool.clone(), adjacent_square)) {
+                    //     None => {
+                    //         best_edges.insert(adjacent_square, current_position);
 
-                                time_costs.insert(
-                                    (next_tool.clone(), adjacent_square),
-                                    adjacent_time_cost,
-                                );
+                    //         time_costs
+                    //             .insert((next_tool.clone(), adjacent_square), adjacent_time_cost);
 
-                                available_squares.push(TimeCoordinate(
-                                    adjacent_time_cost,
-                                    (next_tool.clone(), adjacent_square),
-                                ));
-                            }
-                        }
-                    }
+                    //         available_squares.push(TimeCoordinate(
+                    //             adjacent_time_cost,
+                    //             (next_tool, adjacent_square),
+                    //         ));
+                    //     }
+                    //     Some(best_time_cost) => {
+                    //         if adjacent_time_cost < *best_time_cost {
+                    //             best_edges.insert(adjacent_square, current_position);
+
+                    //             time_costs.insert(
+                    //                 (next_tool.clone(), adjacent_square),
+                    //                 adjacent_time_cost,
+                    //             );
+
+                    //             available_squares.push(TimeCoordinate(
+                    //                 adjacent_time_cost,
+                    //                 (next_tool.clone(), adjacent_square),
+                    //             ));
+                    //         }
+                    //     }
+                    // }
                 }
             }
         }
@@ -469,10 +490,10 @@ mod tests {
         let mut available_squares: BinaryHeap<TimeCoordinate> = BinaryHeap::new();
 
         let items = vec![
-            TimeCoordinate(5, (Tool::Torch, (1, 26))),
-            TimeCoordinate(1, (Tool::Torch, (2, 25))),
-            TimeCoordinate(4, (Tool::Torch, (2, 30))),
-            TimeCoordinate(1, (Tool::Torch, (2, 25))),
+            TimeCoordinate::new(5, 1, (1, 26), Tool::Torch),
+            TimeCoordinate::new(1, 2, (1, 26), Tool::Torch),
+            TimeCoordinate::new(4, 3, (1, 26), Tool::Torch),
+            TimeCoordinate::new(1, 4, (1, 26), Tool::Torch),
         ];
         available_squares.extend(items);
 
@@ -482,10 +503,10 @@ mod tests {
         }
 
         let expected = vec![
-            TimeCoordinate(1, (Tool::Torch, (2, 25))),
-            TimeCoordinate(1, (Tool::Torch, (2, 25))),
-            TimeCoordinate(4, (Tool::Torch, (2, 30))),
-            TimeCoordinate(5, (Tool::Torch, (1, 26))),
+            TimeCoordinate::new(1, 2, (1, 26), Tool::Torch),
+            TimeCoordinate::new(1, 4, (1, 26), Tool::Torch),
+            TimeCoordinate::new(5, 1, (1, 26), Tool::Torch),
+            TimeCoordinate::new(4, 3, (1, 26), Tool::Torch),
         ];
 
         assert_eq!(actual, expected);
