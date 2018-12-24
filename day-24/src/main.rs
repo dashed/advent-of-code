@@ -6,8 +6,7 @@ extern crate combine;
 use combine::combinator::token;
 use combine::parser::char::{char, digit, letter, spaces};
 use combine::stream::easy;
-use combine::{any, tokens};
-use combine::{between, choice, many1, sep_by, Parser};
+use combine::{between, choice, many1, optional, sep_by, sep_by1, tokens, Parser};
 
 use core::cmp::Ordering;
 use std::collections::BinaryHeap;
@@ -27,10 +26,25 @@ fn target_order(first_group: &Group, second_group: &Group) -> Ordering {
     return first_group.initiative.cmp(&second_group.initiative);
 }
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 enum Race {
     Immunity,
     Infection,
+}
+
+#[derive(Debug, Clone)]
+enum Trait {
+    Weaknesses(HashSet<String>),
+    Immunities(HashSet<String>),
+}
+
+impl Trait {
+    fn unwrap(self) -> HashSet<String> {
+        match self {
+            Trait::Weaknesses(set) => set,
+            Trait::Immunities(set) => set,
+        }
+    }
 }
 
 #[derive(Debug, Eq, PartialEq)]
@@ -104,7 +118,7 @@ fn get_attackable_target() {}
 fn parse_input(input_string: &str) {
     let input_string = input_string.trim();
 
-    let skip_spaces = spaces().silent();
+    let skip_spaces = || spaces().silent();
 
     let constant = |needle: String| {
         let chars: Vec<char> = needle.chars().into_iter().collect();
@@ -113,23 +127,139 @@ fn parse_input(input_string: &str) {
         });
     };
 
-    let integer = many1(digit()).map(|string: String| -> i32 {
-        return string.parse::<i32>().unwrap();
-    });
+    let integer = || {
+        many1(digit()).map(|string: String| -> i32 {
+            return string.parse::<i32>().unwrap();
+        })
+    };
 
-    let immunity_start = (constant("Immune System:".to_string()), skip_spaces);
+    let immunity_start = (constant("Immune System:".to_string()), skip_spaces());
+    let infection_start = (constant("Infection:".to_string()), skip_spaces());
 
-    // let infection_start = many1(any()).and_then(|word: String| {
-    //     if word == "Infection:" {
-    //         Ok(word)
-    //     } else {
-    //         Err(easy::Error::Expected(easy::Info::Borrowed("Infection:")))
-    //     }
-    // });
+    let list_of_words = || {
+        sep_by::<HashSet<String>, _, _>(many1(letter()), spaces().skip(char(',')).skip(spaces()))
+    };
 
-    let mut parser = (immunity_start).map(|(_)| {
-        return ();
-    });
+    let parse_immunities = (
+        constant("immune to".to_string()).with(skip_spaces()),
+        list_of_words(),
+    )
+        .map(|(_, words)| {
+            return Trait::Immunities(words);
+        });
+
+    let parse_weaknesses = (
+        constant("weak to".to_string()).with(skip_spaces()),
+        list_of_words(),
+    )
+        .map(|(_, words)| {
+            return Trait::Weaknesses(words);
+        });
+
+    let traits_list = sep_by::<Vec<Trait>, _, _>(
+        choice((parse_immunities, parse_weaknesses)),
+        spaces().skip(char(';')).skip(spaces()),
+    );
+
+    let parse_traits_group = between(token('('), token(')'), traits_list);
+
+    let parse_group = |race: Race| {
+        (
+            integer(), // num of units
+            skip_spaces()
+                .with(constant("units each with".to_string()))
+                .with(skip_spaces()),
+            integer(), // hit points
+            skip_spaces()
+                .with(constant("hit points".to_string()))
+                .with(skip_spaces()),
+            optional(parse_traits_group),
+            skip_spaces()
+                .with(constant("with an attack that does".to_string()))
+                .with(skip_spaces()),
+            integer(), /* attack damage */
+            skip_spaces(),
+            many1::<String, _>(letter()), /* attack type */
+            skip_spaces()
+                .with(constant("damage at initiative".to_string()))
+                .with(skip_spaces()),
+            integer(), /* initiative */
+            skip_spaces(),
+        )
+            .map(
+                move |(
+                    num_of_units,
+                    _,
+                    hit_points,
+                    _,
+                    traits,
+                    _,
+                    attack_damage,
+                    _,
+                    attack_type,
+                    _,
+                    initiative,
+                    _,
+                )|
+                      -> Group {
+                    let (immunities, weaknesses) = traits
+                        .map(|traits| {
+                            let immunities = traits
+                                .iter()
+                                .find(|item| match item {
+                                    Trait::Immunities(_) => {
+                                        return true;
+                                    }
+                                    _ => false,
+                                })
+                                .map(|x| {
+                                    return (*x).clone().unwrap();
+                                })
+                                .unwrap_or(HashSet::new());
+
+                            let weaknesses = traits
+                                .iter()
+                                .find(|item| match item {
+                                    Trait::Weaknesses(_) => {
+                                        return true;
+                                    }
+                                    _ => false,
+                                })
+                                .map(|x| {
+                                    return (*x).clone().unwrap();
+                                })
+                                .unwrap_or(HashSet::new());
+
+                            return (immunities, weaknesses);
+                        })
+                        .unwrap_or((HashSet::new(), HashSet::new()));
+
+                    return Group {
+                        race: race.clone(),
+
+                        num_of_units,
+                        hit_points,
+
+                        attack_damage,
+                        attack_type,
+                        initiative,
+
+                        immunities,
+                        weaknesses,
+                    };
+                },
+            )
+    };
+
+    let mut parser = (
+        immunity_start,
+        many1::<Vec<Group>, _>(parse_group(Race::Immunity)),
+        skip_spaces(),
+        infection_start,
+    )
+        .map(|(_, _, _, _)| {
+            return ();
+        });
 
     let result: Result<((), &str), easy::ParseError<&str>> = parser.easy_parse(input_string);
 
