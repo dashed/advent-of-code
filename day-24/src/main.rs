@@ -14,132 +14,6 @@ use std::collections::HashSet;
 
 // code
 
-fn target_order(first_group: &Group, second_group: &Group) -> Ordering {
-    // group with higher effective power is first
-    if first_group.effective_power() != second_group.effective_power() {
-        return first_group
-            .effective_power()
-            .cmp(&second_group.effective_power());
-    }
-
-    // in a tie, the group with the higher initiative is first.
-    return first_group.initiative.cmp(&second_group.initiative);
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-enum Race {
-    Immunity,
-    Infection,
-}
-
-#[derive(Debug, Clone)]
-enum Trait {
-    Weaknesses(HashSet<String>),
-    Immunities(HashSet<String>),
-}
-
-impl Trait {
-    fn unwrap(self) -> HashSet<String> {
-        match self {
-            Trait::Weaknesses(set) => set,
-            Trait::Immunities(set) => set,
-        }
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, Clone)]
-struct Group {
-    id: i32,
-
-    race: Race,
-
-    num_of_units: i32,
-    hit_points: i32,
-
-    attack_damage: i32,
-    attack_type: String,
-    initiative: i32,
-
-    immunities: HashSet<String>,
-    weaknesses: HashSet<String>,
-}
-
-impl Group {
-    fn effective_power(&self) -> i32 {
-        return self.attack_damage * self.num_of_units;
-    }
-
-    fn immune_to(&self, attack_type: &String) -> bool {
-        return self.immunities.contains(attack_type);
-    }
-
-    fn weak_to(&self, attack_type: &String) -> bool {
-        return self.weaknesses.contains(attack_type);
-    }
-
-    fn calculate_damage_to_group(&self, other_group: &Self) -> i32 {
-        if other_group.immune_to(&self.attack_type) {
-            return 0;
-        }
-
-        if other_group.weak_to(&self.attack_type) {
-            return 2 * self.attack_damage;
-        }
-
-        return self.attack_damage;
-    }
-
-    // take damage from other_group
-    fn take_damage(&mut self, other_group: &Self) {
-        let damage_taken = other_group.calculate_damage_to_group(self);
-
-        let num_of_units_dead: i32 = damage_taken / self.num_of_units;
-
-        self.num_of_units = self.num_of_units - num_of_units_dead;
-    }
-}
-
-impl Ord for Group {
-    fn cmp(&self, other: &Self) -> Ordering {
-        return target_order(self, other);
-    }
-}
-
-impl PartialOrd for Group {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        return Some(self.cmp(other));
-    }
-}
-
-#[derive(Debug)]
-struct Battle {
-    groups: BinaryHeap<Group>,
-}
-
-impl Battle {
-    fn new(groups: BinaryHeap<Group>) -> Self {
-        let mut new_group = BinaryHeap::new();
-
-        let mut current_id = 0;
-        for mut group in groups {
-            group.id = current_id;
-            current_id += 1;
-
-            new_group.push(group);
-        }
-
-        Battle { groups: new_group }
-    }
-
-    fn execute_fight_round(&mut self) {
-
-        // target selection phase
-
-        // attack phase
-        // TODO
-    }
-}
-
 fn parse_input(input_string: &str) -> Battle {
     let input_string = input_string.trim();
 
@@ -303,6 +177,176 @@ fn parse_input(input_string: &str) -> Battle {
         Err(err) => {
             panic!("{}", err);
         }
+    }
+}
+
+fn target_order(first_group: &Group, second_group: &Group) -> Ordering {
+    // group with higher effective power is first
+    if first_group.effective_power() != second_group.effective_power() {
+        return first_group
+            .effective_power()
+            .cmp(&second_group.effective_power());
+    }
+
+    // in a tie, the group with the higher initiative is first.
+    return first_group.initiative.cmp(&second_group.initiative);
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+enum Race {
+    Immunity,
+    Infection,
+}
+
+#[derive(Debug, Clone)]
+enum Trait {
+    Weaknesses(HashSet<String>),
+    Immunities(HashSet<String>),
+}
+
+impl Trait {
+    fn unwrap(self) -> HashSet<String> {
+        match self {
+            Trait::Weaknesses(set) => set,
+            Trait::Immunities(set) => set,
+        }
+    }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone)]
+struct Group {
+    id: i32,
+
+    race: Race,
+
+    num_of_units: i32,
+    hit_points: i32,
+
+    attack_damage: i32,
+    attack_type: String,
+    initiative: i32,
+
+    immunities: HashSet<String>,
+    weaknesses: HashSet<String>,
+}
+
+impl Group {
+    fn effective_power(&self) -> i32 {
+        return self.attack_damage * self.num_of_units;
+    }
+
+    fn immune_to(&self, attack_type: &String) -> bool {
+        return self.immunities.contains(attack_type);
+    }
+
+    fn weak_to(&self, attack_type: &String) -> bool {
+        return self.weaknesses.contains(attack_type);
+    }
+
+    fn calculate_damage_to_group(&self, other_group: &Self) -> i32 {
+        if other_group.immune_to(&self.attack_type) {
+            return 0;
+        }
+
+        if other_group.weak_to(&self.attack_type) {
+            return 2 * self.attack_damage;
+        }
+
+        return self.attack_damage;
+    }
+
+    // take damage from other_group
+    fn take_damage(&mut self, other_group: &Self) {
+        let damage_taken = other_group.calculate_damage_to_group(self);
+
+        let num_of_units_dead: i32 = damage_taken / self.num_of_units;
+
+        self.num_of_units = self.num_of_units - num_of_units_dead;
+    }
+}
+
+impl Ord for Group {
+    fn cmp(&self, other: &Self) -> Ordering {
+        return target_order(self, other);
+    }
+}
+
+impl PartialOrd for Group {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        return Some(self.cmp(other));
+    }
+}
+
+#[derive(Debug)]
+struct Battle {
+    groups: BinaryHeap<Group>,
+}
+
+impl Battle {
+    fn new(groups: BinaryHeap<Group>) -> Self {
+        let mut new_group = BinaryHeap::new();
+
+        let mut current_id = 0;
+        for mut group in groups {
+            group.id = current_id;
+            current_id += 1;
+
+            new_group.push(group);
+        }
+
+        Battle { groups: new_group }
+    }
+
+    fn execute_fight_round(&mut self) {
+        // target selection phase
+
+        let targets = self.groups.clone();
+        let mut queue = self.groups.clone();
+
+        while let Some(current_group) = queue.pop() {
+            println!(
+                "{} effective_power -- {} initiative",
+                current_group.effective_power(),
+                current_group.initiative
+            );
+
+            let mut potential_targets: Vec<(&Group, i32)> = targets
+                .iter()
+                .filter(|target| {
+                    // cannot attack itself
+                    return current_group.id != target.id;
+                })
+                .map(|target| {
+                    let potential_damage = current_group.calculate_damage_to_group(target);
+                    return (target, potential_damage);
+                })
+                .collect();
+
+            potential_targets.sort_by(|this, other| {
+                let (this_target, this_potential_damage) = this;
+                let (other_target, other_potential_damage) = other;
+
+                if this_potential_damage != other_potential_damage {
+                    return other_potential_damage.cmp(this_potential_damage);
+                }
+
+                return target_order(other_target, this_target);
+            });
+
+            for (target, damage) in potential_targets {
+                println!(
+                    "{} damage to take -- {} effective_power -- {} initiative",
+                    damage,
+                    target.effective_power(),
+                    target.initiative
+                );
+            }
+
+            println!("-----");
+        }
+
+        // attack phase
+        // TODO
     }
 }
 
