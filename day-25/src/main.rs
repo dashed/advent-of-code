@@ -50,6 +50,7 @@ impl Constellation {
 
     fn can_add(&self, new_point: Coordinate) -> bool {
         for point in &self.points {
+            assert!(new_point != *point);
             if get_manhattan_distance(*point, new_point) <= 3 {
                 return true;
             }
@@ -101,35 +102,30 @@ fn part_1(input_string: &str) -> usize {
     // merge constallations
 
     loop {
-        if constellations.len() <= 1 {
-            break;
-        }
+        let num_of_constellations_before = constellations.len();
 
-        let mut merge_occurred = false;
+        constellations = constellations
+            .into_iter()
+            .fold(vec![], |mut acc, mut constellation| {
+                // find a constellation to join
+                for potential_constellation in acc.iter_mut() {
+                    if constellation.can_merge(&potential_constellation) {
+                        let new_constellation =
+                            constellation.merge(potential_constellation.clone());
+                        *potential_constellation = new_constellation;
+                        return acc;
+                    }
+                }
 
-        let mut new_constellations = vec![];
+                // invariant: no constellation found
+                acc.push(constellation);
 
-        let last_constellation: Constellation = constellations.pop().unwrap();
+                return acc;
+            });
 
-        while let Some(mut constellation) = constellations.pop() {
-            // find a constellation that can merge with last_constellation
-            if constellation.can_merge(&last_constellation) {
-                merge_occurred = true;
-                let new_constellation = constellation.merge(last_constellation.clone());
-                new_constellations.push(new_constellation);
-                break;
-            }
+        let num_of_constellations_after = constellations.len();
 
-            new_constellations.push(constellation);
-        }
-
-        // add remaining constellations that didn't merge with last_constellation
-        new_constellations.extend(constellations);
-
-        constellations = new_constellations;
-
-        if !merge_occurred {
-            constellations.push(last_constellation);
+        if num_of_constellations_before == num_of_constellations_after {
             break;
         }
     }
@@ -138,10 +134,8 @@ fn part_1(input_string: &str) -> usize {
 }
 
 fn main() {
-
     let input_string = include_str!("input.txt");
 
-    // not: 616 (too high)
     println!("Part 1: {}", part_1(input_string));
 }
 
@@ -151,6 +145,8 @@ mod tests {
 
     #[test]
     fn test_part_1() {
+        assert_eq!(part_1(include_str!("input.txt")), 352);
+
         let input_string = r####"
  0,0,0,0
  3,0,0,0
