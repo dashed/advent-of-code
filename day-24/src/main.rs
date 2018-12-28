@@ -260,9 +260,13 @@ impl Group {
         return self.effective_power();
     }
 
-    fn take_damage(&mut self, damage_taken: Damage) {
+    fn take_damage(&mut self, other_group: &Self) {
+
+        let damage_taken = other_group.calculate_damage_to_group(&self);
 
         let num_of_units_dead: i32 = damage_taken / self.hit_points;
+
+        assert!(num_of_units_dead >= 0);
 
         self.num_of_units = self.num_of_units - num_of_units_dead;
 
@@ -335,9 +339,13 @@ impl Battle {
 
         let mut unavailable_targets: HashSet<i32> = HashSet::new();
 
-        let mut damage_dealt: HashMap<GroupID, Damage> = HashMap::new();
+        let mut groups_lookup: HashMap<GroupID, Group> = HashMap::new();
+        let mut target_selection: Vec<(GroupID, GroupID)> = vec![];
 
         while let Some(current_group) = queue.pop() {
+
+            groups_lookup.insert(current_group.id, current_group.clone());
+
             // TODO: remove
             // println!(
             //     "{} effective_power -- {} initiative",
@@ -391,22 +399,26 @@ impl Battle {
             });
 
             if potential_targets.len() > 0 {
-                let (target, damage) = potential_targets.get(0).unwrap();
+                let (target, _damage) = potential_targets.get(0).unwrap();
 
                 assert!(!unavailable_targets.contains(&target.id));
-                assert!(!damage_dealt.contains_key(&target.id));
 
                 unavailable_targets.insert(target.id);
-                damage_dealt.insert(target.id, *damage);
+                target_selection.push((current_group.id, target.id));
             }
 
             // TODO: remove
             for (target, damage) in potential_targets {
                 println!(
-                    "{} damage to take -- {} effective_power -- {} initiative",
+                    "Group {} ({:?}) to Group {} ({:?}): {} damage to take -- {} effective_power -- {} initiative -- {} dead units",
+                    current_group.id,
+                    current_group.race,
+                    target.id,
+                    target.race,
                     damage,
                     target.effective_power(),
-                    target.initiative
+                    target.initiative,
+                    damage / target.hit_points
                 );
             }
 
@@ -415,24 +427,48 @@ impl Battle {
 
         // attack phase
 
-        self.groups = (&self.groups)
-            .into_iter()
-            .map(|group| {
-                return group.clone();
-            })
-            .map(|mut group: Group| match damage_dealt.get(&group.id) {
+        for (attacking_group_id, defending_group_id) in target_selection.into_iter() {
+
+            let attacking_group = groups_lookup.get(&attacking_group_id).unwrap().clone();
+
+            if !attacking_group.is_alive() {
+                continue;
+            }
+
+            match groups_lookup.get_mut(&defending_group_id) {
                 None => {
-                    return group;
+                    unreachable!();
                 }
-                Some(damage_taken) => {
-                    group.take_damage(*damage_taken);
-                    return group;
+                Some(defending_group) => {
+
+
+            if !defending_group.is_alive() {
+                continue;
+            }
+                    defending_group.take_damage(&attacking_group);
                 }
-            })
-            .filter(|group| {
-                return group.is_alive();
-            })
-            .collect();
+            }
+
+        }
+
+        // self.groups = (&self.groups)
+        //     .into_iter()
+        //     .map(|group| {
+        //         return group.clone();
+        //     })
+        //     .map(|mut group: Group| match damage_dealt.get(&group.id) {
+        //         None => {
+        //             return group;
+        //         }
+        //         Some(damage_taken) => {
+        //             group.take_damage(*damage_taken);
+        //             return group;
+        //         }
+        //     })
+        //     .filter(|group| {
+        //         return group.is_alive();
+        //     })
+        //     .collect();
 
         if self.groups.len() > 0 {
             return WarStatus::NotOver;
