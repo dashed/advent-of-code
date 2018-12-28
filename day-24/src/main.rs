@@ -268,7 +268,7 @@ impl Group {
         return self.effective_power();
     }
 
-    fn take_damage(&mut self, other_group: &Self) {
+    fn take_damage(&mut self, other_group: &Self) -> bool {
         let damage_taken = other_group.calculate_damage_to_group(&self);
 
         let mut num_of_units_dead: i32 = damage_taken / self.hit_points;
@@ -287,6 +287,8 @@ impl Group {
         //     "Group {} ({:?}) attacking Group {} ({:?}): {} units died",
         //     other_group.id, other_group.race, self.id, self.race, num_of_units_dead
         // );
+
+        return num_of_units_dead > 0;
     }
 
     fn is_alive(&self) -> bool {
@@ -310,9 +312,10 @@ impl PartialOrd for Group {
 enum WarStatus {
     Over,
     NotOver,
+    StaleMate
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Battle {
     groups: BinaryHeap<Group>,
 }
@@ -330,6 +333,41 @@ impl Battle {
         }
 
         Battle { groups: new_group }
+    }
+
+    fn has_immunity(&self) -> bool {
+        return self
+            .groups
+            .iter()
+            .filter(|group| {
+                return group.race == Race::Immunity;
+            })
+            .count()
+            > 0;
+    }
+
+    fn has_infection(&self) -> bool {
+        return self
+            .groups
+            .iter()
+            .filter(|group| {
+                return group.race == Race::Infection;
+            })
+            .count()
+            > 0;
+    }
+
+    fn boost(&mut self, boost: Damage) {
+        self.groups = (&self.groups)
+            .into_iter()
+            .map(|group| {
+                let mut group = group.clone();
+                if group.race == Race::Immunity {
+                    group.attack_damage += boost;
+                }
+                return group;
+            })
+            .collect();
     }
 
     fn has_targets(&self, current_group: &Group) -> bool {
@@ -418,23 +456,6 @@ impl Battle {
                 unavailable_targets.insert(target.id);
                 target_selection.push((current_group.id, target.id));
             }
-
-            // TODO: remove
-            // for (target, damage) in potential_targets {
-            //     println!(
-            //         "Group {} ({:?}) to Group {} ({:?}): {} damage to take -- {} effective_power -- {} initiative -- {} dead units",
-            //         current_group.id,
-            //         current_group.race,
-            //         target.id,
-            //         target.race,
-            //         damage,
-            //         target.effective_power(),
-            //         target.initiative,
-            //         damage / target.hit_points
-            //     );
-            // }
-
-            // println!("-----");
         }
 
         // attack phase
@@ -446,10 +467,10 @@ impl Battle {
             return other_initiative.cmp(&this_initiative);
         });
 
+        let mut units_died_in_this_round = false;
+
         for (attacking_group_id, defending_group_id) in target_selection.into_iter() {
             let attacking_group = groups_lookup.get(&attacking_group_id).unwrap().clone();
-
-            // println!("{}", attacking_group.to_string());
 
             if !attacking_group.is_alive() {
                 continue;
@@ -463,7 +484,9 @@ impl Battle {
                     if !defending_group.is_alive() {
                         continue;
                     }
-                    defending_group.take_damage(&attacking_group);
+                    if defending_group.take_damage(&attacking_group) {
+                        units_died_in_this_round = true;
+                    }
                 }
             }
         }
@@ -480,6 +503,10 @@ impl Battle {
 
         self.groups = new_groups;
 
+        if !units_died_in_this_round {
+            return WarStatus::StaleMate;
+        }
+
         if self.groups.len() > 0 {
             return WarStatus::NotOver;
         }
@@ -488,9 +515,7 @@ impl Battle {
     }
 }
 
-fn main() {
-    let input_string = include_str!("input.txt");
-
+fn part_1(input_string: &str) {
     let mut battle = parse_input(input_string);
 
     loop {
@@ -507,4 +532,39 @@ fn main() {
     });
 
     println!("Part 1: {}", remaining_units);
+}
+
+fn part_2(input_string: &str) {
+    let battle = parse_input(input_string);
+
+    for boost in 0.. {
+        let mut battle = battle.clone();
+        // println!("Boost: {}", boost);
+        battle.boost(boost);
+
+        loop {
+            let status = battle.execute_fight_round();
+
+            if status == WarStatus::Over || status == WarStatus::StaleMate {
+                break;
+            }
+        }
+
+        if battle.has_immunity() && !battle.has_infection() {
+            let remaining_units = battle.groups.iter().fold(0, |acc, group| {
+                assert!(group.race == Race::Immunity);
+                return acc + group.num_of_units;
+            });
+
+            println!("Part 2: {}", remaining_units);
+            break;
+        }
+    }
+}
+
+fn main() {
+    let input_string = include_str!("input.txt");
+    part_1(input_string);
+
+    part_2(input_string);
 }
