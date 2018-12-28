@@ -261,7 +261,6 @@ impl Group {
     }
 
     fn take_damage(&mut self, other_group: &Self) {
-
         let damage_taken = other_group.calculate_damage_to_group(&self);
 
         let num_of_units_dead: i32 = damage_taken / self.hit_points;
@@ -272,8 +271,7 @@ impl Group {
 
         println!(
             "Group {} ({:?}): {} units died -- damage: {} {}",
-            self.id, self.race, num_of_units_dead,
-            damage_taken, self.hit_points
+            self.id, self.race, num_of_units_dead, damage_taken, self.hit_points
         );
     }
 
@@ -343,7 +341,6 @@ impl Battle {
         let mut target_selection: Vec<(GroupID, GroupID)> = vec![];
 
         while let Some(current_group) = queue.pop() {
-
             groups_lookup.insert(current_group.id, current_group.clone());
 
             // TODO: remove
@@ -427,8 +424,14 @@ impl Battle {
 
         // attack phase
 
-        for (attacking_group_id, defending_group_id) in target_selection.into_iter() {
+        target_selection.sort_by(|(this, _), (other, _)| {
+            let this_initiative = groups_lookup.get(&this).unwrap().initiative;
+            let other_initiative = groups_lookup.get(&other).unwrap().initiative;
 
+            return other_initiative.cmp(&this_initiative);
+        });
+
+        for (attacking_group_id, defending_group_id) in target_selection.into_iter() {
             let attacking_group = groups_lookup.get(&attacking_group_id).unwrap().clone();
 
             if !attacking_group.is_alive() {
@@ -440,15 +443,12 @@ impl Battle {
                     unreachable!();
                 }
                 Some(defending_group) => {
-
-
-            if !defending_group.is_alive() {
-                continue;
-            }
+                    if !defending_group.is_alive() {
+                        continue;
+                    }
                     defending_group.take_damage(&attacking_group);
                 }
             }
-
         }
 
         // self.groups = (&self.groups)
