@@ -254,10 +254,10 @@ impl Group {
         }
 
         if other_group.weak_to(&self.attack_type) {
-            return 2 * self.attack_damage;
+            return 2 * self.effective_power();
         }
 
-        return self.attack_damage;
+        return self.effective_power();
     }
 
     fn take_damage(&mut self, damage_taken: Damage) {
@@ -425,7 +425,6 @@ impl Battle {
                     return group;
                 }
                 Some(damage_taken) => {
-                    println!("damage_taken: {}", damage_taken);
                     group.take_damage(*damage_taken);
                     return group;
                 }
