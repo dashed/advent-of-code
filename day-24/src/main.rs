@@ -312,7 +312,7 @@ impl PartialOrd for Group {
 enum WarStatus {
     Over,
     NotOver,
-    StaleMate
+    StaleMate,
 }
 
 #[derive(Debug, Clone)]
