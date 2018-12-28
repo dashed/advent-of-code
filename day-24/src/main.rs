@@ -236,7 +236,6 @@ struct Group {
 }
 
 impl Group {
-
     #[allow(dead_code)]
     fn to_string(&self) -> String {
         format!(
@@ -284,10 +283,10 @@ impl Group {
 
         self.num_of_units = self.num_of_units - num_of_units_dead;
 
-        println!(
-            "Group {} ({:?}) attacking Group {} ({:?}): {} units died",
-            other_group.id, other_group.race, self.id, self.race, num_of_units_dead
-        );
+        // println!(
+        //     "Group {} ({:?}) attacking Group {} ({:?}): {} units died",
+        //     other_group.id, other_group.race, self.id, self.race, num_of_units_dead
+        // );
     }
 
     fn is_alive(&self) -> bool {
