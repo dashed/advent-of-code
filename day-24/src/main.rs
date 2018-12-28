@@ -236,6 +236,15 @@ struct Group {
 }
 
 impl Group {
+
+    #[allow(dead_code)]
+    fn to_string(&self) -> String {
+        format!(
+            "Group {} ({:?}) with {} units (HP: {})",
+            self.id, self.race, self.num_of_units, self.hit_points
+        )
+    }
+
     fn effective_power(&self) -> i32 {
         return self.attack_damage * self.num_of_units;
     }
@@ -263,15 +272,21 @@ impl Group {
     fn take_damage(&mut self, other_group: &Self) {
         let damage_taken = other_group.calculate_damage_to_group(&self);
 
-        let num_of_units_dead: i32 = damage_taken / self.hit_points;
+        let mut num_of_units_dead: i32 = damage_taken / self.hit_points;
 
         assert!(num_of_units_dead >= 0);
+
+        num_of_units_dead = if num_of_units_dead >= self.num_of_units {
+            self.num_of_units
+        } else {
+            num_of_units_dead
+        };
 
         self.num_of_units = self.num_of_units - num_of_units_dead;
 
         println!(
-            "Group {} ({:?}): {} units died -- damage: {} {}",
-            self.id, self.race, num_of_units_dead, damage_taken, self.hit_points
+            "Group {} ({:?}) attacking Group {} ({:?}): {} units died",
+            other_group.id, other_group.race, self.id, self.race, num_of_units_dead
         );
     }
 
@@ -292,6 +307,7 @@ impl PartialOrd for Group {
     }
 }
 
+#[derive(Debug, Eq, PartialEq)]
 enum WarStatus {
     Over,
     NotOver,
@@ -405,21 +421,21 @@ impl Battle {
             }
 
             // TODO: remove
-            for (target, damage) in potential_targets {
-                println!(
-                    "Group {} ({:?}) to Group {} ({:?}): {} damage to take -- {} effective_power -- {} initiative -- {} dead units",
-                    current_group.id,
-                    current_group.race,
-                    target.id,
-                    target.race,
-                    damage,
-                    target.effective_power(),
-                    target.initiative,
-                    damage / target.hit_points
-                );
-            }
+            // for (target, damage) in potential_targets {
+            //     println!(
+            //         "Group {} ({:?}) to Group {} ({:?}): {} damage to take -- {} effective_power -- {} initiative -- {} dead units",
+            //         current_group.id,
+            //         current_group.race,
+            //         target.id,
+            //         target.race,
+            //         damage,
+            //         target.effective_power(),
+            //         target.initiative,
+            //         damage / target.hit_points
+            //     );
+            // }
 
-            println!("-----");
+            // println!("-----");
         }
 
         // attack phase
@@ -433,6 +449,8 @@ impl Battle {
 
         for (attacking_group_id, defending_group_id) in target_selection.into_iter() {
             let attacking_group = groups_lookup.get(&attacking_group_id).unwrap().clone();
+
+            // println!("{}", attacking_group.to_string());
 
             if !attacking_group.is_alive() {
                 continue;
@@ -451,24 +469,17 @@ impl Battle {
             }
         }
 
-        // self.groups = (&self.groups)
-        //     .into_iter()
-        //     .map(|group| {
-        //         return group.clone();
-        //     })
-        //     .map(|mut group: Group| match damage_dealt.get(&group.id) {
-        //         None => {
-        //             return group;
-        //         }
-        //         Some(damage_taken) => {
-        //             group.take_damage(*damage_taken);
-        //             return group;
-        //         }
-        //     })
-        //     .filter(|group| {
-        //         return group.is_alive();
-        //     })
-        //     .collect();
+        let mut new_groups: BinaryHeap<Group> = BinaryHeap::new();
+
+        let remaining_groups = groups_lookup
+            .values()
+            .into_iter()
+            .map(|g| g.clone())
+            .filter(|g| g.is_alive());
+
+        new_groups.extend(remaining_groups);
+
+        self.groups = new_groups;
 
         if self.groups.len() > 0 {
             return WarStatus::NotOver;
@@ -483,5 +494,18 @@ fn main() {
 
     let mut battle = parse_input(input_string);
 
-    battle.execute_fight_round();
+    loop {
+        let status = battle.execute_fight_round();
+        // println!("--------");
+
+        if status == WarStatus::Over {
+            break;
+        }
+    }
+
+    let remaining_units = battle.groups.iter().fold(0, |acc, group| {
+        return acc + group.num_of_units;
+    });
+
+    println!("Part 1: {}", remaining_units);
 }
