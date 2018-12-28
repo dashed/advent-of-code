@@ -3,6 +3,7 @@
 // imports
 
 extern crate combine;
+
 use combine::combinator::token;
 use combine::parser::char::{char, digit, letter, spaces};
 use combine::stream::easy;
@@ -10,6 +11,7 @@ use combine::{between, choice, many1, optional, sep_by, sep_by1, tokens, Parser}
 
 use core::cmp::Ordering;
 use std::collections::BinaryHeap;
+use std::collections::HashMap;
 use std::collections::HashSet;
 
 // code
@@ -213,16 +215,19 @@ impl Trait {
     }
 }
 
+type GroupID = i32;
+type Damage = i32;
+
 #[derive(Debug, Eq, PartialEq, Clone)]
 struct Group {
-    id: i32,
+    id: GroupID,
 
     race: Race,
 
     num_of_units: i32,
     hit_points: i32,
 
-    attack_damage: i32,
+    attack_damage: Damage,
     attack_type: String,
     initiative: i32,
 
@@ -243,7 +248,7 @@ impl Group {
         return self.weaknesses.contains(attack_type);
     }
 
-    fn calculate_damage_to_group(&self, other_group: &Self) -> i32 {
+    fn calculate_damage_to_group(&self, other_group: &Self) -> Damage {
         if other_group.immune_to(&self.attack_type) {
             return 0;
         }
@@ -303,12 +308,17 @@ impl Battle {
         let targets = self.groups.clone();
         let mut queue = self.groups.clone();
 
+        let mut unavailable_targets: HashSet<i32> = HashSet::new();
+
+        let mut damage_dealt: HashMap<GroupID, Damage> = HashMap::new();
+
         while let Some(current_group) = queue.pop() {
-            println!(
-                "{} effective_power -- {} initiative",
-                current_group.effective_power(),
-                current_group.initiative
-            );
+            // TODO: remove
+            // println!(
+            //     "{} effective_power -- {} initiative",
+            //     current_group.effective_power(),
+            //     current_group.initiative
+            // );
 
             let mut potential_targets: Vec<(&Group, i32)> = targets
                 .iter()
@@ -320,6 +330,14 @@ impl Battle {
                     let potential_damage = current_group.calculate_damage_to_group(target);
                     return (target, potential_damage);
                 })
+                .filter(|(_target, potential_damage)| {
+                    // only consider targets for which damage can be dealt
+                    return potential_damage > &0;
+                })
+                .filter(|(target, _potential_damage)| {
+                    // only consider targets for which are not chosen
+                    return !unavailable_targets.contains(&target.id);
+                })
                 .collect();
 
             potential_targets.sort_by(|this, other| {
@@ -327,22 +345,38 @@ impl Battle {
                 let (other_target, other_potential_damage) = other;
 
                 if this_potential_damage != other_potential_damage {
+                    // The attacking group chooses to target the group in the enemy army to which it would deal the most damage
+                    // (after accounting for weaknesses and immunities, but not accounting for whether the defending group
+                    // has enough units to actually receive all of that damage).
                     return other_potential_damage.cmp(this_potential_damage);
                 }
 
+                // If an attacking group is considering two defending groups to which it would deal equal damage,
+                // it chooses to target the defending group with the largest effective power;
+                // if there is still a tie, it chooses the defending group with the highest initiative.
                 return target_order(other_target, this_target);
             });
 
-            for (target, damage) in potential_targets {
-                println!(
-                    "{} damage to take -- {} effective_power -- {} initiative",
-                    damage,
-                    target.effective_power(),
-                    target.initiative
-                );
+            if potential_targets.len() > 0 {
+                let (target, damage) = potential_targets.get(0).unwrap();
+
+                assert!(!unavailable_targets.contains(&target.id));
+
+                unavailable_targets.insert(target.id);
+                damage_dealt.insert(target.id, *damage);
             }
 
-            println!("-----");
+            // TODO: remove
+            // for (target, damage) in potential_targets {
+            //     println!(
+            //         "{} damage to take -- {} effective_power -- {} initiative",
+            //         damage,
+            //         target.effective_power(),
+            //         target.initiative
+            //     );
+            // }
+
+            // println!("-----");
         }
 
         // attack phase
