@@ -22,3 +22,8 @@ cargo check
 # creating a new cargo package
 cargo new <day-num>
 ```
+
+
+## Result
+
+![](/ascii_image.gif)
