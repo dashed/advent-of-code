@@ -9,7 +9,7 @@ struct Node {
 
 impl Node {
     fn part_2_get_value(&self) -> i32 {
-        if self.children.len() <= 0 {
+        if self.children.len() == 0 {
             return self.metadata.iter().sum();
         }
 

@@ -102,11 +102,21 @@ impl Acre {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq)]
 struct Area {
     area: CollectionArea,
     max_y: i32,
     max_x: i32,
+}
+
+impl PartialEq for Area {
+    fn eq(&self, other: &Self) -> bool {
+        let equal_max_y = self.max_y == other.max_y;
+        let equal_max_x = self.max_x == other.max_x;
+        let equal_string = self.to_string() == other.to_string();
+
+        equal_max_y && equal_max_x && equal_string
+    }
 }
 
 impl Hash for Area {

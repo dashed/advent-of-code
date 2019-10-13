@@ -270,11 +270,10 @@ impl Cave {
 
             let current_region = self.get_region_type(&current_position);
 
-            if current_region == RegionType::Rocky && current_tool == Tool::None {
-                continue;
-            } else if current_region == RegionType::Wet && current_tool == Tool::Torch {
-                continue;
-            } else if current_region == RegionType::Narrow && current_tool == Tool::ClimbingGear {
+            if (current_region == RegionType::Rocky && current_tool == Tool::None)
+                || (current_region == RegionType::Wet && current_tool == Tool::Torch)
+                || (current_region == RegionType::Narrow && current_tool == Tool::ClimbingGear)
+            {
                 continue;
             }
 

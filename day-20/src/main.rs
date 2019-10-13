@@ -100,7 +100,7 @@ impl Branches {
                     .map(|routes| routes.to_string())
                     .collect();
 
-                if rest_str.len() <= 0 {
+                if rest_str.len() == 0 {
                     return format!("{}|", routes.to_string());
                 }
 
@@ -227,7 +227,7 @@ fn parse_route(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Rou
         }
     }
 
-    if route.len() <= 0 {
+    if route.len() == 0 {
         // no route was parsed
         return None;
     }
@@ -571,7 +571,7 @@ impl Map {
     fn parse_route(&mut self, route: Route, current_position: Coordinate) -> Coordinate {
         let Route(directions) = route;
 
-        if directions.len() <= 0 {
+        if directions.len() == 0 {
             return current_position;
         }
 

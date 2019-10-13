@@ -613,7 +613,7 @@ fn part_2(input_string: &str, opcode_map: OpCodeMap) {
             continue;
         }
 
-        if input_line.len() <= 0 {
+        if input_line.len() == 0 {
             continue;
         }
 

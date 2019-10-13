@@ -173,7 +173,7 @@ fn parse_input(input_string: &str) -> Battle {
 
     match result {
         Ok((value, remaining_input)) => {
-            assert!(remaining_input.trim().len() <= 0);
+            assert!(remaining_input.trim().len() == 0);
             return value;
         }
         Err(err) => {

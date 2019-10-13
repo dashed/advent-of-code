@@ -299,7 +299,7 @@ fn part_2(input_string: &str, base_workload: i32, max_worker_limit: i32) -> i32 
     let mut work_in_progress: BinaryHeap<WorkTask> = BinaryHeap::new();
 
     loop {
-        if remaining_work.len() <= 0 && work_queue.len() <= 0 {
+        if remaining_work.len() == 0 && work_queue.len() == 0 {
             break;
         }
 

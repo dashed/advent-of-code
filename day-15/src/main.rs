@@ -490,7 +490,7 @@ impl Map {
             let targets = self.get_targets(&unit);
 
             // If no targets remain, combat ends.
-            if targets.len() <= 0 {
+            if targets.len() == 0 {
                 return RoundState::Incomplete;
             }
 
