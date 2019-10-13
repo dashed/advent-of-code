@@ -27,13 +27,11 @@ fn parse_input(input: &str) -> Parsed {
         |mut letter_counter: HashMap<char, i32>, letter| {
             // count the number of occurrences of the letters within the given input
 
-            let result = letter_counter.get(&letter);
-
-            match result {
+            match &letter_counter.get(&letter) {
                 None => {
                     letter_counter.insert(letter, 1);
                 }
-                Some(num_of_occurrences) => {
+                Some(&num_of_occurrences) => {
                     letter_counter.insert(letter, num_of_occurrences + 1);
                 }
             }
