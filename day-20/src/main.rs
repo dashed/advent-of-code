@@ -735,5 +735,4 @@ mod tests {
             assert_eq!(map.distance_to_farthest_room(), distance);
         }
     }
-
 }

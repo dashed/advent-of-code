@@ -344,5 +344,4 @@ mod tests {
         assert_eq!(get_total_power_level_of_square(33, 45, 3, 18), 29);
         assert_eq!(get_total_power_level_of_square(21, 61, 3, 42), 30);
     }
-
 }

@@ -222,5 +222,4 @@ mod tests {
         assert_eq!(get_overlapping_area(&fabric_1, &fabric_3), 0);
         assert_eq!(get_overlapping_area(&fabric_2, &fabric_3), 0);
     }
-
 }

@@ -475,5 +475,4 @@ mod tests {
 
         assert_eq!(area.to_string(), result);
     }
-
 }

@@ -489,5 +489,4 @@ Step F must be finished before step E can begin.
 
         assert_eq!(part_2(input, base_workload, max_worker_limit), 15);
     }
-
 }

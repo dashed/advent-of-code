@@ -137,5 +137,4 @@ mod tests {
 
         assert_eq!(part_2(input_string), 66);
     }
-
 }

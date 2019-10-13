@@ -739,5 +739,4 @@ v
 
         assert_eq!(part_2(input_string), Some((6, 4)));
     }
-
 }

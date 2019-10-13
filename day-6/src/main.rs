@@ -335,5 +335,4 @@ mod tests {
 
         assert_eq!(part_1(input), Some(17));
     }
-
 }
