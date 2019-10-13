@@ -27,14 +27,28 @@ impl Dimensions {
 
         axis_1 + axis_2 + axis_3 + self.get_slack()
     }
+
+    fn required_amount_of_ribbon(&self) -> u32 {
+        let axis_1 = 2 * self.length + 2 * self.width;
+        let axis_2 = 2 * self.width + 2 * self.height;
+        let axis_3 = 2 * self.length + 2 * self.height;
+
+        let possible_wraps = vec![axis_1, axis_2, axis_3];
+
+        let minimum_wrap = possible_wraps.into_iter().min_by(|x, y| x.cmp(y)).unwrap();
+
+        let bow_tie = self.length * self.width * self.height;
+
+        minimum_wrap + bow_tie
+    }
 }
 
 fn main() {
     let input_string = include_str!("input.txt");
 
-    let sum = part_1(input_string);
+    println!("Part 1: {}", part_1(input_string));
 
-    println!("Part 1: {}", sum);
+    println!("Part 2: {}", part_2(input_string));
 }
 
 fn parse_input(input_string: &str) -> Vec<Dimensions> {
@@ -71,6 +85,16 @@ fn part_1(input_string: &str) -> u32 {
     sum
 }
 
+fn part_2(input_string: &str) -> u32 {
+    let dimensions = parse_input(input_string);
+
+    let sum: u32 = dimensions.iter().fold(0, |acc, item| -> u32 {
+        acc + item.required_amount_of_ribbon()
+    });
+
+    sum
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -90,5 +114,22 @@ mod tests {
         "####;
 
         assert_eq!(part_1(input_string), 43);
+    }
+
+    #[test]
+    fn test_part_2() {
+        // assert_eq!(part_1(include_str!("input.txt")), 1586300);
+
+        let input_string = r####"
+        2x3x4
+        "####;
+
+        assert_eq!(part_2(input_string), 34);
+
+        let input_string = r####"
+        1x1x10
+        "####;
+
+        assert_eq!(part_2(input_string), 14);
     }
 }
