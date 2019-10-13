@@ -387,7 +387,7 @@ impl Map {
         water_at_rest.push(position.clone());
 
         let mut current = position.left();
-        let mut has_left_wall = false;
+        let has_left_wall;
 
         loop {
             if self.is_clay(&current) || self.is_water_at_rest(&current) {
@@ -414,7 +414,7 @@ impl Map {
 
         // flood right
         let mut current = position.right();
-        let mut has_right_wall = false;
+        let has_right_wall;
 
         loop {
             if self.is_clay(&current) || self.is_water_at_rest(&current) {
