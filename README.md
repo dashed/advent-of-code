@@ -1,6 +1,6 @@
 # Advent of Code
 
-[![Build Status](https://travis-ci.org/dashed/advent-of-code.svg?branch=master)](https://travis-ci.org/dashed/advent-of-code)
+[![Build Status](https://github.com/dashed/advent-of-code/actions?workflow=Rust)](https://github.com/dashed/advent-of-code/workflows/Rust/badge.svg)
 
 I'm solving the Advent of Code puzzles using the [Rust](https://www.rust-lang.org/) programming language.
 
