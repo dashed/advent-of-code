@@ -22,7 +22,8 @@ cargo run -p <day-num>
 cargo check
 
 # creating a new cargo package
-cargo new <day-num>
+# for example: cargo new 2019-day-01
+cargo new <year-day-num>
 ```
 
 
