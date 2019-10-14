@@ -1,12 +1,16 @@
-# Advent of Code 2018
+# Advent of Code
 
 [![Build Status](https://travis-ci.org/dashed/advent-of-code.svg?branch=master)](https://travis-ci.org/dashed/advent-of-code)
 
-https://adventofcode.com/2018
+I'm solving the Advent of Code puzzles using the [Rust](https://www.rust-lang.org/) programming language.
 
-I'm solving the Advent of Code 2018 puzzles using the [Rust](https://www.rust-lang.org/) programming language.
+**Completed:**
 
-Other AOC events: https://github.com/dashed/advent-of-code/branches
+- https://adventofcode.com/2018
+
+**In progress:**
+
+- https://adventofcode.com/2015
 
 #### Btw, there are spoilers...
 
@@ -27,6 +31,8 @@ cargo new <year-day-num>
 ```
 
 
-## Result
+## Results
 
-![](/ascii_image.gif)
+### 2018
+
+![](/results/ascii_image_2018.gif)
