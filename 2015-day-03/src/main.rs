@@ -85,12 +85,18 @@ impl Santa {
     fn num_of_visited_houses(&self) -> usize {
         self.visited_houses.keys().len()
     }
+
+    fn visited_coords(&self) -> Vec<Coordinate> {
+        self.visited_houses.keys().cloned().collect()
+    }
 }
 
 fn main() {
     let input_string = include_str!("input.txt");
 
     println!("Part 1: {}", part_1(input_string));
+
+    println!("Part 2: {}", part_2(input_string));
 }
 
 fn parse_input(input_string: &str) -> Santa {
@@ -126,6 +132,41 @@ fn part_1(input_string: &str) -> usize {
     santa.num_of_visited_houses()
 }
 
+fn part_2(input_string: &str) -> usize {
+    enum Turn {
+        Santa,
+        RoboSanta,
+    }
+
+    let mut current_turn = Turn::Santa;
+    let mut santa_instructions = String::from("");
+    let mut robo_santa_instructions = String::from("");
+
+    for instruction in input_string.chars() {
+        match current_turn {
+            Turn::Santa => {
+                santa_instructions.push(instruction);
+                current_turn = Turn::RoboSanta;
+            }
+            Turn::RoboSanta => {
+                robo_santa_instructions.push(instruction);
+                current_turn = Turn::Santa;
+            }
+        }
+    }
+
+    let santa = parse_input(&santa_instructions);
+    let robo_santa = parse_input(&robo_santa_instructions);
+
+    let mut visited_coords = santa.visited_coords();
+    visited_coords.append(&mut robo_santa.visited_coords());
+
+    visited_coords.sort();
+    visited_coords.dedup();
+
+    visited_coords.len()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -137,5 +178,14 @@ mod tests {
         assert_eq!(part_1(">"), 2);
         assert_eq!(part_1("^>v<"), 4);
         assert_eq!(part_1("^v^v^v^v^v"), 2);
+    }
+
+    #[test]
+    fn test_part_2() {
+        assert_eq!(part_2(include_str!("input.txt")), 2631);
+
+        assert_eq!(part_2("^v"), 3);
+        assert_eq!(part_2("^>v<"), 3);
+        assert_eq!(part_2("^v^v^v^v^v"), 11);
     }
 }
