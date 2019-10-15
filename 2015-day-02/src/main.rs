@@ -118,7 +118,7 @@ mod tests {
 
     #[test]
     fn test_part_2() {
-        // assert_eq!(part_1(include_str!("input.txt")), 1586300);
+        assert_eq!(part_2(include_str!("input.txt")), 3737498);
 
         let input_string = r####"
         2x3x4
