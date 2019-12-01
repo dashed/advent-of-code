@@ -58,10 +58,23 @@ fn is_nice(input: String) -> bool {
     return true;
 }
 
+fn part_1(input_string: String) -> usize {
+    let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
+
+    let nice_strings: Vec<&str> = inputs
+        .into_iter()
+        .filter(|input| {
+            return is_nice(input.to_string());
+        })
+        .collect();
+
+    return nice_strings.len();
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
-    println!("{}", input_string);
+    println!("Part 1: {}", part_1(input_string.to_string()));
 }
 
 #[cfg(test)]
