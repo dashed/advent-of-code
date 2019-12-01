@@ -25,7 +25,8 @@ fn main() {
 
     let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
 
-    let total_fuel_requirements_part_1: i32 = inputs.clone()
+    let total_fuel_requirements_part_1: i32 = inputs
+        .clone()
         .into_iter()
         .map(|module| -> i32 {
             let module_mass: i32 = module.parse().unwrap();
