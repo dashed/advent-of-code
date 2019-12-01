@@ -10,6 +10,7 @@ I'm solving the Advent of Code puzzles using the [Rust](https://www.rust-lang.or
 
 **In progress:**
 
+- https://adventofcode.com/2019
 - https://adventofcode.com/2015
 
 #### Btw, there are spoilers...
@@ -20,18 +21,18 @@ I'm solving the Advent of Code puzzles using the [Rust](https://www.rust-lang.or
 
 ```sh
 # running code for some day of the Advent of Code event
-# for example: cargo run -p 2019-day-01
-cargo run -p <year-day-num>
+# for example: cargo run -p day-01-2019
+cargo run -p <day-num-year>
 
 # quick check
 cargo check
 # or
-# for example: cargo check -p 2019-day-01
-cargo check -p <year-day-num>
+# for example: cargo check -p day-01-2019
+cargo check -p <day-num-year>
 
 # creating a new cargo package
-# for example: cargo new 2019-day-01
-cargo new <year-day-num>
+# for example: cargo new day-01-2019
+cargo new <day-num-year>
 ```
 
 
