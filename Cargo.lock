@@ -134,6 +134,10 @@ name = "2018-day-25"
 version = "0.1.0"
 
 [[package]]
+name = "2019-day-01"
+version = "0.1.0"
+
+[[package]]
 name = "adler32"
 version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
