@@ -1,8 +1,0 @@
-[package]
-name = "2018-day-11"
-version = "0.1.0"
-authors = ["Alberto Leal <mail4alberto@gmail.com>"]
-edition = "2018"
-
-[dependencies]
-rayon = "1.0.3"
