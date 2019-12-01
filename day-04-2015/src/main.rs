@@ -5,7 +5,6 @@ extern crate md5;
 use rayon::prelude::*;
 
 fn general(secret_key: &str, num_of_zeroes: usize) -> i32 {
-
     let marker: String = String::from_utf8(vec![b'0'; num_of_zeroes]).unwrap();
 
     let mut current = 0;
@@ -98,9 +97,7 @@ fn main() {
     // Part 1
 
     println!("Part 2: {}", part_2(secret_key));
-
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -111,5 +108,4 @@ mod tests {
         assert_eq!(part_1("abcdef"), 609043);
         assert_eq!(part_1("pqrstuv"), 1048970);
     }
-
 }
