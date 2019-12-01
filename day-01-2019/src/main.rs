@@ -4,6 +4,19 @@ fn fuel_required(mass: i32) -> i32 {
     return (((mass as f64) / 3.0).floor() - 2.0) as i32;
 }
 
+fn part_1(inputs: Vec<&str>) -> i32 {
+    let total_fuel_requirements: i32 = inputs
+        .clone()
+        .into_iter()
+        .map(|module| -> i32 {
+            let module_mass: i32 = module.parse().unwrap();
+            return fuel_required(module_mass);
+        })
+        .sum();
+
+    return total_fuel_requirements;
+}
+
 fn fuel_required_part_2(mass: i32) -> i32 {
     let mut sum = fuel_required(mass);
     let mut last_fuel_required = sum;
@@ -18,6 +31,18 @@ fn fuel_required_part_2(mass: i32) -> i32 {
     }
 }
 
+fn part_2(inputs: Vec<&str>) -> i32 {
+    let total_fuel_requirements: i32 = inputs
+        .into_iter()
+        .map(|module| -> i32 {
+            let mass: i32 = module.parse().unwrap();
+            return fuel_required_part_2(mass);
+        })
+        .sum();
+
+    return total_fuel_requirements;
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
@@ -25,26 +50,29 @@ fn main() {
 
     let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
 
-    let total_fuel_requirements_part_1: i32 = inputs
-        .clone()
-        .into_iter()
-        .map(|module| -> i32 {
-            let module_mass: i32 = module.parse().unwrap();
-            return fuel_required(module_mass);
-        })
-        .sum();
-
-    println!("Part 1: {}", total_fuel_requirements_part_1);
+    println!("Part 1: {}", part_1(inputs.clone()));
 
     // Part 2
 
-    let total_fuel_requirements_part_2: i32 = inputs
-        .into_iter()
-        .map(|module| -> i32 {
-            let module_mass: i32 = module.parse().unwrap();
-            return fuel_required_part_2(module_mass);
-        })
-        .sum();
+    println!("Part 2: {}", part_2(inputs));
+}
 
-    println!("Part 2: {}", total_fuel_requirements_part_2);
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_fuel_required() {
+        assert_eq!(fuel_required(12), 2);
+        assert_eq!(fuel_required(14), 2);
+        assert_eq!(fuel_required(1969), 654);
+        assert_eq!(fuel_required(100756), 33583);
+    }
+
+    #[test]
+    fn test_fuel_required_part_2() {
+        assert_eq!(fuel_required_part_2(14), 2);
+        assert_eq!(fuel_required_part_2(1969), 966);
+        assert_eq!(fuel_required_part_2(100756), 50346);
+    }
 }
