@@ -88,10 +88,9 @@ fn parse_nanobot(input: &str) -> NanoBot {
     unreachable!();
 }
 
-fn main() {
-    let input_string = include_str!("input.txt");
-
+fn part_1(input_string: String) -> usize {
     let nanobots: Vec<NanoBot> = input_string
+        .trim()
         .lines()
         .map(|s| s.trim())
         .map(|s| parse_nanobot(s))
@@ -114,19 +113,16 @@ fn main() {
         .map(|b| b.clone())
         .collect();
 
-    println!("Part 1: {}", num_in_range.len());
+    return num_in_range.len();
+}
 
-    // Part 2
-    // https://old.reddit.com/r/adventofcode/comments/a8s17l/2018_day_23_solutions/ecdqzdg/
-
-    // visualization
-    //       <===A===> <==B==>
-    // <==C==>             <==D==>
-    //     <======E======>
-    // 1111223222222221222122211110 :: Bot count per x-coordinate
-    //       ^                      :: Point of maximum intersection
-    //
-    // https://old.reddit.com/r/adventofcode/comments/a8s17l/2018_day_23_solutions/ecez07o/
+fn part_2(input_string: String) -> i32 {
+    let nanobots: Vec<NanoBot> = input_string
+        .trim()
+        .lines()
+        .map(|s| s.trim())
+        .map(|s| parse_nanobot(s))
+        .collect();
 
     let queue: Vec<(i32, i32)> = nanobots
         .into_iter()
@@ -159,5 +155,57 @@ fn main() {
         }
     }
 
-    println!("Part 2: {}", result);
+    return result;
+}
+
+fn main() {
+    let input_string = include_str!("input.txt");
+
+    println!("Part 1: {}", part_1(input_string.to_string()));
+
+    // Part 2
+    // https://old.reddit.com/r/adventofcode/comments/a8s17l/2018_day_23_solutions/ecdqzdg/
+
+    // visualization
+    //       <===A===> <==B==>
+    // <==C==>             <==D==>
+    //     <======E======>
+    // 1111223222222221222122211110 :: Bot count per x-coordinate
+    //       ^                      :: Point of maximum intersection
+    //
+    // https://old.reddit.com/r/adventofcode/comments/a8s17l/2018_day_23_solutions/ecez07o/
+
+    println!("Part 2: {}", part_2(input_string.to_string()));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part_1() {
+        let input = r###"
+pos=<0,0,0>, r=4
+pos=<1,0,0>, r=1
+pos=<4,0,0>, r=3
+pos=<0,2,0>, r=1
+pos=<0,5,0>, r=3
+pos=<0,0,3>, r=1
+pos=<1,1,1>, r=1
+pos=<1,1,2>, r=1
+pos=<1,3,1>, r=1
+        "###;
+
+        assert_eq!(part_1(input.to_string()), 7);
+
+        let input_string = include_str!("input.txt");
+        assert_eq!(part_1(input_string.to_string()), 737);
+    }
+
+    #[test]
+    fn test_part_2() {
+        let input_string = include_str!("input.txt");
+
+        assert_eq!(part_2(input_string.to_string()), 123356173);
+    }
 }
