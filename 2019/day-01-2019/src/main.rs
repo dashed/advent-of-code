@@ -67,6 +67,11 @@ mod tests {
         assert_eq!(fuel_required(14), 2);
         assert_eq!(fuel_required(1969), 654);
         assert_eq!(fuel_required(100756), 33583);
+
+        let input_string = include_str!("input.txt");
+        let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
+        assert_eq!(part_1(inputs), 3249140);
+
     }
 
     #[test]
@@ -74,5 +79,9 @@ mod tests {
         assert_eq!(fuel_required_part_2(14), 2);
         assert_eq!(fuel_required_part_2(1969), 966);
         assert_eq!(fuel_required_part_2(100756), 50346);
+
+        let input_string = include_str!("input.txt");
+        let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
+        assert_eq!(part_2(inputs), 4870838);
     }
 }
