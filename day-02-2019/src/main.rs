@@ -4,7 +4,9 @@ fn main() {
 
     let input_string = include_str!("input.txt");
 
-    // let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
+    let inputs: Vec<i32> = input_string.trim().split(',').map(|opcode| -> i32 {
+        return opcode.parse().unwrap();
+    }).collect();
 
-    println!("Hello, world!");
+    println!("{:?}", inputs);
 }
