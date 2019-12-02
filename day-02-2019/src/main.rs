@@ -91,15 +91,12 @@ fn part_2(input_string: String) {
 
     match result {
         Some((noun, verb)) => {
-            println!(
-                "Part 2: noun:{} verb:{} => {}",
-                noun,
-                verb,
-                100 * noun + verb
-            );
+            println!("Part 2");
+            println!("Noun: {} Verb: {}", noun, verb);
+            println!("100 * noun + verb = {}", 100 * noun + verb);
         }
         None => {
-            println!("oh no");
+            println!("Part 2. Unable to find the noun and verb combination.");
         }
     }
 }
