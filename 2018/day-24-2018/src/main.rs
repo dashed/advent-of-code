@@ -515,7 +515,7 @@ impl Battle {
     }
 }
 
-fn part_1(input_string: &str) {
+fn part_1(input_string: &str) -> i32 {
     let mut battle = parse_input(input_string);
 
     loop {
@@ -531,10 +531,10 @@ fn part_1(input_string: &str) {
         return acc + group.num_of_units;
     });
 
-    println!("Part 1: {}", remaining_units);
+    return remaining_units;
 }
 
-fn part_2(input_string: &str) {
+fn part_2(input_string: &str) -> i32 {
     let battle = parse_input(input_string);
 
     for boost in 0.. {
@@ -556,15 +556,39 @@ fn part_2(input_string: &str) {
                 return acc + group.num_of_units;
             });
 
-            println!("Part 2: {}", remaining_units);
-            break;
+            return remaining_units;
         }
     }
+
+    return 0;
 }
 
 fn main() {
     let input_string = include_str!("input.txt");
-    part_1(input_string);
 
-    part_2(input_string);
+    println!("Part 1: {}", part_1(input_string));
+    println!("Part 2: {}", part_2(input_string));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_part_1() {
+        let input = r###"
+Immune System:
+17 units each with 5390 hit points (weak to radiation, bludgeoning) with an attack that does 4507 fire damage at initiative 2
+989 units each with 1274 hit points (immune to fire; weak to bludgeoning, slashing) with an attack that does 25 slashing damage at initiative 3
+
+Infection:
+801 units each with 4706 hit points (weak to radiation) with an attack that does 116 bludgeoning damage at initiative 1
+4485 units each with 2961 hit points (immune to radiation; weak to fire, cold) with an attack that does 12 slashing damage at initiative 4
+        "###;
+
+        assert_eq!(part_1(&input.to_string()), 5216);
+
+        let input_string = include_str!("input.txt");
+        assert_eq!(part_1(&input_string.to_string()), 14799);
+    }
 }
