@@ -103,7 +103,6 @@ fn part_2(input_string: String) {
 
 fn main() {
     let input_string = include_str!("input.txt");
-    // let input_string = "1,9,10,3,2,3,11,0,99,30,40,50";
 
     // Part 1
 
@@ -115,4 +114,20 @@ fn main() {
     // Part 2
 
     part_2(input_string.to_string());
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_run_computer() {
+        assert_eq!(
+            run_computer("1,9,10,3,2,3,11,0,99,30,40,50".to_string(), 9, 10),
+            3500
+        );
+        assert_eq!(run_computer("1,0,0,0,99".to_string(), 0, 0), 2);
+        assert_eq!(run_computer("2,4,4,5,99,0".to_string(), 4, 4), 2);
+        assert_eq!(run_computer("1,1,1,4,99,5,6,0,99".to_string(), 1, 1), 30);
+    }
 }
