@@ -49,59 +49,108 @@ fn line_segments_intersection(
     return None;
 }
 
+fn part_1(input_string: String) -> Distance {
+    let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
+
+    let wires: Vec<Vec<LineSegment>> = inputs
+        .into_iter()
+        .map(|wire: &str| {
+            let mut current_coord: Coordinate = (0, 0);
+
+            let line_segments: Vec<LineSegment> = wire
+                .trim()
+                .split(',')
+                .map(|instructions: &str| {
+                    let instructions = instructions.trim();
+
+                    let direction: char = instructions.chars().next().unwrap();
+                    let steps: String = instructions.chars().skip(1).collect();
+                    let steps: u32 = steps.parse().unwrap();
+
+                    let previous_coord = current_coord;
+
+                    match direction {
+                        'U' => {
+                            let (x, y) = current_coord;
+                            current_coord = (x, y + (steps as i32));
+                        }
+                        'D' => {
+                            let (x, y) = current_coord;
+                            current_coord = (x, y - (steps as i32));
+                        }
+                        'L' => {
+                            let (x, y) = current_coord;
+                            current_coord = (x - (steps as i32), y);
+                        }
+                        'R' => {
+                            let (x, y) = current_coord;
+                            current_coord = (x + (steps as i32), y);
+                        }
+                        _ => {
+                            panic!("Unknown direction: {}", direction);
+                        }
+                    }
+
+                    let line_segment: LineSegment = (previous_coord, current_coord);
+
+                    return line_segment;
+                })
+                .collect();
+
+            return line_segments;
+        })
+        .collect();
+
+    assert!(wires.len() >= 2);
+    let wire_1: Vec<LineSegment> = wires[0].clone();
+    let wire_2: Vec<LineSegment> = wires[1].clone();
+
+    let mut intersections: Vec<Coordinate> = vec![];
+
+    for segment_1 in wire_1 {
+        for segment_2 in wire_2.iter() {
+            match line_segments_intersection(segment_1, *segment_2) {
+                None => {
+                    continue;
+                }
+                Some(coord) => {
+                    intersections.push(coord);
+                }
+            }
+        }
+    }
+
+    let closest_intersection_to_port: Distance = intersections
+        .into_iter()
+        .map(|coord| {
+            return get_manhattan_distance((0, 0), coord);
+        })
+        .min()
+        .unwrap();
+
+    return closest_intersection_to_port;
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
     // Part 1
 
-    let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
-
-    inputs.into_iter().map(|wire: &str| {
-        let mut current_coord: Coordinate = (0, 0);
-
-        wire.trim().split(',').map(|instructions: &str| {
-            let instructions = instructions.trim();
-
-            let direction: char = instructions.chars().next().unwrap();
-            let steps: String = instructions.chars().skip(1).collect();
-            let steps: u32 = steps.parse().unwrap();
-
-            let previous_coord = current_coord;
-
-            match direction {
-                'U' => {
-                    let (x, y) = current_coord;
-                    current_coord = (x, y + (steps as i32));
-                }
-                'D' => {
-                    let (x, y) = current_coord;
-                    current_coord = (x, y - (steps as i32));
-                }
-                'L' => {
-                    let (x, y) = current_coord;
-                    current_coord = (x - (steps as i32), y );
-                }
-                'R' => {
-                    let (x, y) = current_coord;
-                    current_coord = (x + (steps as i32), y );
-                }
-                _ => {
-                    panic!("Unknown direction: {}", direction);
-                }
-            }
-
-            let line_segment: LineSegment = (previous_coord, current_coord);
-        });
-
-        return wire;
-    });
-
-    println!("{:?}", input_string);
+    println!("Part 1: {}", part_1(input_string.to_string()));
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_part_1() {
+        // intersection
+
+        let input_string = include_str!("input.txt");
+
+        assert_eq!(part_1(input_string.to_string()), 1519);
+    }
 
     #[test]
     fn test_line_segments_intersection() {
