@@ -54,7 +54,47 @@ fn main() {
 
     // Part 1
 
-    // let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
+    let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
+
+    inputs.into_iter().map(|wire: &str| {
+        let mut current_coord: Coordinate = (0, 0);
+
+        wire.trim().split(',').map(|instructions: &str| {
+            let instructions = instructions.trim();
+
+            let direction: char = instructions.chars().next().unwrap();
+            let steps: String = instructions.chars().skip(1).collect();
+            let steps: u32 = steps.parse().unwrap();
+
+            let previous_coord = current_coord;
+
+            match direction {
+                'U' => {
+                    let (x, y) = current_coord;
+                    current_coord = (x, y + (steps as i32));
+                }
+                'D' => {
+                    let (x, y) = current_coord;
+                    current_coord = (x, y - (steps as i32));
+                }
+                'L' => {
+                    let (x, y) = current_coord;
+                    current_coord = (x - (steps as i32), y );
+                }
+                'R' => {
+                    let (x, y) = current_coord;
+                    current_coord = (x + (steps as i32), y );
+                }
+                _ => {
+                    panic!("Unknown direction: {}", direction);
+                }
+            }
+
+            let line_segment: LineSegment = (previous_coord, current_coord);
+        });
+
+        return wire;
+    });
 
     println!("{:?}", input_string);
 }
