@@ -71,7 +71,6 @@ mod tests {
         let input_string = include_str!("input.txt");
         let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
         assert_eq!(part_1(inputs), 3249140);
-
     }
 
     #[test]
