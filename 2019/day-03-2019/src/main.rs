@@ -49,7 +49,7 @@ fn line_segments_intersection(
     return None;
 }
 
-fn part_1(input_string: String) -> Distance {
+fn process_wires(input_string: String) -> Vec<Vec<LineSegment>> {
     let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
 
     let wires: Vec<Vec<LineSegment>> = inputs
@@ -91,6 +91,11 @@ fn part_1(input_string: String) -> Distance {
                         }
                     }
 
+                    assert_eq!(
+                        get_manhattan_distance(previous_coord, current_coord),
+                        steps as i32
+                    );
+
                     let line_segment: LineSegment = (previous_coord, current_coord);
 
                     return line_segment;
@@ -101,6 +106,11 @@ fn part_1(input_string: String) -> Distance {
         })
         .collect();
 
+    return wires;
+}
+
+fn part_1(input_string: String) -> Distance {
+    let wires: Vec<Vec<LineSegment>> = process_wires(input_string);
     assert!(wires.len() >= 2);
     let wire_1: Vec<LineSegment> = wires[0].clone();
     let wire_2: Vec<LineSegment> = wires[1].clone();
