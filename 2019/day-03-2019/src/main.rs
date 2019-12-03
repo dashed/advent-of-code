@@ -2,16 +2,8 @@
 
 type Coordinate = (i32, i32);
 
-#[derive(Clone)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
 // a line segment is defined by two coordinates
-type LineSegment = (Coordinate, Coordinate, Direction);
+type LineSegment = (Coordinate, Coordinate);
 
 // https://math.stackexchange.com/a/139604/10247
 type Distance = i32;
@@ -27,8 +19,8 @@ fn line_segments_intersection(
     first_segment: LineSegment,
     second_segment: LineSegment,
 ) -> Option<Coordinate> {
-    let (point_1, point_2, _) = first_segment;
-    let (point_3, point_4, _) = second_segment;
+    let (point_1, point_2) = first_segment;
+    let (point_3, point_4) = second_segment;
 
     let (x_1, y_1) = point_1;
     let (x_2, y_2) = point_2;
@@ -78,27 +70,22 @@ fn process_wires(input_string: String) -> Vec<Vec<LineSegment>> {
 
                     let previous_coord = current_coord;
 
-                    let line_segment_direction: Direction;
                     match direction {
                         'U' => {
                             let (x, y) = current_coord;
                             current_coord = (x, y + (steps as i32));
-                            line_segment_direction = Direction::Up;
                         }
                         'D' => {
                             let (x, y) = current_coord;
                             current_coord = (x, y - (steps as i32));
-                            line_segment_direction = Direction::Down;
                         }
                         'L' => {
                             let (x, y) = current_coord;
                             current_coord = (x - (steps as i32), y);
-                            line_segment_direction = Direction::Left;
                         }
                         'R' => {
                             let (x, y) = current_coord;
                             current_coord = (x + (steps as i32), y);
-                            line_segment_direction = Direction::Right;
                         }
                         _ => {
                             panic!("Unknown direction: {}", direction);
@@ -110,8 +97,7 @@ fn process_wires(input_string: String) -> Vec<Vec<LineSegment>> {
                         steps as i32
                     );
 
-                    let line_segment: LineSegment =
-                        (previous_coord, current_coord, line_segment_direction);
+                    let line_segment: LineSegment = (previous_coord, current_coord);
 
                     return line_segment;
                 })
@@ -139,8 +125,7 @@ fn part_1(input_string: String) -> Distance {
                     continue;
                 }
                 Some(coord) => {
-
-                    if coord == (0,0) {
+                    if coord == (0, 0) {
                         continue;
                     }
 
@@ -172,13 +157,13 @@ fn part_2(input_string: String) -> i32 {
     let mut steps_wire_1 = 0;
 
     for segment_1 in wire_1 {
-        let (segment_1_start, segment_1_end, _segment_1_direction) = segment_1.clone();
+        let (segment_1_start, segment_1_end) = segment_1.clone();
         steps_wire_1 = steps_wire_1 + get_manhattan_distance(segment_1_start, segment_1_end);
 
         let mut steps_wire_2 = 0;
 
         for segment_2 in wire_2.iter() {
-            let (segment_2_start, segment_2_end, _segment_2_direction) = segment_2;
+            let (segment_2_start, segment_2_end) = segment_2;
             steps_wire_2 = steps_wire_2 + get_manhattan_distance(*segment_2_start, *segment_2_end);
 
             match line_segments_intersection(segment_1.clone(), segment_2.clone()) {
@@ -186,19 +171,17 @@ fn part_2(input_string: String) -> i32 {
                     continue;
                 }
                 Some(intersection_coord) => {
-
-                    if intersection_coord == (0,0) {
+                    if intersection_coord == (0, 0) {
                         continue;
                     }
 
-                    let steps_wire_1_intersection = steps_wire_1 - get_manhattan_distance(intersection_coord, segment_1_end);
-                    let steps_wire_2_intersection = steps_wire_2 - get_manhattan_distance(intersection_coord, *segment_2_end);
+                    let steps_wire_1_intersection =
+                        steps_wire_1 - get_manhattan_distance(intersection_coord, segment_1_end);
+                    let steps_wire_2_intersection =
+                        steps_wire_2 - get_manhattan_distance(intersection_coord, *segment_2_end);
 
-                    println!("steps_wire_1: {}", steps_wire_1_intersection);
-                    println!("steps_wire_2: {}", steps_wire_2_intersection);
-                    println!("coord: {:?}", intersection_coord);
-                    println!("----");
-                    steps_to_reach_intersections.push(steps_wire_1_intersection + steps_wire_2_intersection);
+                    steps_to_reach_intersections
+                        .push(steps_wire_1_intersection + steps_wire_2_intersection);
                 }
             }
         }
@@ -222,7 +205,6 @@ mod tests {
 
     #[test]
     fn test_part_1() {
-
         let input_string = r###"
 R8,U5,L5,D3
 U7,R6,D4,L4
@@ -250,7 +232,6 @@ U98,R91,D20,R16,D67,R40,U7,R15,U6,R7
 
     #[test]
     fn test_part_2() {
-
         let input_string = r###"
 R8,U5,L5,D3
 U7,R6,D4,L4
@@ -280,8 +261,8 @@ U98,R91,D20,R16,D67,R40,U7,R15,U6,R7
     fn test_line_segments_intersection() {
         // intersection
 
-        let line_segment_1 = ((3, 2), (3, 10), Direction::Up);
-        let line_segment_2 = ((0, 3), (10, 3), Direction::Up);
+        let line_segment_1 = ((3, 2), (3, 10));
+        let line_segment_2 = ((0, 3), (10, 3));
 
         assert_eq!(
             line_segments_intersection(line_segment_1, line_segment_2),
@@ -290,8 +271,8 @@ U98,R91,D20,R16,D67,R40,U7,R15,U6,R7
 
         // no intersection
 
-        let line_segment_1 = ((3, 2), (3, 10), Direction::Up);
-        let line_segment_2 = ((0, 30), (10, 30), Direction::Up);
+        let line_segment_1 = ((3, 2), (3, 10));
+        let line_segment_2 = ((0, 30), (10, 30));
 
         assert_eq!(
             line_segments_intersection(line_segment_1, line_segment_2),
@@ -300,8 +281,8 @@ U98,R91,D20,R16,D67,R40,U7,R15,U6,R7
 
         // collinear intersection y-axis
 
-        let line_segment_1 = ((3, 2), (3, 10), Direction::Up);
-        let line_segment_2 = ((3, -10), (3, 20), Direction::Up);
+        let line_segment_1 = ((3, 2), (3, 10));
+        let line_segment_2 = ((3, -10), (3, 20));
 
         assert_eq!(
             line_segments_intersection(line_segment_1, line_segment_2),
@@ -310,8 +291,8 @@ U98,R91,D20,R16,D67,R40,U7,R15,U6,R7
 
         // collinear intersection x-axis
 
-        let line_segment_1 = ((-10, 3), (20, 3), Direction::Up);
-        let line_segment_2 = ((0, 3), (10, 3), Direction::Up);
+        let line_segment_1 = ((-10, 3), (20, 3));
+        let line_segment_2 = ((0, 3), (10, 3));
 
         assert_eq!(
             line_segments_intersection(line_segment_1, line_segment_2),
