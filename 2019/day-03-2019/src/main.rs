@@ -175,6 +175,8 @@ fn part_2(input_string: String) -> i32 {
                         continue;
                     }
 
+                    // need to backtrack the amount of steps
+
                     let steps_wire_1_intersection =
                         steps_wire_1 - get_manhattan_distance(intersection_coord, segment_1_end);
                     let steps_wire_2_intersection =
