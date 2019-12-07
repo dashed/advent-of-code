@@ -71,7 +71,6 @@ fn is_valid_password_part_2(password: String) -> bool {
     for digit in chars {
         match prev_digit {
             None => {
-
                 let entry = digit_counter.entry(digit).or_insert(0);
                 *entry += 1;
 
@@ -79,7 +78,6 @@ fn is_valid_password_part_2(password: String) -> bool {
                 continue;
             }
             Some(last_digit) => {
-
                 // if !digit_counter.contains_key(&digit) {
                 //     digit_counter.insert(digit, 1);
                 // } else {
