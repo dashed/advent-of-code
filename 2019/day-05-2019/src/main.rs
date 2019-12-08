@@ -1,8 +1,14 @@
 // https://adventofcode.com/2019/day/5
 
+enum ParameterMode {
+    Position,
+    Immediate,
+}
+
 struct Computer {
     current_instruction_pointer: usize,
     tape: Vec<i32>,
+    mode: ParameterMode,
 }
 
 impl Computer {
@@ -18,6 +24,7 @@ impl Computer {
         Computer {
             current_instruction_pointer: 0,
             tape: inputs,
+            mode: ParameterMode::Position,
         }
     }
 }
