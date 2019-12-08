@@ -1,7 +1,9 @@
 // https://adventofcode.com/2019/day/5
 
 enum ParameterMode {
+    // position mode, which causes the parameter to be interpreted as a position
     Position,
+    // In immediate mode, a parameter is interpreted as a value
     Immediate,
 }
 
