@@ -22,17 +22,17 @@ I'm solving the Advent of Code puzzles using the [Rust](https://www.rust-lang.or
 
 ```sh
 # running code for some day of the Advent of Code event
-# for example: cargo run -p day-01-2019
+# for example: cargo run -p day-01-2020
 cargo run -p <day-num-year>
 
 # quick check
 cargo check
 # or
-# for example: cargo check -p day-01-2019
+# for example: cargo check -p day-01-2020
 cargo check -p <day-num-year>
 
 # creating a new cargo package
-# for example: cargo new day-01-2019
+# for example: cargo new day-01-2020
 cargo new <year>/<day-num-year>
 ```
 
