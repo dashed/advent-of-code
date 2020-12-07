@@ -106,6 +106,6 @@ mod tests {
         let puzzle_inputs = parse_input(input_string);
 
         assert_eq!(part_1(puzzle_inputs.clone()), 625);
-        assert_eq!(part_2(puzzle_inputs), 391);        
+        assert_eq!(part_2(puzzle_inputs), 391);
     }
 }
