@@ -7,6 +7,12 @@ struct Elf {
     food: Vec<Calories>,
 }
 
+impl Elf {
+    fn get_total_calories(&self) -> i32 {
+        self.food.iter().sum()
+    }
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
@@ -27,16 +33,25 @@ fn main() {
         }
         let calories = input.parse::<i32>().unwrap();
         current_elf.food.push(calories);
-
-        println!("{}", calories);
     }
 
     // Find the Elf carrying the most Calories. How many total Calories is that Elf carrying?
-    let elve_carrying_most_calories = elves
-        .iter()
-        .max_by_key(|elf| -> i32 { elf.food.iter().sum() })
-        .unwrap();
+    elves.sort_by_key(|elf| -> i32 { elf.get_total_calories() });
+    elves.reverse();
+    let elve_carrying_most_calories = elves.first().unwrap();
 
-    let total_calories: i32 = elve_carrying_most_calories.food.iter().sum();
+    let total_calories: i32 = elve_carrying_most_calories.get_total_calories();
     println!("Part 1: {}", total_calories);
+    assert_eq!(total_calories, 70509);
+
+    assert!(elves.len() >= 3);
+
+    let total_calories_first_3_elves: i32 = elves
+        .iter()
+        .take(3)
+        .map(|elf| elf.get_total_calories())
+        .sum();
+
+    assert_eq!(total_calories_first_3_elves, 208567);
+    println!("Part 2: {}", total_calories_first_3_elves);
 }
