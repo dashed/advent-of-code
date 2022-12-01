@@ -10,6 +10,7 @@ I'm solving the Advent of Code puzzles using the [Rust](https://www.rust-lang.or
 
 **In progress:**
 
+- https://adventofcode.com/2022
 - https://adventofcode.com/2020
 - https://adventofcode.com/2019
 - https://adventofcode.com/2015
@@ -35,7 +36,6 @@ cargo check -p <day-num-year>
 # for example: cargo new day-01-2020
 cargo new <year>/<day-num-year>
 ```
-
 
 ## Results
 
