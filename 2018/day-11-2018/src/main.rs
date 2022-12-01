@@ -123,7 +123,8 @@ fn get_power_level(x: i32, y: i32, grid_serial_number: i32) -> i32 {
     let skip_n = power_level.len() - 3;
 
     let power_level: i32 = power_level
-        .chars().nth(skip_n)
+        .chars()
+        .nth(skip_n)
         .unwrap()
         .to_string()
         .parse()
@@ -151,9 +152,7 @@ fn get_total_power_level_of_square(
         .map(|x| -> i32 {
             let result: i32 = y_range
                 .par_iter()
-                .map(|y| -> i32 {
-                    get_power_level(x, *y, grid_serial_number)
-                })
+                .map(|y| -> i32 { get_power_level(x, *y, grid_serial_number) })
                 .sum();
 
             result

@@ -419,8 +419,6 @@ fn part_2(depth: Depth, target: Coordinate) -> Option<Time> {
 
     assert!(cave.get_region_type(&target) == RegionType::Rocky);
 
-    
-
     cave.find_target()
 }
 

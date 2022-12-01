@@ -100,9 +100,7 @@ fn compare_vectors(
 fn part_2(part_1_input: String) -> usize {
     let needle = part_1_input
         .chars()
-        .map(|x| -> i32 {
-            x.to_string().parse().unwrap()
-        })
+        .map(|x| -> i32 { x.to_string().parse().unwrap() })
         .collect();
 
     let mut num_of_recipes_to_skip = 0;

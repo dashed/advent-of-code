@@ -148,9 +148,7 @@ fn part_1(input_string: &str) -> Option<i32> {
         .iter()
         .fold(None, |acc: Option<BoundingBox>, dest| match acc {
             None => Some(BoundingBox::new(*dest)),
-            Some(bounding_box) => {
-                Some(bounding_box.add_point(*dest))
-            }
+            Some(bounding_box) => Some(bounding_box.add_point(*dest)),
         });
 
     if bounding_box.is_none() {
@@ -184,9 +182,7 @@ fn part_1(input_string: &str) -> Option<i32> {
                 .collect();
 
             // sort by distance from largest to smallest
-            distances.sort_by_key(|&(_dest, distance)| {
-                distance
-            });
+            distances.sort_by_key(|&(_dest, distance)| distance);
 
             let (dest, smallest_distance) = distances.first().unwrap();
             let (_dest2, second_smallest_distance) = distances.get(1).unwrap();
@@ -238,9 +234,7 @@ fn part_2(input_string: &str) -> Option<i32> {
         .iter()
         .fold(None, |acc: Option<BoundingBox>, dest| match acc {
             None => Some(BoundingBox::new(*dest)),
-            Some(bounding_box) => {
-                Some(bounding_box.add_point(*dest))
-            }
+            Some(bounding_box) => Some(bounding_box.add_point(*dest)),
         });
 
     if bounding_box.is_none() {

@@ -484,11 +484,7 @@ fn parse_input(input_string: &str) -> Program {
 
             let opcode_str = iter.next().unwrap();
 
-            let arr: Vec<i32> = iter
-                .map(|x| -> i32 {
-                    x.parse().unwrap()
-                })
-                .collect();
+            let arr: Vec<i32> = iter.map(|x| -> i32 { x.parse().unwrap() }).collect();
 
             OpcodeInstruction(
                 Opcode::from_str(opcode_str),
@@ -500,8 +496,6 @@ fn parse_input(input_string: &str) -> Program {
 
         instructions.push(opcode_instruction);
     }
-
-    
 
     Program::new(instruction_pointer_bound, instructions.clone())
 }

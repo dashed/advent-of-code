@@ -38,13 +38,10 @@ impl NanoBot {
 }
 
 fn parse_nanobot(input: &str) -> NanoBot {
-    let integer = many1(digit()).map(|string: String| -> i32 {
-        string.parse::<i32>().unwrap()
-    });
+    let integer = many1(digit()).map(|string: String| -> i32 { string.parse::<i32>().unwrap() });
 
-    let negative_integer = (char('-'), integer.clone()).map(|(_, parsed_int): (_, i32)| -> i32 {
-        -parsed_int
-    });
+    let negative_integer =
+        (char('-'), integer.clone()).map(|(_, parsed_int): (_, i32)| -> i32 { -parsed_int });
 
     let parse_integer = choice((negative_integer, integer.clone()));
 
@@ -60,15 +57,10 @@ fn parse_nanobot(input: &str) -> NanoBot {
 
     let coord_list = between(token('<'), token('>'), parse_integer_list);
 
-    let parse_position = (position_start, char('='), coord_list).map(
-        |(_, _, list): (_, _, Vec<i32>)| -> Coordinate {
-            (list[0], list[1], list[2])
-        },
-    );
+    let parse_position = (position_start, char('='), coord_list)
+        .map(|(_, _, list): (_, _, Vec<i32>)| -> Coordinate { (list[0], list[1], list[2]) });
 
-    let parse_radius = (char('r'), char('='), integer).map(|(_, _, radius): (_, _, Radius)| {
-        radius
-    });
+    let parse_radius = (char('r'), char('='), integer).map(|(_, _, radius): (_, _, Radius)| radius);
 
     let mut parse_nanobot = (parse_position, char(',').skip(spaces()), parse_radius).map(
         |(position, _, radius): (Coordinate, _, Radius)| -> NanoBot {
@@ -96,20 +88,15 @@ fn part_1(input_string: String) -> usize {
         .map(parse_nanobot)
         .collect();
 
-    let strongest_nanobot: NanoBot = nanobots
-        .iter()
-        .max_by_key(|b| {
-            b.radius
-        })
-        .unwrap()
-        .clone();
+    let strongest_nanobot: NanoBot = nanobots.iter().max_by_key(|b| b.radius).unwrap().clone();
 
     let num_in_range: Vec<NanoBot> = nanobots
         .iter()
         .filter(|bot| {
             get_manhattan_distance(bot.position, strongest_nanobot.position)
                 <= strongest_nanobot.radius
-        }).cloned()
+        })
+        .cloned()
         .collect();
 
     num_in_range.len()

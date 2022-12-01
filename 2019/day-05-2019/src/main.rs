@@ -18,9 +18,7 @@ impl Computer {
         let inputs: Vec<i32> = input_string
             .trim()
             .split(',')
-            .map(|value| -> i32 {
-                value.parse().unwrap()
-            })
+            .map(|value| -> i32 { value.parse().unwrap() })
             .collect();
 
         Computer {

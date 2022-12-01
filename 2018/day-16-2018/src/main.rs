@@ -146,9 +146,7 @@ impl Opcode {
     ) -> bool {
         match self.execute(registers_before, instruction) {
             None => false,
-            Some(registers_after_actual) => {
-                registers_after_expected == registers_after_actual
-            }
+            Some(registers_after_actual) => registers_after_expected == registers_after_actual,
         }
     }
 
@@ -437,9 +435,7 @@ fn part_1(input_string: &str) -> OpCodeMap {
             let arr: Vec<i32> = opcode_instruction_line
                 .split_whitespace()
                 .map(|x| x.trim())
-                .map(|x| -> i32 {
-                    x.parse().unwrap()
-                })
+                .map(|x| -> i32 { x.parse().unwrap() })
                 .collect();
 
             OpcodeInstruction(
@@ -545,9 +541,7 @@ fn part_1(input_string: &str) -> OpCodeMap {
 
                 (input_opcode_number, opcodes)
             })
-            .filter(|(_input_opcode_number, opcodes)| {
-                opcodes.len() >= 2
-            })
+            .filter(|(_input_opcode_number, opcodes)| opcodes.len() >= 2)
             .collect();
     }
 
@@ -581,9 +575,7 @@ fn part_2(input_string: &str, opcode_map: OpCodeMap) {
             let arr: Vec<i32> = opcode_instruction_line
                 .split_whitespace()
                 .map(|x| x.trim())
-                .map(|x| -> i32 {
-                    x.parse().unwrap()
-                })
+                .map(|x| -> i32 { x.parse().unwrap() })
                 .collect();
 
             OpcodeInstruction(
@@ -640,11 +632,7 @@ mod tests {
             // invalid
 
             let registers_after = Registers(0, 2, 3, 4);
-            let result = opcode.matches(
-                registers_before,
-                instruction,
-                registers_after,
-            );
+            let result = opcode.matches(registers_before, instruction, registers_after);
 
             assert_eq!(result, false);
         }

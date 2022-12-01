@@ -40,7 +40,6 @@ impl PartialOrd for OrderedCoordinate {
 
 impl Ord for OrderedCoordinate {
     fn cmp(&self, other: &Self) -> Ordering {
-        
         self.partial_cmp(other).unwrap()
     }
 }
@@ -617,9 +616,7 @@ fn part_2(input_string: &str) -> Option<Coordinate> {
             return carts
                 .carts
                 .iter()
-                .map(|(position, _cart)| -> Coordinate {
-                    position.coordinate()
-                })
+                .map(|(position, _cart)| -> Coordinate { position.coordinate() })
                 .into_iter()
                 .next();
         }

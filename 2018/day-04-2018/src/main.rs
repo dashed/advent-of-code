@@ -74,9 +74,7 @@ impl Guard {
         let result = self.occurences_counter.iter().fold(
             None,
             |acc: Option<(Minute, Occurences)>, (minute, occurences_count)| match acc {
-                None => {
-                    Some((*minute, *occurences_count))
-                }
+                None => Some((*minute, *occurences_count)),
                 Some((_prev_minute, prev_occurences_count)) => {
                     if occurences_count > &prev_occurences_count {
                         return Some((*minute, *occurences_count));
@@ -189,9 +187,7 @@ fn main() {
             guard_sleep_tracker
                 .iter()
                 .fold(None, |acc: Option<&Guard>, (_guard_id, guard)| match acc {
-                    None => {
-                        Some(guard)
-                    }
+                    None => Some(guard),
                     Some(prev_guard) => {
                         if guard.minutes_slept > prev_guard.minutes_slept {
                             return Some(guard);
@@ -236,12 +232,12 @@ fn main() {
         let result = guard_sleep_tracker.iter().fold(
             None,
             |acc: Option<(&Guard, Minute, Occurences)>, (_guard_id, guard)| match acc {
-                None => guard.get_minute_slept_most_at().map(|(minute, occurences_count)| (guard, minute, occurences_count)),
+                None => guard
+                    .get_minute_slept_most_at()
+                    .map(|(minute, occurences_count)| (guard, minute, occurences_count)),
                 Some((_prev_guard, _best_minute, best_occurences_count)) => {
                     match guard.get_minute_slept_most_at() {
-                        None => {
-                            acc
-                        }
+                        None => acc,
                         Some((minute, occurences_count)) => {
                             if occurences_count > best_occurences_count {
                                 return Some((guard, minute, occurences_count));

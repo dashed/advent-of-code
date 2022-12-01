@@ -181,9 +181,7 @@ type ParseResult<T> = Option<(T, TokenPosition)>;
 
 fn parse_start(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()> {
     match tokens.get(start_at) {
-        None => {
-            None
-        }
+        None => None,
         Some(token) => {
             if token == &Tokens::Start {
                 return Some(((), start_at + 1));
@@ -195,9 +193,7 @@ fn parse_start(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()>
 
 fn parse_end(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()> {
     match tokens.get(start_at) {
-        None => {
-            None
-        }
+        None => None,
         Some(token) => {
             if token == &Tokens::End {
                 return Some(((), start_at + 1));
@@ -396,9 +392,7 @@ fn parse_routes(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Ro
     }
 
     match parse_route(tokens, start_at) {
-        None => {
-            None
-        }
+        None => None,
         Some((starting_route, next_position)) => match parse_routes(tokens, next_position) {
             None => {
                 let result = Routes::Route(starting_route, Box::new(None));
@@ -635,18 +629,15 @@ impl Map {
         // for each new positions, continue taking more_routes
 
         match more_routes {
-            None => {
-                new_positions
-            }
+            None => new_positions,
             Some(more_routes) => {
-                new_positions.into_iter().fold(
-                    HashSet::new(),
-                    |mut acc, position: Coordinate| {
+                new_positions
+                    .into_iter()
+                    .fold(HashSet::new(), |mut acc, position: Coordinate| {
                         let new_positions = self.parse_routes(more_routes.clone(), position);
                         acc.extend(new_positions);
                         acc
-                    },
-                )
+                    })
             }
         }
     }
@@ -665,9 +656,7 @@ impl Map {
                         set.insert(new_position);
                         set
                     }
-                    Some(more_routes) => {
-                        self.parse_routes(more_routes, new_position)
-                    }
+                    Some(more_routes) => self.parse_routes(more_routes, new_position),
                 }
             }
             Routes::Branch(branch_group, more_routes) => {
@@ -700,9 +689,7 @@ fn main() {
         .room_distance
         .values()
         .into_iter()
-        .filter(|x| {
-            *x >= &1000
-        })
+        .filter(|x| *x >= &1000)
         .count();
 
     println!("Part 2: {}", num_of_rooms);

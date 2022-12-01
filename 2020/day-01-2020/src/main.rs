@@ -7,9 +7,7 @@ fn main() {
 
     let entries: Vec<i32> = inputs
         .into_iter()
-        .map(|entry| -> i32 {
-            entry.parse().unwrap()
-        })
+        .map(|entry| -> i32 { entry.parse().unwrap() })
         .collect();
 
     println!("Part 1: {}", part_1(entries.clone()));
@@ -76,9 +74,7 @@ mod tests {
 
         let entries: Vec<i32> = inputs
             .into_iter()
-            .map(|entry| -> i32 {
-                entry.parse().unwrap()
-            })
+            .map(|entry| -> i32 { entry.parse().unwrap() })
             .collect();
 
         assert_eq!(part_1(entries.clone()), 864864);

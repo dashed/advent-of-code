@@ -63,9 +63,7 @@ fn part_1(input_string: String) -> usize {
 
     let nice_strings: Vec<&str> = inputs
         .into_iter()
-        .filter(|input| {
-            is_nice(input.to_string())
-        })
+        .filter(|input| is_nice(input.to_string()))
         .collect();
 
     nice_strings.len()
@@ -120,9 +118,7 @@ fn part_2(input_string: String) -> usize {
 
     let nice_strings: Vec<&str> = inputs
         .into_iter()
-        .filter(|input| {
-            is_nice_part_2(input.to_string())
-        })
+        .filter(|input| is_nice_part_2(input.to_string()))
         .collect();
 
     nice_strings.len()

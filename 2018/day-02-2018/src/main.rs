@@ -45,8 +45,6 @@ fn parse_input(input: &str) -> Parsed {
     // - occur exactly three times
     // - or both
 
-    
-
     letter_counter.into_iter().fold(
         Parsed::None, // accumulator
         |current_state, (_letter, num_of_occurrences)| {
@@ -79,9 +77,7 @@ fn parse_input(input: &str) -> Parsed {
 
                     Parsed::HasBoth
                 }
-                Parsed::HasBoth => {
-                    Parsed::HasBoth
-                }
+                Parsed::HasBoth => Parsed::HasBoth,
             }
         },
     )
@@ -97,18 +93,10 @@ fn part_1(inputs: Vec<&str>) {
             let (num_of_two, num_of_three) = accumulator;
 
             match parsed_state {
-                Parsed::None => {
-                    (num_of_two, num_of_three)
-                }
-                Parsed::HasBoth => {
-                    (num_of_two + 1, num_of_three + 1)
-                }
-                Parsed::HasTwo => {
-                    (num_of_two + 1, num_of_three)
-                }
-                Parsed::HasThree => {
-                    (num_of_two, num_of_three + 1)
-                }
+                Parsed::None => (num_of_two, num_of_three),
+                Parsed::HasBoth => (num_of_two + 1, num_of_three + 1),
+                Parsed::HasTwo => (num_of_two + 1, num_of_three),
+                Parsed::HasThree => (num_of_two, num_of_three + 1),
             }
         },
     );
@@ -150,20 +138,14 @@ fn strings_diff_by_1(this: &str, other: &str) -> bool {
                     }
                     Diff::DiffByOne
                 }
-                Diff::DiffByMoreThanOne => {
-                    Diff::DiffByMoreThanOne
-                }
+                Diff::DiffByMoreThanOne => Diff::DiffByMoreThanOne,
             }
         },
     );
 
     match result {
-        Diff::DiffByOne => {
-            true
-        }
-        _ => {
-            false
-        }
+        Diff::DiffByOne => true,
+        _ => false,
     }
 }
 
@@ -171,9 +153,7 @@ fn common_letters(this: &str, other: &str) -> String {
     let result: String = this
         .chars()
         .zip(other.chars())
-        .filter(|&(this_char, other_char): &(char, char)| -> bool {
-            this_char == other_char
-        })
+        .filter(|&(this_char, other_char): &(char, char)| -> bool { this_char == other_char })
         .map(|(this_char, _other_char): (char, char)| this_char)
         .collect();
 

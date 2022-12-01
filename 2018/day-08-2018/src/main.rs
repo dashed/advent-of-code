@@ -68,11 +68,9 @@ fn parse_children<I: Iterator<Item = i32>>(iter: &mut I, num_of_child_nodes: i32
 }
 
 fn part_1(input_string: &str) -> i32 {
-    let mut iter = input_string
-        .split_whitespace()
-        .map(|x| -> i32 {
-            return x.trim().parse().unwrap();
-        });
+    let mut iter = input_string.split_whitespace().map(|x| -> i32 {
+        return x.trim().parse().unwrap();
+    });
 
     let root_node = parse_node(&mut iter);
 
@@ -91,11 +89,9 @@ fn part_1(input_string: &str) -> i32 {
 }
 
 fn part_2(input_string: &str) -> i32 {
-    let mut iter = input_string
-        .split_whitespace()
-        .map(|x| -> i32 {
-            return x.trim().parse().unwrap();
-        });
+    let mut iter = input_string.split_whitespace().map(|x| -> i32 {
+        return x.trim().parse().unwrap();
+    });
 
     let root_node = parse_node(&mut iter);
 

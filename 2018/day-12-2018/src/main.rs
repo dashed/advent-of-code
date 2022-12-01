@@ -208,9 +208,7 @@ fn main() {
 
         let initial_state_iter = initial_state
             .chars()
-            .filter(|x| {
-                is_valid_plant_state(*x)
-            })
+            .filter(|x| is_valid_plant_state(*x))
             .enumerate();
 
         for (pot_index, has_plant_char) in initial_state_iter {

@@ -11,9 +11,7 @@ fn is_valid_password(password: String) -> bool {
 
     let chars: Vec<u8> = password
         .chars()
-        .map(|digit| -> u8 {
-            digit.to_digit(10).unwrap() as u8
-        })
+        .map(|digit| -> u8 { digit.to_digit(10).unwrap() as u8 })
         .collect();
 
     let mut equal_adjacent_digits = false;
@@ -57,9 +55,7 @@ fn is_valid_password_part_2(password: String) -> bool {
 
     let chars: Vec<u8> = password
         .chars()
-        .map(|digit| -> u8 {
-            digit.to_digit(10).unwrap() as u8
-        })
+        .map(|digit| -> u8 { digit.to_digit(10).unwrap() as u8 })
         .collect();
 
     // the two adjacent matching digits are not part of a larger group of matching digits.

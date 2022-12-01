@@ -6,9 +6,7 @@ fn run_computer(input_string: String, noun: u32, verb: u32) -> u32 {
     let mut inputs: Vec<u32> = input_string
         .trim()
         .split(',')
-        .map(|opcode| -> u32 {
-            opcode.parse().unwrap()
-        })
+        .map(|opcode| -> u32 { opcode.parse().unwrap() })
         .collect();
 
     inputs[1] = noun;
@@ -74,9 +72,7 @@ fn part_2(input_string: String) {
 
                     None
                 })
-                .find_first(|result: &Option<(u32, u32)>| {
-                    result.is_some()
-                });
+                .find_first(|result: &Option<(u32, u32)>| result.is_some());
 
             if result.is_some() {
                 return result.unwrap();
@@ -84,9 +80,7 @@ fn part_2(input_string: String) {
 
             None
         })
-        .find_first(|result: &Option<(u32, u32)>| {
-            result.is_some()
-        })
+        .find_first(|result: &Option<(u32, u32)>| result.is_some())
         .unwrap();
 
     match result {

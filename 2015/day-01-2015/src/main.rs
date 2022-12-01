@@ -11,12 +11,8 @@ fn main() {
         input_string.chars().fold(
             0,
             |current_floor: i32, instruction: char| match instruction {
-                '(' => {
-                    current_floor + 1
-                }
-                ')' => {
-                    current_floor - 1
-                }
+                '(' => current_floor + 1,
+                ')' => current_floor - 1,
                 _ => {
                     unreachable!();
                 }

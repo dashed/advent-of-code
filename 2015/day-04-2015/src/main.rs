@@ -30,13 +30,9 @@ fn general(secret_key: &str, num_of_zeroes: usize) -> i32 {
                 || None,
                 |lowest_positive_num: Option<i32>, candidate: Option<i32>| -> Option<i32> {
                     match candidate {
-                        None => {
-                            lowest_positive_num
-                        }
+                        None => lowest_positive_num,
                         Some(maybe_lowest_positive_num) => match lowest_positive_num {
-                            None => {
-                                Some(maybe_lowest_positive_num)
-                            }
+                            None => Some(maybe_lowest_positive_num),
                             Some(lowest_positive_num) => {
                                 if maybe_lowest_positive_num < lowest_positive_num {
                                     return Some(maybe_lowest_positive_num);
@@ -51,13 +47,9 @@ fn general(secret_key: &str, num_of_zeroes: usize) -> i32 {
                 || None,
                 |lowest_positive_num: Option<i32>, candidate: Option<i32>| -> Option<i32> {
                     match candidate {
-                        None => {
-                            lowest_positive_num
-                        }
+                        None => lowest_positive_num,
                         Some(maybe_lowest_positive_num) => match lowest_positive_num {
-                            None => {
-                                Some(maybe_lowest_positive_num)
-                            }
+                            None => Some(maybe_lowest_positive_num),
                             Some(lowest_positive_num) => {
                                 if maybe_lowest_positive_num < lowest_positive_num {
                                     return Some(maybe_lowest_positive_num);

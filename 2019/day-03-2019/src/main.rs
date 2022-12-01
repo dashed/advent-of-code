@@ -137,9 +137,7 @@ fn part_1(input_string: String) -> Distance {
 
     let closest_intersection_to_port: Distance = intersections
         .into_iter()
-        .map(|coord| {
-            get_manhattan_distance((0, 0), coord)
-        })
+        .map(|coord| get_manhattan_distance((0, 0), coord))
         .min()
         .unwrap();
 
