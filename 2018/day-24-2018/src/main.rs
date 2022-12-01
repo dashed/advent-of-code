@@ -23,16 +23,11 @@ fn parse_input(input_string: &str) -> Battle {
 
     let constant = |needle: String| {
         let chars: Vec<char> = needle.chars().into_iter().collect();
-        tokens(|l, r| l.eq_ignore_ascii_case(&r), "error".into(), chars).map(move |_| {
-            needle.clone()
-        })
+        tokens(|l, r| l.eq_ignore_ascii_case(&r), "error".into(), chars)
+            .map(move |_| needle.clone())
     };
 
-    let integer = || {
-        many1(digit()).map(|string: String| -> i32 {
-            string.parse::<i32>().unwrap()
-        })
-    };
+    let integer = || many1(digit()).map(|string: String| -> i32 { string.parse::<i32>().unwrap() });
 
     let immunity_start = (constant("Immune System:".to_string()), skip_spaces());
     let infection_start = (constant("Infection:".to_string()), skip_spaces());
@@ -45,17 +40,13 @@ fn parse_input(input_string: &str) -> Battle {
         constant("immune to".to_string()).with(skip_spaces()),
         list_of_words(),
     )
-        .map(|(_, words)| {
-            Trait::Immunities(words)
-        });
+        .map(|(_, words)| Trait::Immunities(words));
 
     let parse_weaknesses = (
         constant("weak to".to_string()).with(skip_spaces()),
         list_of_words(),
     )
-        .map(|(_, words)| {
-            Trait::Weaknesses(words)
-        });
+        .map(|(_, words)| Trait::Weaknesses(words));
 
     let traits_list = sep_by::<Vec<Trait>, _, _>(
         choice((parse_immunities, parse_weaknesses)),
@@ -108,27 +99,19 @@ fn parse_input(input_string: &str) -> Battle {
                             let immunities = traits
                                 .iter()
                                 .find(|item| match item {
-                                    Trait::Immunities(_) => {
-                                        true
-                                    }
+                                    Trait::Immunities(_) => true,
                                     _ => false,
                                 })
-                                .map(|x| {
-                                    (*x).clone().unwrap()
-                                })
+                                .map(|x| (*x).clone().unwrap())
                                 .unwrap_or_default();
 
                             let weaknesses = traits
                                 .iter()
                                 .find(|item| match item {
-                                    Trait::Weaknesses(_) => {
-                                        true
-                                    }
+                                    Trait::Weaknesses(_) => true,
                                     _ => false,
                                 })
-                                .map(|x| {
-                                    (*x).clone().unwrap()
-                                })
+                                .map(|x| (*x).clone().unwrap())
                                 .unwrap_or_default();
 
                             (immunities, weaknesses)
@@ -324,11 +307,8 @@ impl Battle {
     fn new(groups: BinaryHeap<Group>) -> Self {
         let mut new_group = BinaryHeap::new();
 
-        let mut current_id = 0;
-        for mut group in groups {
-            group.id = current_id;
-            current_id += 1;
-
+        for (current_id, mut group) in groups.into_iter().enumerate() {
+            group.id = current_id as i32;
             new_group.push(group);
         }
 
@@ -339,9 +319,7 @@ impl Battle {
         return self
             .groups
             .iter()
-            .filter(|group| {
-                group.race == Race::Immunity
-            })
+            .filter(|group| group.race == Race::Immunity)
             .count()
             > 0;
     }
@@ -350,15 +328,14 @@ impl Battle {
         return self
             .groups
             .iter()
-            .filter(|group| {
-                group.race == Race::Infection
-            })
+            .filter(|group| group.race == Race::Infection)
             .count()
             > 0;
     }
 
     fn boost(&mut self, boost: Damage) {
-        self.groups = self.groups
+        self.groups = self
+            .groups
             .iter()
             .map(|group| {
                 let mut group = group.clone();
@@ -495,7 +472,8 @@ impl Battle {
 
         let remaining_groups = groups_lookup
             .values()
-            .into_iter().cloned()
+            .into_iter()
+            .cloned()
             .filter(|g| g.is_alive());
 
         new_groups.extend(remaining_groups);
@@ -526,9 +504,10 @@ fn part_1(input_string: &str) -> i32 {
         }
     }
 
-    let remaining_units = battle.groups.iter().fold(0, |acc, group| {
-        acc + group.num_of_units
-    });
+    let remaining_units = battle
+        .groups
+        .iter()
+        .fold(0, |acc, group| acc + group.num_of_units);
 
     remaining_units
 }

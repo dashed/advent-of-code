@@ -26,7 +26,7 @@ fn main() {
 
     for input in inputs {
         let input = input.trim();
-        if input.len() <= 0 {
+        if input.is_empty() {
             elves.push(current_elf.clone());
             current_elf = Elf { food: vec![] };
             continue;
