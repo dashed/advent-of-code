@@ -506,10 +506,7 @@ fn parse_input(input_string: &str) -> (Map, Carts) {
                         continue;
                     }
 
-                    assert!(
-                        false,
-                        format!("Invalid placement of track: / at {:?}", position)
-                    );
+                    assert!(false, "Invalid placement of track: / at {:?}", position);
                 }
                 '\\' => {
                     // match configuration:
@@ -556,10 +553,7 @@ fn parse_input(input_string: &str) -> (Map, Carts) {
                         continue;
                     }
 
-                    assert!(
-                        false,
-                        format!("Invalid placement of track: \\ at {:?}", position)
-                    );
+                    assert!(false, "Invalid placement of track: \\ at {:?}", position);
                 }
                 ' ' => {}
                 _ => {
