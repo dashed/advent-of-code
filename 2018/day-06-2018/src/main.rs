@@ -19,7 +19,7 @@ fn get_manhattan_distance(x: Position, y: Position) -> i32 {
     let (a, b) = x;
     let (c, d) = y;
 
-    return (a - c).abs() + (b - d).abs();
+    (a - c).abs() + (b - d).abs()
 }
 
 fn parse_to_coord(input: &str) -> Position {
@@ -28,41 +28,41 @@ fn parse_to_coord(input: &str) -> Position {
         .map(|x| -> i32 { x.trim().parse().unwrap() })
         .collect();
 
-    (*result.get(0).unwrap(), *result.get(1).unwrap())
+    (*result.first().unwrap(), *result.get(1).unwrap())
 }
 
 fn get_x(src: Position) -> i32 {
     let (x, _y) = src;
-    return x;
+    x
 }
 
 fn get_y(src: Position) -> i32 {
     let (_x, y) = src;
-    return y;
+    y
 }
 
 fn is_better_top_edge(reference: Position, target: Position) -> bool {
     let ref_point = get_y(reference);
     let target_point = get_y(target);
-    return target_point > ref_point;
+    target_point > ref_point
 }
 
 fn is_better_bottom_edge(reference: Position, target: Position) -> bool {
     let ref_point = get_y(reference);
     let target_point = get_y(target);
-    return target_point < ref_point;
+    target_point < ref_point
 }
 
 fn is_better_left_edge(reference: Position, target: Position) -> bool {
     let ref_point = get_x(reference);
     let target_point = get_x(target);
-    return target_point < ref_point;
+    target_point < ref_point
 }
 
 fn is_better_right_edge(reference: Position, target: Position) -> bool {
     let ref_point = get_x(reference);
     let target_point = get_x(target);
-    return target_point > ref_point;
+    target_point > ref_point
 }
 
 #[derive(Debug, Clone)]
@@ -86,34 +86,34 @@ impl BoundingBox {
     fn is_strictly_inside_bounding_box(&self, target: Position) -> bool {
         let (x, y) = target;
 
-        return self.get_x_start() < x
+        self.get_x_start() < x
             && x < self.get_x_end()
             && self.get_y_start() < y
-            && y < self.get_y_end();
+            && y < self.get_y_end()
     }
 
     // left-most x coord
     fn get_x_start(&self) -> i32 {
         let (x, _y) = self.left;
-        return x;
+        x
     }
 
     // right-most x coord
     fn get_x_end(&self) -> i32 {
         let (x, _y) = self.right;
-        return x;
+        x
     }
 
     // bottom-most y coord
     fn get_y_start(&self) -> i32 {
         let (_x, y) = self.bottom;
-        return y;
+        y
     }
 
     // top-most y coord
     fn get_y_end(&self) -> i32 {
         let (_x, y) = self.top;
-        return y;
+        y
     }
 
     fn add_point(&self, src: Position) -> BoundingBox {
@@ -135,7 +135,7 @@ impl BoundingBox {
             cloned.right = src;
         }
 
-        return cloned;
+        cloned
     }
 }
 
@@ -147,9 +147,9 @@ fn part_1(input_string: &str) -> Option<i32> {
     let bounding_box = destinations
         .iter()
         .fold(None, |acc: Option<BoundingBox>, dest| match acc {
-            None => return Some(BoundingBox::new(*dest)),
+            None => Some(BoundingBox::new(*dest)),
             Some(bounding_box) => {
-                return Some(bounding_box.add_point(*dest));
+                Some(bounding_box.add_point(*dest))
             }
         });
 
@@ -179,16 +179,16 @@ fn part_1(input_string: &str) -> Option<i32> {
                 .iter()
                 .map(|dest| {
                     let distance_to_position = get_manhattan_distance(position, *dest);
-                    return (*dest, distance_to_position);
+                    (*dest, distance_to_position)
                 })
                 .collect();
 
             // sort by distance from largest to smallest
             distances.sort_by_key(|&(_dest, distance)| {
-                return distance;
+                distance
             });
 
-            let (dest, smallest_distance) = distances.get(0).unwrap();
+            let (dest, smallest_distance) = distances.first().unwrap();
             let (_dest2, second_smallest_distance) = distances.get(1).unwrap();
 
             if smallest_distance < second_smallest_distance {
@@ -197,7 +197,7 @@ fn part_1(input_string: &str) -> Option<i32> {
                 // if a position is on the edge of the bounding box,
                 // then the region defined by dest has infinite area.
                 if !bounding_box.is_strictly_inside_bounding_box(position) {
-                    regions.remove(&dest);
+                    regions.remove(dest);
                     continue;
                 }
 
@@ -215,18 +215,18 @@ fn part_1(input_string: &str) -> Option<i32> {
                 }
 
                 match acc {
-                    None => return Some(*region_area),
+                    None => Some(*region_area),
                     Some(largest_region_area_size) => {
                         if region_area > &largest_region_area_size {
                             return Some(*region_area);
                         }
 
-                        return acc;
+                        acc
                     }
                 }
             });
 
-    return largest_region_size;
+    largest_region_size
 }
 
 fn part_2(input_string: &str) -> Option<i32> {
@@ -237,9 +237,9 @@ fn part_2(input_string: &str) -> Option<i32> {
     let bounding_box = destinations
         .iter()
         .fold(None, |acc: Option<BoundingBox>, dest| match acc {
-            None => return Some(BoundingBox::new(*dest)),
+            None => Some(BoundingBox::new(*dest)),
             Some(bounding_box) => {
-                return Some(bounding_box.add_point(*dest));
+                Some(bounding_box.add_point(*dest))
             }
         });
 
@@ -278,7 +278,7 @@ fn part_2(input_string: &str) -> Option<i32> {
         }
     }
 
-    return Some(size_of_region);
+    Some(size_of_region)
 }
 
 fn main() {

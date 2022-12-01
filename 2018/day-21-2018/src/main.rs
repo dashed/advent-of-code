@@ -36,7 +36,7 @@ struct Registers(i32, i32, i32, i32, i32, i32);
 
 impl Registers {
     fn new() -> Self {
-        return Registers(0, 0, 0, 0, 0, 0);
+        Registers(0, 0, 0, 0, 0, 0)
     }
 
     fn get(&self, register_id: RegisterID) -> i32 {
@@ -131,14 +131,10 @@ impl Opcode {
                 // addr (add register) stores into register C the result of adding register A and register B.
 
                 let register_a = RegisterID::into_register_id(instruction.input_a());
-                if register_a.is_none() {
-                    return None;
-                }
+                register_a.as_ref()?;
 
                 let register_b = RegisterID::into_register_id(instruction.input_b());
-                if register_b.is_none() {
-                    return None;
-                }
+                register_b.as_ref()?;
 
                 let value_a = registers_before.get(register_a.unwrap());
                 let value_b = registers_before.get(register_b.unwrap());
@@ -152,9 +148,7 @@ impl Opcode {
                 // addi (add immediate) stores into register C the result of adding register A and value B.
 
                 let register_a = RegisterID::into_register_id(instruction.input_a());
-                if register_a.is_none() {
-                    return None;
-                }
+                register_a.as_ref()?;
 
                 let value_a = registers_before.get(register_a.unwrap());
                 let value_b = instruction.input_b();
@@ -168,14 +162,10 @@ impl Opcode {
                 // mulr (multiply register) stores into register C the result of multiplying register A and register B.
 
                 let register_a = RegisterID::into_register_id(instruction.input_a());
-                if register_a.is_none() {
-                    return None;
-                }
+                register_a.as_ref()?;
 
                 let register_b = RegisterID::into_register_id(instruction.input_b());
-                if register_b.is_none() {
-                    return None;
-                }
+                register_b.as_ref()?;
 
                 let value_a = registers_before.get(register_a.unwrap());
                 let value_b = registers_before.get(register_b.unwrap());
@@ -189,9 +179,7 @@ impl Opcode {
                 // muli (multiply immediate) stores into register C the result of multiplying register A and value B.
 
                 let register_a = RegisterID::into_register_id(instruction.input_a());
-                if register_a.is_none() {
-                    return None;
-                }
+                register_a.as_ref()?;
 
                 let value_a = registers_before.get(register_a.unwrap());
                 let value_b = instruction.input_b();
@@ -205,14 +193,10 @@ impl Opcode {
                 // banr (bitwise AND register) stores into register C the result of the bitwise AND of register A and register B.
 
                 let register_a = RegisterID::into_register_id(instruction.input_a());
-                if register_a.is_none() {
-                    return None;
-                }
+                register_a.as_ref()?;
 
                 let register_b = RegisterID::into_register_id(instruction.input_b());
-                if register_b.is_none() {
-                    return None;
-                }
+                register_b.as_ref()?;
 
                 let value_a = registers_before.get(register_a.unwrap());
                 let value_b = registers_before.get(register_b.unwrap());
@@ -226,9 +210,7 @@ impl Opcode {
                 // bani (bitwise AND immediate) stores into register C the result of the bitwise AND of register A and value B.
 
                 let register_a = RegisterID::into_register_id(instruction.input_a());
-                if register_a.is_none() {
-                    return None;
-                }
+                register_a.as_ref()?;
 
                 let value_a = registers_before.get(register_a.unwrap());
                 let value_b = instruction.input_b();
@@ -242,14 +224,10 @@ impl Opcode {
                 // borr (bitwise OR register) stores into register C the result of the bitwise OR of register A and register B.
 
                 let register_a = RegisterID::into_register_id(instruction.input_a());
-                if register_a.is_none() {
-                    return None;
-                }
+                register_a.as_ref()?;
 
                 let register_b = RegisterID::into_register_id(instruction.input_b());
-                if register_b.is_none() {
-                    return None;
-                }
+                register_b.as_ref()?;
 
                 let value_a = registers_before.get(register_a.unwrap());
                 let value_b = registers_before.get(register_b.unwrap());
@@ -263,9 +241,7 @@ impl Opcode {
                 // bori (bitwise OR immediate) stores into register C the result of the bitwise OR of register A and value B.
 
                 let register_a = RegisterID::into_register_id(instruction.input_a());
-                if register_a.is_none() {
-                    return None;
-                }
+                register_a.as_ref()?;
 
                 let value_a = registers_before.get(register_a.unwrap());
                 let value_b = instruction.input_b();
@@ -279,9 +255,7 @@ impl Opcode {
                 // setr (set register) copies the contents of register A into register C. (Input B is ignored.)
 
                 let register_a = RegisterID::into_register_id(instruction.input_a());
-                if register_a.is_none() {
-                    return None;
-                }
+                register_a.as_ref()?;
 
                 let value_a = registers_before.get(register_a.unwrap());
 
@@ -303,9 +277,7 @@ impl Opcode {
                 let value_a = instruction.input_a();
 
                 let register_b = RegisterID::into_register_id(instruction.input_b());
-                if register_b.is_none() {
-                    return None;
-                }
+                register_b.as_ref()?;
                 let value_b = registers_before.get(register_b.unwrap());
 
                 let result = if value_a > value_b { 1 } else { 0 };
@@ -318,9 +290,7 @@ impl Opcode {
                 // Otherwise, register C is set to 0.
 
                 let register_a = RegisterID::into_register_id(instruction.input_a());
-                if register_a.is_none() {
-                    return None;
-                }
+                register_a.as_ref()?;
                 let value_a = registers_before.get(register_a.unwrap());
 
                 let value_b = instruction.input_b();
@@ -335,15 +305,11 @@ impl Opcode {
                 // Otherwise, register C is set to 0.
 
                 let register_a = RegisterID::into_register_id(instruction.input_a());
-                if register_a.is_none() {
-                    return None;
-                }
+                register_a.as_ref()?;
                 let value_a = registers_before.get(register_a.unwrap());
 
                 let register_b = RegisterID::into_register_id(instruction.input_b());
-                if register_b.is_none() {
-                    return None;
-                }
+                register_b.as_ref()?;
                 let value_b = registers_before.get(register_b.unwrap());
 
                 let result = if value_a > value_b { 1 } else { 0 };
@@ -358,9 +324,7 @@ impl Opcode {
                 let value_a = instruction.input_a();
 
                 let register_b = RegisterID::into_register_id(instruction.input_b());
-                if register_b.is_none() {
-                    return None;
-                }
+                register_b.as_ref()?;
                 let value_b = registers_before.get(register_b.unwrap());
 
                 let result = if value_a == value_b { 1 } else { 0 };
@@ -373,9 +337,7 @@ impl Opcode {
                 // Otherwise, register C is set to 0.
 
                 let register_a = RegisterID::into_register_id(instruction.input_a());
-                if register_a.is_none() {
-                    return None;
-                }
+                register_a.as_ref()?;
                 let value_a = registers_before.get(register_a.unwrap());
 
                 let value_b = instruction.input_b();
@@ -390,15 +352,11 @@ impl Opcode {
                 // Otherwise, register C is set to 0.
 
                 let register_a = RegisterID::into_register_id(instruction.input_a());
-                if register_a.is_none() {
-                    return None;
-                }
+                register_a.as_ref()?;
                 let value_a = registers_before.get(register_a.unwrap());
 
                 let register_b = RegisterID::into_register_id(instruction.input_b());
-                if register_b.is_none() {
-                    return None;
-                }
+                register_b.as_ref()?;
                 let value_b = registers_before.get(register_b.unwrap());
 
                 let result = if value_a == value_b { 1 } else { 0 };
@@ -408,7 +366,7 @@ impl Opcode {
             }
         }
 
-        return Some(registers_before);
+        Some(registers_before)
     }
 }
 
@@ -422,19 +380,19 @@ struct OpcodeInstruction(
 
 impl OpcodeInstruction {
     fn output_register(&self) -> RegisterID {
-        return self.3.clone();
+        self.3.clone()
     }
 
     fn input_a(&self) -> i32 {
-        return self.1;
+        self.1
     }
 
     fn input_b(&self) -> i32 {
-        return self.2;
+        self.2
     }
 
     fn opcode(&self) -> Opcode {
-        return self.0.clone();
+        self.0.clone()
     }
 }
 
@@ -501,7 +459,7 @@ impl Program {
         // after the instruction has executed, add one to the instruction pointer
         self.instruction_pointer += 1;
 
-        return Status::NotHalted;
+        Status::NotHalted
     }
 }
 
@@ -520,7 +478,7 @@ fn parse_input(input_string: &str) -> Program {
 
     let mut instructions = vec![];
 
-    while let Some(opcode_instruction_line) = input_iter.next() {
+    for opcode_instruction_line in input_iter {
         let opcode_instruction = {
             let mut iter = opcode_instruction_line.split_whitespace().map(|x| x.trim());
 
@@ -528,7 +486,7 @@ fn parse_input(input_string: &str) -> Program {
 
             let arr: Vec<i32> = iter
                 .map(|x| -> i32 {
-                    return x.parse().unwrap();
+                    x.parse().unwrap()
                 })
                 .collect();
 
@@ -543,9 +501,9 @@ fn parse_input(input_string: &str) -> Program {
         instructions.push(opcode_instruction);
     }
 
-    let program = Program::new(instruction_pointer_bound.clone(), instructions.clone());
+    
 
-    return program;
+    Program::new(instruction_pointer_bound, instructions.clone())
 }
 
 fn compiled_program(reg_0: i32) {
@@ -567,7 +525,7 @@ fn compiled_program(reg_0: i32) {
 
     loop {
         // bani 5 456 5
-        reg_5 = reg_5 & 456;
+        reg_5 &= 456;
         num_of_instructions_executed += 1;
 
         // eqri 5 72 5
@@ -610,16 +568,16 @@ fn compiled_program(reg_0: i32) {
             reg_3 = reg_4 & 255;
 
             // addr 5 3 5
-            reg_5 = reg_5 + reg_3;
+            reg_5 += reg_3;
 
             // bani 5 16777215 5
-            reg_5 = reg_5 & 16777215;
+            reg_5 &= 16777215;
 
             // muli 5 65899 5
-            reg_5 = reg_5 * 65899;
+            reg_5 *= 65899;
 
             // bani 5 16777215 5
-            reg_5 = reg_5 & 16777215;
+            reg_5 &= 16777215;
 
             num_of_instructions_executed += 5;
 
@@ -654,7 +612,7 @@ fn compiled_program(reg_0: i32) {
                 num_of_instructions_executed += 1;
 
                 // muli 2 256 2
-                reg_2 = reg_2 * 256;
+                reg_2 *= 256;
                 num_of_instructions_executed += 1;
 
                 // gtrr 2 4 2
@@ -677,7 +635,7 @@ fn compiled_program(reg_0: i32) {
 
                 // loop body
                 // addi 3 1 3
-                reg_3 = reg_3 + 1;
+                reg_3 += 1;
                 num_of_instructions_executed += 1;
 
                 // rerun loop A
@@ -736,7 +694,7 @@ fn compiled_program(reg_0: i32) {
         .iter()
         .min_by_key(|item: &(&i32, &i128)| -> i128 {
             let (_key, value) = *item;
-            return *value;
+            *value
         })
         .unwrap();
 
@@ -749,7 +707,7 @@ fn compiled_program(reg_0: i32) {
         .iter()
         .max_by_key(|item: &(&i32, &i128)| -> i128 {
             let (_key, value) = *item;
-            return *value;
+            *value
         })
         .unwrap();
 
@@ -947,5 +905,5 @@ fn main() {
 
     let input_string = include_str!("input.txt");
     let program = parse_input(input_string);
-    part_1(program.clone(), 3941014);
+    part_1(program, 3941014);
 }

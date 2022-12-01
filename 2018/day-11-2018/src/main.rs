@@ -3,7 +3,7 @@
 use rayon::prelude::*;
 
 fn get_row_major_order_idx(x: usize, y: usize, width: usize) -> usize {
-    return width * y + x;
+    width * y + x
 }
 
 struct SummedAreaTable {
@@ -63,8 +63,8 @@ impl SummedAreaTable {
         }
 
         SummedAreaTable {
-            grid_size: grid_size,
-            inner_array: inner_array,
+            grid_size,
+            inner_array,
         }
     }
 
@@ -103,7 +103,7 @@ impl SummedAreaTable {
         // bottom-right corner
         let bottom_right = self.inner_array[get_row_major_order_idx(end_x, end_y, self.grid_size)];
 
-        return bottom_right + top_left - top_right - bottom_left;
+        bottom_right + top_left - top_right - bottom_left
     }
 }
 
@@ -123,15 +123,13 @@ fn get_power_level(x: i32, y: i32, grid_serial_number: i32) -> i32 {
     let skip_n = power_level.len() - 3;
 
     let power_level: i32 = power_level
-        .chars()
-        .skip(skip_n)
-        .next()
+        .chars().nth(skip_n)
         .unwrap()
         .to_string()
         .parse()
         .unwrap();
 
-    return power_level - 5;
+    power_level - 5
 }
 
 fn get_total_power_level_of_square(
@@ -154,15 +152,15 @@ fn get_total_power_level_of_square(
             let result: i32 = y_range
                 .par_iter()
                 .map(|y| -> i32 {
-                    return get_power_level(x, *y, grid_serial_number);
+                    get_power_level(x, *y, grid_serial_number)
                 })
                 .sum();
 
-            return result;
+            result
         })
         .sum();
 
-    return total;
+    total
 }
 
 fn part_1(grid_serial_number: i32, sub_grid_size: i32) -> ((i32, i32), i32) {
@@ -183,25 +181,25 @@ fn part_1(grid_serial_number: i32, sub_grid_size: i32) -> ((i32, i32), i32) {
 
                     let position: (i32, i32) = (x, *y);
 
-                    return (position, total);
+                    (position, total)
                 })
                 .max_by_key(|item| {
                     let (_position, total) = item;
-                    return total.clone();
+                    *total
                 })
                 .unwrap();
 
-            return best;
+            best
         })
         .max_by_key(|item| {
             let (_position, total) = item;
-            return total.clone();
+            *total
         })
         .unwrap();
 
     let (position, largest_total_power) = best;
 
-    return (position, largest_total_power);
+    (position, largest_total_power)
 }
 
 fn part_1_optimized(
@@ -224,7 +222,7 @@ fn part_1_optimized(
         }
     }
 
-    return (best_position.unwrap(), largest_total_power);
+    (best_position.unwrap(), largest_total_power)
 }
 
 #[allow(dead_code)]
@@ -238,11 +236,11 @@ fn part_2(grid_serial_number: i32) {
 
             let (position, total) = part_1(grid_serial_number, sub_grid_size);
 
-            return (position, total, sub_grid_size);
+            (position, total, sub_grid_size)
         })
         .max_by_key(|x| {
             let (_position, total, _sub_grid_size) = x;
-            return total.clone();
+            *total
         })
         .unwrap();
 
@@ -273,17 +271,17 @@ fn part_2_optimized(summed_area_table: &SummedAreaTable) -> ((usize, usize), usi
                 }
             }
 
-            return (best_position, largest_total_power, sub_grid_size);
+            (best_position, largest_total_power, sub_grid_size)
         })
         .max_by_key(|x| {
             let (_position, total, _sub_grid_size) = x;
-            return total.clone();
+            *total
         })
         .unwrap();
 
     let (best_position, _total, best_sub_grid_size) = result;
 
-    return (best_position.unwrap(), best_sub_grid_size);
+    (best_position.unwrap(), best_sub_grid_size)
 
     // Naive version
     // let mut largest_total_power = 0;

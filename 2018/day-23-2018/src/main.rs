@@ -19,7 +19,7 @@ fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> Distance {
     let (a, b, e) = start;
     let (c, d, f) = end;
 
-    return (a - c).abs() + (b - d).abs() + (e - f).abs();
+    (a - c).abs() + (b - d).abs() + (e - f).abs()
 }
 
 type Radius = i32;
@@ -39,11 +39,11 @@ impl NanoBot {
 
 fn parse_nanobot(input: &str) -> NanoBot {
     let integer = many1(digit()).map(|string: String| -> i32 {
-        return string.parse::<i32>().unwrap();
+        string.parse::<i32>().unwrap()
     });
 
     let negative_integer = (char('-'), integer.clone()).map(|(_, parsed_int): (_, i32)| -> i32 {
-        return -parsed_int;
+        -parsed_int
     });
 
     let parse_integer = choice((negative_integer, integer.clone()));
@@ -62,17 +62,17 @@ fn parse_nanobot(input: &str) -> NanoBot {
 
     let parse_position = (position_start, char('='), coord_list).map(
         |(_, _, list): (_, _, Vec<i32>)| -> Coordinate {
-            return (list[0], list[1], list[2]);
+            (list[0], list[1], list[2])
         },
     );
 
     let parse_radius = (char('r'), char('='), integer).map(|(_, _, radius): (_, _, Radius)| {
-        return radius;
+        radius
     });
 
     let mut parse_nanobot = (parse_position, char(',').skip(spaces()), parse_radius).map(
         |(position, _, radius): (Coordinate, _, Radius)| -> NanoBot {
-            return NanoBot::new(position, radius);
+            NanoBot::new(position, radius)
         },
     );
 
@@ -93,13 +93,13 @@ fn part_1(input_string: String) -> usize {
         .trim()
         .lines()
         .map(|s| s.trim())
-        .map(|s| parse_nanobot(s))
+        .map(parse_nanobot)
         .collect();
 
     let strongest_nanobot: NanoBot = nanobots
         .iter()
         .max_by_key(|b| {
-            return b.radius;
+            b.radius
         })
         .unwrap()
         .clone();
@@ -107,13 +107,12 @@ fn part_1(input_string: String) -> usize {
     let num_in_range: Vec<NanoBot> = nanobots
         .iter()
         .filter(|bot| {
-            return get_manhattan_distance(bot.position, strongest_nanobot.position)
-                <= strongest_nanobot.radius;
-        })
-        .map(|b| b.clone())
+            get_manhattan_distance(bot.position, strongest_nanobot.position)
+                <= strongest_nanobot.radius
+        }).cloned()
         .collect();
 
-    return num_in_range.len();
+    num_in_range.len()
 }
 
 fn part_2(input_string: String) -> i32 {
@@ -121,7 +120,7 @@ fn part_2(input_string: String) -> i32 {
         .trim()
         .lines()
         .map(|s| s.trim())
-        .map(|s| parse_nanobot(s))
+        .map(parse_nanobot)
         .collect();
 
     let queue: Vec<(i32, i32)> = nanobots
@@ -134,7 +133,7 @@ fn part_2(input_string: String) -> i32 {
                 (distance + bot.radius + 1, -1),
             ];
 
-            return segments;
+            segments
         })
         .flat_map(|s| s.into_iter())
         .collect();
@@ -155,7 +154,7 @@ fn part_2(input_string: String) -> i32 {
         }
     }
 
-    return result;
+    result
 }
 
 fn main() {

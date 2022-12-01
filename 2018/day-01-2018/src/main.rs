@@ -19,7 +19,7 @@ fn sum_frequencies(mut current_frequency: i32, mut inputs: Vec<&str>) -> i32 {
         current_frequency += parsed_frequency;
     }
 
-    return current_frequency;
+    current_frequency
 }
 
 // Part 2
@@ -48,7 +48,7 @@ fn find_second_frequency(
         seen_frequencies.insert(current_frequency);
     }
 
-    return (false, current_frequency);
+    (false, current_frequency)
 }
 
 fn main() {

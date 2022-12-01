@@ -11,7 +11,7 @@ fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> Distance {
     let (a, b) = start;
     let (c, d) = end;
 
-    return (a - c).abs() + (b - d).abs();
+    (a - c).abs() + (b - d).abs()
 }
 
 // based on http://www.cs.swan.ac.uk/~cssimon/line_intersection.html
@@ -40,18 +40,18 @@ fn line_segments_intersection(
     let parameter_1: f64 = parameter_1_numerator as f64 / parameter_1_denominator as f64;
     let parameter_2: f64 = parameter_2_numerator as f64 / parameter_2_denominator as f64;
 
-    if (0.0 <= parameter_1 && parameter_1 <= 1.0) && (0.0 <= parameter_2 && parameter_2 <= 1.0) {
+    if (0.0..=1.0).contains(&parameter_1) && (0.0..=1.0).contains(&parameter_2) {
         let x = x_1 as f64 + parameter_1 * (x_2 as f64 - x_1 as f64);
         let y = y_1 as f64 + parameter_1 * (y_2 as f64 - y_1 as f64);
 
         return Some((x as i32, y as i32));
     }
 
-    return None;
+    None
 }
 
 fn process_wires(input_string: String) -> Vec<Vec<LineSegment>> {
-    let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
+    let inputs: Vec<&str> = input_string.split_whitespace().collect();
 
     let wires: Vec<Vec<LineSegment>> = inputs
         .into_iter()
@@ -99,15 +99,15 @@ fn process_wires(input_string: String) -> Vec<Vec<LineSegment>> {
 
                     let line_segment: LineSegment = (previous_coord, current_coord);
 
-                    return line_segment;
+                    line_segment
                 })
                 .collect();
 
-            return line_segments;
+            line_segments
         })
         .collect();
 
-    return wires;
+    wires
 }
 
 fn part_1(input_string: String) -> Distance {
@@ -120,7 +120,7 @@ fn part_1(input_string: String) -> Distance {
 
     for segment_1 in wire_1 {
         for segment_2 in wire_2.iter() {
-            match line_segments_intersection(segment_1.clone(), segment_2.clone()) {
+            match line_segments_intersection(segment_1, *segment_2) {
                 None => {
                     continue;
                 }
@@ -138,12 +138,12 @@ fn part_1(input_string: String) -> Distance {
     let closest_intersection_to_port: Distance = intersections
         .into_iter()
         .map(|coord| {
-            return get_manhattan_distance((0, 0), coord);
+            get_manhattan_distance((0, 0), coord)
         })
         .min()
         .unwrap();
 
-    return closest_intersection_to_port;
+    closest_intersection_to_port
 }
 
 fn part_2(input_string: String) -> i32 {
@@ -157,16 +157,16 @@ fn part_2(input_string: String) -> i32 {
     let mut steps_wire_1 = 0;
 
     for segment_1 in wire_1 {
-        let (segment_1_start, segment_1_end) = segment_1.clone();
-        steps_wire_1 = steps_wire_1 + get_manhattan_distance(segment_1_start, segment_1_end);
+        let (segment_1_start, segment_1_end) = segment_1;
+        steps_wire_1 += get_manhattan_distance(segment_1_start, segment_1_end);
 
         let mut steps_wire_2 = 0;
 
         for segment_2 in wire_2.iter() {
             let (segment_2_start, segment_2_end) = segment_2;
-            steps_wire_2 = steps_wire_2 + get_manhattan_distance(*segment_2_start, *segment_2_end);
+            steps_wire_2 += get_manhattan_distance(*segment_2_start, *segment_2_end);
 
-            match line_segments_intersection(segment_1.clone(), segment_2.clone()) {
+            match line_segments_intersection(segment_1, *segment_2) {
                 None => {
                     continue;
                 }
@@ -191,7 +191,7 @@ fn part_2(input_string: String) -> i32 {
 
     let fewest_combined_steps: i32 = steps_to_reach_intersections.into_iter().min().unwrap();
 
-    return fewest_combined_steps;
+    fewest_combined_steps
 }
 
 fn main() {

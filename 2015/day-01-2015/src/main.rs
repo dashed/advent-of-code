@@ -12,10 +12,10 @@ fn main() {
             0,
             |current_floor: i32, instruction: char| match instruction {
                 '(' => {
-                    return current_floor + 1;
+                    current_floor + 1
                 }
                 ')' => {
-                    return current_floor - 1;
+                    current_floor - 1
                 }
                 _ => {
                     unreachable!();

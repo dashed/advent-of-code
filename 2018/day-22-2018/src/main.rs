@@ -18,7 +18,7 @@ fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> Distance {
     let (a, b) = start;
     let (c, d) = end;
 
-    return (a - c).abs() + (b - d).abs();
+    (a - c).abs() + (b - d).abs()
 }
 
 #[derive(PartialEq, Hash, Eq, Clone, Debug)]
@@ -31,16 +31,16 @@ struct TimeCoordinate {
 
 impl TimeCoordinate {
     fn new(time: Time, distance: Distance, position: Coordinate, tool: Tool) -> Self {
-        return TimeCoordinate {
+        TimeCoordinate {
             time,
             distance,
             position,
             tool,
-        };
+        }
     }
 
     fn get_cost(&self) -> Cost {
-        return self.distance + self.time;
+        self.distance + self.time
     }
 
     fn move_to_square(&self, distance: Distance, new_position: Coordinate) -> Self {
@@ -53,7 +53,7 @@ impl TimeCoordinate {
         next.position = new_position;
         next.time += 1;
 
-        return next;
+        next
     }
 
     fn switch_tool(&self, next_tool: Tool) -> Self {
@@ -66,21 +66,21 @@ impl TimeCoordinate {
 
         assert!(next.time > self.time);
 
-        return next;
+        next
     }
 }
 
 impl Ord for TimeCoordinate {
     fn cmp(&self, other: &Self) -> Ordering {
         // reversed for the binary heap which is a max-heap
-        return (self.get_cost()).cmp(&(other.get_cost())).reverse();
+        (self.get_cost()).cmp(&(other.get_cost())).reverse()
     }
 }
 
 impl PartialOrd for TimeCoordinate {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         // reversed for the binary heap which is a max-heap
-        return Some(self.cmp(other));
+        Some(self.cmp(other))
     }
 }
 
@@ -113,22 +113,22 @@ trait Transitions {
 impl Transitions for Coordinate {
     fn up(&self) -> Coordinate {
         let (x, y) = self;
-        return (*x, y - 1);
+        (*x, y - 1)
     }
 
     fn down(&self) -> Coordinate {
         let (x, y) = self;
-        return (*x, y + 1);
+        (*x, y + 1)
     }
 
     fn left(&self) -> Coordinate {
         let (x, y) = self;
-        return (x - 1, *y);
+        (x - 1, *y)
     }
 
     fn right(&self) -> Coordinate {
         let (x, y) = self;
-        return (x + 1, *y);
+        (x + 1, *y)
     }
 }
 
@@ -154,7 +154,7 @@ impl RegionType {
             RegionType::Wet => "=",
             RegionType::Narrow => "|",
         };
-        return result.to_string();
+        result.to_string()
     }
 
     fn required_tools(&self) -> HashSet<Tool> {
@@ -164,17 +164,17 @@ impl RegionType {
             RegionType::Rocky => {
                 set.insert(Tool::ClimbingGear);
                 set.insert(Tool::Torch);
-                return set;
+                set
             }
             RegionType::Wet => {
                 set.insert(Tool::ClimbingGear);
                 set.insert(Tool::None);
-                return set;
+                set
             }
             RegionType::Narrow => {
                 set.insert(Tool::None);
                 set.insert(Tool::Torch);
-                return set;
+                set
             }
         }
     }
@@ -207,7 +207,7 @@ impl Cave {
     }
 
     fn get_risk_level(&mut self, coord: &Coordinate) -> RiskLevel {
-        return self.get_region_type(coord).risk_level();
+        self.get_region_type(coord).risk_level()
     }
 
     fn get_region_type(&mut self, coord: &Coordinate) -> RegionType {
@@ -231,23 +231,23 @@ impl Cave {
 
         self.region_types.insert(*coord, result.clone());
 
-        return result;
+        result
     }
 
     fn get_adjacent_squares(&self, coord: &Coordinate) -> Vec<Coordinate> {
         let adjacent = vec![coord.left(), coord.right(), coord.up(), coord.down()];
 
-        return adjacent
+        adjacent
             .into_iter()
             .filter(|coord| {
                 let (x, y) = coord;
-                return x >= &0 && y >= &0;
+                x >= &0 && y >= &0
             })
-            .collect();
+            .collect()
     }
 
     fn get_erosion_level(&mut self, coord: &Coordinate) -> ErosionLevel {
-        return (self.get_geologic_index(coord) + self.depth) % 20183;
+        (self.get_geologic_index(coord) + self.depth) % 20183
     }
 
     fn find_target(&mut self) -> Option<Time> {
@@ -319,7 +319,7 @@ impl Cave {
             }
         }
 
-        return None;
+        None
     }
 
     fn get_geologic_index(&mut self, coord: &Coordinate) -> GeologicIndex {
@@ -357,7 +357,7 @@ impl Cave {
 
         self.geologic_indices.insert(*coord, geologic_index);
 
-        return geologic_index;
+        geologic_index
     }
 
     #[allow(dead_code)]
@@ -373,12 +373,12 @@ impl Cave {
                 let coord = (x, y);
 
                 if coord == MOUTH_OF_CAVE {
-                    row_string.push_str("M");
+                    row_string.push('M');
                     continue;
                 }
 
                 if coord == self.target {
-                    row_string.push_str("T");
+                    row_string.push('T');
                     continue;
                 }
 
@@ -390,7 +390,7 @@ impl Cave {
             map_string.push(row_string);
         }
 
-        return map_string.join("\n");
+        map_string.join("\n")
     }
 }
 
@@ -411,7 +411,7 @@ fn part_1(depth: Depth, target: Coordinate) -> RiskLevel {
 
     // println!("{}", cave.to_string());
 
-    return total_risk;
+    total_risk
 }
 
 fn part_2(depth: Depth, target: Coordinate) -> Option<Time> {
@@ -419,9 +419,9 @@ fn part_2(depth: Depth, target: Coordinate) -> Option<Time> {
 
     assert!(cave.get_region_type(&target) == RegionType::Rocky);
 
-    let part_2 = cave.find_target();
+    
 
-    return part_2;
+    cave.find_target()
 }
 
 fn main() {

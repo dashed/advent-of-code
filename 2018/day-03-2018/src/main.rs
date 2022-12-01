@@ -23,11 +23,11 @@ struct Fabric {
 
 impl Fabric {
     fn right(&self) -> i32 {
-        return self.left + self.width;
+        self.left + self.width
     }
 
     fn bottom(&self) -> i32 {
-        return self.top + self.height;
+        self.top + self.height
     }
 
     fn generate_claim_points(&self) -> HashSet<String> {
@@ -41,7 +41,7 @@ impl Fabric {
             }
         }
 
-        return points;
+        points
     }
 
     fn is_overlapping(&self, other: &Fabric) -> bool {
@@ -58,7 +58,7 @@ impl Fabric {
         let not_overlapping =
             self_left_of_other || self_right_of_other || self_above_of_other || self_below_of_other;
 
-        return !not_overlapping;
+        !not_overlapping
     }
 
     fn generate_intersection_fabric(&self, other: &Fabric) -> Option<Fabric> {
@@ -83,8 +83,8 @@ impl Fabric {
 
         let intersection_fabric = Fabric {
             id: format!("Insection of: {} and {}", self.id, other.id),
-            left: left,
-            top: top,
+            left,
+            top,
             height: overlapping_height,
             width: overlapping_width,
         };
@@ -109,10 +109,10 @@ fn parse_to_fabric(input: &str) -> Fabric {
 
         let locations: Vec<i32> = location_string
             .split(',')
-            .map(|x| -> i32 { return x.parse().unwrap() })
+            .map(|x| -> i32 { x.parse().unwrap() })
             .collect();
 
-        (*locations.get(0).unwrap(), *locations.get(1).unwrap())
+        (*locations.first().unwrap(), *locations.get(1).unwrap())
     };
 
     let (width, height): (i32, i32) = {
@@ -120,18 +120,18 @@ fn parse_to_fabric(input: &str) -> Fabric {
 
         let sizes: Vec<i32> = size_string
             .split('x')
-            .map(|x| -> i32 { return x.parse().unwrap() })
+            .map(|x| -> i32 { x.parse().unwrap() })
             .collect();
 
-        (*sizes.get(0).unwrap(), *sizes.get(1).unwrap())
+        (*sizes.first().unwrap(), *sizes.get(1).unwrap())
     };
 
     Fabric {
         id: id.to_string(),
-        left: left,
-        top: top,
-        height: height,
-        width: width,
+        left,
+        top,
+        height,
+        width,
     }
 }
 
@@ -140,7 +140,7 @@ fn main() {
 
     let inputs = input_string.lines();
 
-    let fabrics: Vec<Fabric> = inputs.map(|x| parse_to_fabric(x)).collect();
+    let fabrics: Vec<Fabric> = inputs.map(parse_to_fabric).collect();
 
     // set of fabrics assumed to not overlap with any other fabric
     let mut nonoverlapping_fabrics: HashSet<&Fabric> = HashSet::from_iter(fabrics.iter());
@@ -202,7 +202,7 @@ mod tests {
     #[test]
     fn test_overlap() {
         fn get_overlapping_area(this: &Fabric, other: &Fabric) -> i32 {
-            let intersection_fabric = this.generate_intersection_fabric(&other);
+            let intersection_fabric = this.generate_intersection_fabric(other);
 
             if intersection_fabric.is_some() {
                 let intersection_fabric = intersection_fabric.unwrap();
@@ -211,7 +211,7 @@ mod tests {
                 return claimed_points.len() as i32;
             }
 
-            return 0;
+            0
         }
 
         let fabric_1 = parse_to_fabric("#1 @ 1,3: 4x4");

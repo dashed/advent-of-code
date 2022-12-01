@@ -9,15 +9,15 @@ use std::iter::FromIterator;
 // helpers
 
 fn is_same_type(x: char, y: char) -> bool {
-    return x.to_lowercase().to_string() == y.to_lowercase().to_string();
+    x.to_lowercase().to_string() == y.to_lowercase().to_string()
 }
 
 fn is_opposite_polarity(x: char, y: char) -> bool {
-    return (x.is_uppercase() && y.is_lowercase()) || (y.is_uppercase() && x.is_lowercase());
+    (x.is_uppercase() && y.is_lowercase()) || (y.is_uppercase() && x.is_lowercase())
 }
 
 fn does_react(x: char, y: char) -> bool {
-    return is_same_type(x, y) && is_opposite_polarity(x, y);
+    is_same_type(x, y) && is_opposite_polarity(x, y)
 }
 
 fn part_1(input: &str) -> String {
@@ -54,11 +54,11 @@ fn part_1(input: &str) -> String {
     }
 
     let final_result: String = units.into_iter().collect();
-    return final_result;
+    final_result
 }
 
 fn part_2(input: &str) -> String {
-    let unique_types: HashSet<char> = HashSet::from_iter(input.to_lowercase().chars().into_iter());
+    let unique_types: HashSet<char> = HashSet::from_iter(input.to_lowercase().chars());
 
     let result = unique_types
         .par_iter()
@@ -68,7 +68,7 @@ fn part_2(input: &str) -> String {
             |shortest_string, character: &char| -> String {
                 let units: String = input
                     .par_chars()
-                    .filter(|x| -> bool { return !is_same_type(*x, *character) })
+                    .filter(|x| -> bool { !is_same_type(*x, *character) })
                     .collect();
 
                 let reacted = part_1(&units);
@@ -78,7 +78,7 @@ fn part_2(input: &str) -> String {
                     return reacted;
                 }
 
-                return shortest_string;
+                shortest_string
             },
         )
         // find the shortest string among all the folded groups
@@ -88,11 +88,11 @@ fn part_2(input: &str) -> String {
                 if a.len() > b.len() {
                     return b;
                 }
-                return a;
+                a
             },
         );
 
-    return result;
+    result
 }
 
 fn main() {

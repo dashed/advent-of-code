@@ -23,14 +23,14 @@ fn parse_input(input_string: &str) -> Battle {
 
     let constant = |needle: String| {
         let chars: Vec<char> = needle.chars().into_iter().collect();
-        return tokens(|l, r| l.eq_ignore_ascii_case(&r), "error".into(), chars).map(move |_| {
-            return needle.clone();
-        });
+        tokens(|l, r| l.eq_ignore_ascii_case(&r), "error".into(), chars).map(move |_| {
+            needle.clone()
+        })
     };
 
     let integer = || {
         many1(digit()).map(|string: String| -> i32 {
-            return string.parse::<i32>().unwrap();
+            string.parse::<i32>().unwrap()
         })
     };
 
@@ -46,7 +46,7 @@ fn parse_input(input_string: &str) -> Battle {
         list_of_words(),
     )
         .map(|(_, words)| {
-            return Trait::Immunities(words);
+            Trait::Immunities(words)
         });
 
     let parse_weaknesses = (
@@ -54,7 +54,7 @@ fn parse_input(input_string: &str) -> Battle {
         list_of_words(),
     )
         .map(|(_, words)| {
-            return Trait::Weaknesses(words);
+            Trait::Weaknesses(words)
         });
 
     let traits_list = sep_by::<Vec<Trait>, _, _>(
@@ -109,33 +109,33 @@ fn parse_input(input_string: &str) -> Battle {
                                 .iter()
                                 .find(|item| match item {
                                     Trait::Immunities(_) => {
-                                        return true;
+                                        true
                                     }
                                     _ => false,
                                 })
                                 .map(|x| {
-                                    return (*x).clone().unwrap();
+                                    (*x).clone().unwrap()
                                 })
-                                .unwrap_or(HashSet::new());
+                                .unwrap_or_default();
 
                             let weaknesses = traits
                                 .iter()
                                 .find(|item| match item {
                                     Trait::Weaknesses(_) => {
-                                        return true;
+                                        true
                                     }
                                     _ => false,
                                 })
                                 .map(|x| {
-                                    return (*x).clone().unwrap();
+                                    (*x).clone().unwrap()
                                 })
-                                .unwrap_or(HashSet::new());
+                                .unwrap_or_default();
 
-                            return (immunities, weaknesses);
+                            (immunities, weaknesses)
                         })
                         .unwrap_or((HashSet::new(), HashSet::new()));
 
-                    return Group {
+                    Group {
                         id: 0,
 
                         race: race.clone(),
@@ -149,7 +149,7 @@ fn parse_input(input_string: &str) -> Battle {
 
                         immunities,
                         weaknesses,
-                    };
+                    }
                 },
             )
     };
@@ -166,15 +166,15 @@ fn parse_input(input_string: &str) -> Battle {
 
             groups.extend(immunities);
             groups.extend(infections);
-            return Battle::new(groups);
+            Battle::new(groups)
         });
 
     let result: Result<(Battle, &str), easy::ParseError<&str>> = parser.easy_parse(input_string);
 
     match result {
         Ok((value, remaining_input)) => {
-            assert!(remaining_input.trim().len() == 0);
-            return value;
+            assert!(remaining_input.trim().is_empty());
+            value
         }
         Err(err) => {
             panic!("{}", err);
@@ -191,7 +191,7 @@ fn target_order(first_group: &Group, second_group: &Group) -> Ordering {
     }
 
     // in a tie, the group with the higher initiative is first.
-    return first_group.initiative.cmp(&second_group.initiative);
+    first_group.initiative.cmp(&second_group.initiative)
 }
 
 #[derive(Debug, Eq, PartialEq, Clone)]
@@ -245,15 +245,15 @@ impl Group {
     }
 
     fn effective_power(&self) -> i32 {
-        return self.attack_damage * self.num_of_units;
+        self.attack_damage * self.num_of_units
     }
 
     fn immune_to(&self, attack_type: &String) -> bool {
-        return self.immunities.contains(attack_type);
+        self.immunities.contains(attack_type)
     }
 
     fn weak_to(&self, attack_type: &String) -> bool {
-        return self.weaknesses.contains(attack_type);
+        self.weaknesses.contains(attack_type)
     }
 
     fn calculate_damage_to_group(&self, other_group: &Self) -> Damage {
@@ -265,11 +265,11 @@ impl Group {
             return 2 * self.effective_power();
         }
 
-        return self.effective_power();
+        self.effective_power()
     }
 
     fn take_damage(&mut self, other_group: &Self) -> bool {
-        let damage_taken = other_group.calculate_damage_to_group(&self);
+        let damage_taken = other_group.calculate_damage_to_group(self);
 
         let mut num_of_units_dead: i32 = damage_taken / self.hit_points;
 
@@ -281,30 +281,30 @@ impl Group {
             num_of_units_dead
         };
 
-        self.num_of_units = self.num_of_units - num_of_units_dead;
+        self.num_of_units -= num_of_units_dead;
 
         // println!(
         //     "Group {} ({:?}) attacking Group {} ({:?}): {} units died",
         //     other_group.id, other_group.race, self.id, self.race, num_of_units_dead
         // );
 
-        return num_of_units_dead > 0;
+        num_of_units_dead > 0
     }
 
     fn is_alive(&self) -> bool {
-        return self.num_of_units > 0;
+        self.num_of_units > 0
     }
 }
 
 impl Ord for Group {
     fn cmp(&self, other: &Self) -> Ordering {
-        return target_order(self, other);
+        target_order(self, other)
     }
 }
 
 impl PartialOrd for Group {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        return Some(self.cmp(other));
+        Some(self.cmp(other))
     }
 }
 
@@ -340,7 +340,7 @@ impl Battle {
             .groups
             .iter()
             .filter(|group| {
-                return group.race == Race::Immunity;
+                group.race == Race::Immunity
             })
             .count()
             > 0;
@@ -351,21 +351,21 @@ impl Battle {
             .groups
             .iter()
             .filter(|group| {
-                return group.race == Race::Infection;
+                group.race == Race::Infection
             })
             .count()
             > 0;
     }
 
     fn boost(&mut self, boost: Damage) {
-        self.groups = (&self.groups)
-            .into_iter()
+        self.groups = self.groups
+            .iter()
             .map(|group| {
                 let mut group = group.clone();
                 if group.race == Race::Immunity {
                     group.attack_damage += boost;
                 }
-                return group;
+                group
             })
             .collect();
     }
@@ -376,7 +376,7 @@ impl Battle {
             .iter()
             .filter(|group| {
                 // cannot attack its own race
-                return current_group.race != group.race;
+                current_group.race != group.race
             })
             .count()
             > 0;
@@ -411,23 +411,23 @@ impl Battle {
                 .iter()
                 .filter(|target| {
                     // cannot attack itself
-                    return current_group.id != target.id;
+                    current_group.id != target.id
                 })
                 .filter(|target| {
                     // cannot attack its own race
-                    return current_group.race != target.race;
+                    current_group.race != target.race
                 })
                 .map(|target| {
                     let potential_damage = current_group.calculate_damage_to_group(target);
-                    return (target, potential_damage);
+                    (target, potential_damage)
                 })
                 .filter(|(_target, potential_damage)| {
                     // only consider targets for which damage can be dealt
-                    return potential_damage > &0;
+                    potential_damage > &0
                 })
                 .filter(|(target, _potential_damage)| {
                     // only consider targets for which are not chosen
-                    return !unavailable_targets.contains(&target.id);
+                    !unavailable_targets.contains(&target.id)
                 })
                 .collect();
 
@@ -445,10 +445,10 @@ impl Battle {
                 // If an attacking group is considering two defending groups to which it would deal equal damage,
                 // it chooses to target the defending group with the largest effective power;
                 // if there is still a tie, it chooses the defending group with the highest initiative.
-                return target_order(other_target, this_target);
+                target_order(other_target, this_target)
             });
 
-            if potential_targets.len() > 0 {
+            if !potential_targets.is_empty() {
                 let (target, _damage) = potential_targets.get(0).unwrap();
 
                 assert!(!unavailable_targets.contains(&target.id));
@@ -461,10 +461,10 @@ impl Battle {
         // attack phase
 
         target_selection.sort_by(|(this, _), (other, _)| {
-            let this_initiative = groups_lookup.get(&this).unwrap().initiative;
-            let other_initiative = groups_lookup.get(&other).unwrap().initiative;
+            let this_initiative = groups_lookup.get(this).unwrap().initiative;
+            let other_initiative = groups_lookup.get(other).unwrap().initiative;
 
-            return other_initiative.cmp(&this_initiative);
+            other_initiative.cmp(&this_initiative)
         });
 
         let mut units_died_in_this_round = false;
@@ -495,8 +495,7 @@ impl Battle {
 
         let remaining_groups = groups_lookup
             .values()
-            .into_iter()
-            .map(|g| g.clone())
+            .into_iter().cloned()
             .filter(|g| g.is_alive());
 
         new_groups.extend(remaining_groups);
@@ -507,11 +506,11 @@ impl Battle {
             return WarStatus::StaleMate;
         }
 
-        if self.groups.len() > 0 {
+        if !self.groups.is_empty() {
             return WarStatus::NotOver;
         }
 
-        return WarStatus::Over;
+        WarStatus::Over
     }
 }
 
@@ -528,10 +527,10 @@ fn part_1(input_string: &str) -> i32 {
     }
 
     let remaining_units = battle.groups.iter().fold(0, |acc, group| {
-        return acc + group.num_of_units;
+        acc + group.num_of_units
     });
 
-    return remaining_units;
+    remaining_units
 }
 
 fn part_2(input_string: &str) -> i32 {
@@ -553,14 +552,14 @@ fn part_2(input_string: &str) -> i32 {
         if battle.has_immunity() && !battle.has_infection() {
             let remaining_units = battle.groups.iter().fold(0, |acc, group| {
                 assert!(group.race == Race::Immunity);
-                return acc + group.num_of_units;
+                acc + group.num_of_units
             });
 
             return remaining_units;
         }
     }
 
-    return 0;
+    0
 }
 
 fn main() {
@@ -586,9 +585,9 @@ Infection:
 4485 units each with 2961 hit points (immune to radiation; weak to fire, cold) with an attack that does 12 slashing damage at initiative 4
         "###;
 
-        assert_eq!(part_1(&input.to_string()), 5216);
+        assert_eq!(part_1(input), 5216);
 
         let input_string = include_str!("input.txt");
-        assert_eq!(part_1(&input_string.to_string()), 14799);
+        assert_eq!(part_1(input_string), 14799);
     }
 }

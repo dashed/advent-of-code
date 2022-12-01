@@ -19,7 +19,7 @@ impl Computer {
             .trim()
             .split(',')
             .map(|value| -> i32 {
-                return value.parse().unwrap();
+                value.parse().unwrap()
             })
             .collect();
 

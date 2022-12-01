@@ -20,7 +20,7 @@ fn reading_order(first_coord: &Coordinate, second_coord: &Coordinate) -> Orderin
         return y1.cmp(y2);
     }
 
-    return x1.cmp(x2);
+    x1.cmp(x2)
 }
 
 #[derive(PartialEq, Hash, Eq, Clone, Debug)]
@@ -28,26 +28,26 @@ struct OrderedCoordinate(Coordinate);
 
 impl OrderedCoordinate {
     fn coordinate(&self) -> Coordinate {
-        return self.0.clone();
+        self.0
     }
 }
 
 impl PartialOrd for OrderedCoordinate {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        return Some(reading_order(&self.0, &other.0));
+        Some(reading_order(&self.0, &other.0))
     }
 }
 
 impl Ord for OrderedCoordinate {
     fn cmp(&self, other: &Self) -> Ordering {
-        let ord = self.partial_cmp(other).unwrap();
-        return ord;
+        
+        self.partial_cmp(other).unwrap()
     }
 }
 
 impl Into<OrderedCoordinate> for Coordinate {
     fn into(self) -> OrderedCoordinate {
-        return OrderedCoordinate(self);
+        OrderedCoordinate(self)
     }
 }
 
@@ -93,7 +93,7 @@ impl Track {
             Track::BottomAndLeft | Track::TopAndRight => "\\",
         };
 
-        return result.to_string();
+        result.to_string()
     }
 }
 
@@ -211,7 +211,7 @@ impl Cart {
             Orientation::Right => ">",
         };
 
-        return orientation.to_string();
+        orientation.to_string()
     }
 
     fn tick(&self, map: &Map) -> Cart {
@@ -326,8 +326,8 @@ impl Carts {
     }
 
     fn get_cart(&self, position: &Coordinate) -> Option<&Cart> {
-        let position: Coordinate = position.clone();
-        return self.carts.get(&position.into()).clone();
+        let position: Coordinate = *position;
+        self.carts.get(&position.into())
     }
 
     fn tick(&mut self, map: &Map) -> Option<CrashedCarts> {
@@ -349,7 +349,7 @@ impl Carts {
                     return (prev_carts, next_carts);
                 }
 
-                let next_cart = current_cart.tick(&map);
+                let next_cart = current_cart.tick(map);
 
                 // does the next cart collide with any other cart in the map state?
                 if prev_carts.contains_key(&next_cart.position.into()) {
@@ -366,7 +366,7 @@ impl Carts {
 
                 next_carts.insert(next_cart.position.into(), next_cart);
 
-                return (prev_carts, next_carts);
+                (prev_carts, next_carts)
             },
         );
 
@@ -374,11 +374,11 @@ impl Carts {
 
         self.carts = next_carts;
 
-        if crashed_positions.len() > 0 {
+        if !crashed_positions.is_empty() {
             return Some(crashed_positions);
         }
 
-        return None;
+        None
     }
 }
 
@@ -403,7 +403,7 @@ fn print_map(map: &Map, carts: &Carts, max_x: i32, max_y: i32) {
             }
         }
 
-        println!("");
+        println!();
     }
 }
 
@@ -448,8 +448,8 @@ fn parse_input(input_string: &str) -> (Map, Carts) {
         }
 
         for (position, cell) in cell_map.iter() {
-            let (x, y) = position.clone();
-            let position = position.clone();
+            let (x, y) = *position;
+            let position = *position;
 
             match cell {
                 '|' => {
@@ -565,7 +565,7 @@ fn parse_input(input_string: &str) -> (Map, Carts) {
         map
     };
 
-    return (map, carts);
+    (map, carts)
 }
 
 fn part_1(input_string: &str) -> Coordinate {
@@ -618,7 +618,7 @@ fn part_2(input_string: &str) -> Option<Coordinate> {
                 .carts
                 .iter()
                 .map(|(position, _cart)| -> Coordinate {
-                    return position.coordinate();
+                    position.coordinate()
                 })
                 .into_iter()
                 .next();
@@ -651,7 +651,7 @@ mod tests {
             test
         };
 
-        let mut actual = test.clone();
+        let mut actual = test;
         actual.sort();
 
         assert_eq!(actual, expected);

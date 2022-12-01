@@ -9,7 +9,7 @@ struct Node {
 
 impl Node {
     fn part_2_get_value(&self) -> i32 {
-        if self.children.len() == 0 {
+        if self.children.is_empty() {
             return self.metadata.iter().sum();
         }
 
@@ -31,7 +31,7 @@ impl Node {
             total_value += child_node.unwrap().part_2_get_value();
         }
 
-        return total_value;
+        total_value
     }
 }
 
@@ -64,17 +64,15 @@ fn parse_children<I: Iterator<Item = i32>>(iter: &mut I, num_of_child_nodes: i32
         idx += 1;
     }
 
-    return children;
+    children
 }
 
 fn part_1(input_string: &str) -> i32 {
     let mut iter = input_string
-        .trim()
         .split_whitespace()
         .map(|x| -> i32 {
             return x.trim().parse().unwrap();
-        })
-        .into_iter();
+        });
 
     let root_node = parse_node(&mut iter);
 
@@ -89,21 +87,19 @@ fn part_1(input_string: &str) -> i32 {
         stack.extend(node.children);
     }
 
-    return total;
+    total
 }
 
 fn part_2(input_string: &str) -> i32 {
     let mut iter = input_string
-        .trim()
         .split_whitespace()
         .map(|x| -> i32 {
             return x.trim().parse().unwrap();
-        })
-        .into_iter();
+        });
 
     let root_node = parse_node(&mut iter);
 
-    return root_node.part_2_get_value();
+    root_node.part_2_get_value()
 }
 
 fn main() {

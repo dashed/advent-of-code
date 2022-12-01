@@ -3,12 +3,12 @@ fn main() {
 
     // Part 1
 
-    let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
+    let inputs: Vec<&str> = input_string.split_whitespace().collect();
 
     let entries: Vec<i32> = inputs
         .into_iter()
         .map(|entry| -> i32 {
-            return entry.parse().unwrap();
+            entry.parse().unwrap()
         })
         .collect();
 
@@ -16,11 +16,11 @@ fn main() {
 
     // Part 2
 
-    println!("Part 2: {}", part_2(entries.clone()));
+    println!("Part 2: {}", part_2(entries));
 }
 
 fn part_1(entries: Vec<i32>) -> i32 {
-    return find_candidates_sum(entries, 2020).unwrap();
+    find_candidates_sum(entries, 2020).unwrap()
 }
 
 fn part_2(entries: Vec<i32>) -> i32 {
@@ -61,7 +61,7 @@ fn find_candidates_sum(entries: Vec<i32>, sum: i32) -> Option<i32> {
         }
     }
 
-    return None;
+    None
 }
 
 #[cfg(test)]
@@ -72,16 +72,16 @@ mod tests {
     fn test_day_1() {
         let input_string = include_str!("input.txt");
 
-        let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
+        let inputs: Vec<&str> = input_string.split_whitespace().collect();
 
         let entries: Vec<i32> = inputs
             .into_iter()
             .map(|entry| -> i32 {
-                return entry.parse().unwrap();
+                entry.parse().unwrap()
             })
             .collect();
 
         assert_eq!(part_1(entries.clone()), 864864);
-        assert_eq!(part_2(entries.clone()), 281473080);
+        assert_eq!(part_2(entries), 281473080);
     }
 }

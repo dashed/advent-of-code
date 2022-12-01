@@ -23,7 +23,7 @@ struct PasswordPolicy {
 impl PasswordPolicy {
     fn is_valid_old_policy(&self) -> bool {
         let counts = self.password.matches(self.character).count() as u32;
-        return self.min <= counts && counts <= self.max;
+        self.min <= counts && counts <= self.max
     }
 
     fn is_valid_new_policy(&self) -> bool {
@@ -40,7 +40,7 @@ impl PasswordPolicy {
             return true;
         }
 
-        return false;
+        false
     }
 }
 
@@ -52,7 +52,7 @@ fn parse_input(input_string: &str) -> Vec<PasswordPolicy> {
     for input in inputs {
         let input: Vec<&str> = input.trim().split(':').collect();
 
-        let raw_policy: Vec<&str> = input[0].trim().split_whitespace().collect();
+        let raw_policy: Vec<&str> = input[0].split_whitespace().collect();
         let min_max: Vec<&str> = raw_policy[0].trim().split('-').collect();
         let min: u32 = min_max[0].trim().parse().unwrap();
         let max: u32 = min_max[1].trim().parse().unwrap();
@@ -68,7 +68,7 @@ fn parse_input(input_string: &str) -> Vec<PasswordPolicy> {
         });
     }
 
-    return policies;
+    policies
 }
 
 fn part_1(entries: Vec<PasswordPolicy>) -> i32 {
@@ -80,7 +80,7 @@ fn part_1(entries: Vec<PasswordPolicy>) -> i32 {
         }
     }
 
-    return num_of_valid_passwords;
+    num_of_valid_passwords
 }
 
 fn part_2(entries: Vec<PasswordPolicy>) -> i32 {
@@ -92,7 +92,7 @@ fn part_2(entries: Vec<PasswordPolicy>) -> i32 {
         }
     }
 
-    return num_of_valid_passwords;
+    num_of_valid_passwords
 }
 
 #[cfg(test)]

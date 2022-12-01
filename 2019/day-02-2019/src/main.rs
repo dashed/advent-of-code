@@ -7,7 +7,7 @@ fn run_computer(input_string: String, noun: u32, verb: u32) -> u32 {
         .trim()
         .split(',')
         .map(|opcode| -> u32 {
-            return opcode.parse().unwrap();
+            opcode.parse().unwrap()
         })
         .collect();
 
@@ -50,10 +50,10 @@ fn run_computer(input_string: String, noun: u32, verb: u32) -> u32 {
             }
         }
 
-        current_instruction_pointer = current_instruction_pointer + 4;
+        current_instruction_pointer += 4;
     }
 
-    return inputs[0];
+    inputs[0]
 }
 
 fn part_2(input_string: String) {
@@ -72,20 +72,20 @@ fn part_2(input_string: String) {
                         return Some((noun, *verb));
                     }
 
-                    return None;
+                    None
                 })
                 .find_first(|result: &Option<(u32, u32)>| {
-                    return result.is_some();
+                    result.is_some()
                 });
 
             if result.is_some() {
                 return result.unwrap();
             }
 
-            return None;
+            None
         })
         .find_first(|result: &Option<(u32, u32)>| {
-            return result.is_some();
+            result.is_some()
         })
         .unwrap();
 

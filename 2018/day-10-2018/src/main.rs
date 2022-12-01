@@ -29,7 +29,7 @@ fn parse_input_to_star(input: &str) -> Star {
     let input: Vec<&str> = input.trim().split("velocity").map(|x| x.trim()).collect();
 
     let position: (i64, i64) = {
-        let raw_string = input.get(0).unwrap();
+        let raw_string = input.first().unwrap();
 
         let skip = "position=<".len();
         let end = raw_string.len() - skip - 1;
@@ -42,7 +42,7 @@ fn parse_input_to_star(input: &str) -> Star {
             })
             .collect();
 
-        (*tokens.get(0).unwrap(), *tokens.get(1).unwrap())
+        (*tokens.first().unwrap(), *tokens.get(1).unwrap())
     };
 
     let velocity: (i64, i64) = {
@@ -59,7 +59,7 @@ fn parse_input_to_star(input: &str) -> Star {
             })
             .collect();
 
-        (*tokens.get(0).unwrap(), *tokens.get(1).unwrap())
+        (*tokens.first().unwrap(), *tokens.get(1).unwrap())
     };
 
     Star { position, velocity }
@@ -127,7 +127,7 @@ fn generate_img_buffer(input_string: String) -> image::GrayImage {
         let initial_stars: Vec<Star> = input_string
             .trim()
             .lines()
-            .map(|x| parse_input_to_star(x))
+            .map(parse_input_to_star)
             .collect();
 
         find_smallest_area(initial_stars)
@@ -181,7 +181,7 @@ fn generate_img_buffer(input_string: String) -> image::GrayImage {
         *pixel = image::Luma([color]);
     }
 
-    return img_buffer;
+    img_buffer
 }
 
 fn main() {

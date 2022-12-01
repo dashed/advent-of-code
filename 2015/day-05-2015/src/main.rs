@@ -2,7 +2,7 @@
 
 fn is_vowel(c: char) -> bool {
     // c is one of a, e, i, o, or u
-    return c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u';
+    c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u'
 }
 
 fn is_nice(input: String) -> bool {
@@ -14,7 +14,7 @@ fn is_nice(input: String) -> bool {
 
     for c in chars.clone() {
         if is_vowel(c) {
-            num_of_vowels = num_of_vowels + 1;
+            num_of_vowels += 1;
         }
 
         if num_of_vowels >= 3 {
@@ -55,20 +55,20 @@ fn is_nice(input: String) -> bool {
         }
     }
 
-    return true;
+    true
 }
 
 fn part_1(input_string: String) -> usize {
-    let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
+    let inputs: Vec<&str> = input_string.split_whitespace().collect();
 
     let nice_strings: Vec<&str> = inputs
         .into_iter()
         .filter(|input| {
-            return is_nice(input.to_string());
+            is_nice(input.to_string())
         })
         .collect();
 
-    return nice_strings.len();
+    nice_strings.len()
 }
 
 fn is_nice_part_2(input_string: String) -> bool {
@@ -112,20 +112,20 @@ fn is_nice_part_2(input_string: String) -> bool {
         }
     }
 
-    return has_first_rule;
+    has_first_rule
 }
 
 fn part_2(input_string: String) -> usize {
-    let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
+    let inputs: Vec<&str> = input_string.split_whitespace().collect();
 
     let nice_strings: Vec<&str> = inputs
         .into_iter()
         .filter(|input| {
-            return is_nice_part_2(input.to_string());
+            is_nice_part_2(input.to_string())
         })
         .collect();
 
-    return nice_strings.len();
+    nice_strings.len()
 }
 
 fn main() {

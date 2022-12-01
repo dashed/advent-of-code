@@ -24,24 +24,24 @@ fn general(secret_key: &str, num_of_zeroes: usize) -> i32 {
                     return Some(lowest_positive_num);
                 }
 
-                return None;
+                None
             })
             .fold(
                 || None,
                 |lowest_positive_num: Option<i32>, candidate: Option<i32>| -> Option<i32> {
                     match candidate {
                         None => {
-                            return lowest_positive_num;
+                            lowest_positive_num
                         }
                         Some(maybe_lowest_positive_num) => match lowest_positive_num {
                             None => {
-                                return Some(maybe_lowest_positive_num);
+                                Some(maybe_lowest_positive_num)
                             }
                             Some(lowest_positive_num) => {
                                 if maybe_lowest_positive_num < lowest_positive_num {
                                     return Some(maybe_lowest_positive_num);
                                 }
-                                return Some(lowest_positive_num);
+                                Some(lowest_positive_num)
                             }
                         },
                     }
@@ -52,17 +52,17 @@ fn general(secret_key: &str, num_of_zeroes: usize) -> i32 {
                 |lowest_positive_num: Option<i32>, candidate: Option<i32>| -> Option<i32> {
                     match candidate {
                         None => {
-                            return lowest_positive_num;
+                            lowest_positive_num
                         }
                         Some(maybe_lowest_positive_num) => match lowest_positive_num {
                             None => {
-                                return Some(maybe_lowest_positive_num);
+                                Some(maybe_lowest_positive_num)
                             }
                             Some(lowest_positive_num) => {
                                 if maybe_lowest_positive_num < lowest_positive_num {
                                     return Some(maybe_lowest_positive_num);
                                 }
-                                return Some(lowest_positive_num);
+                                Some(lowest_positive_num)
                             }
                         },
                     }
@@ -70,7 +70,7 @@ fn general(secret_key: &str, num_of_zeroes: usize) -> i32 {
             );
 
         if lowest_positive_num.is_none() {
-            current = current + 1;
+            current += 1;
             continue;
         }
 
@@ -80,11 +80,11 @@ fn general(secret_key: &str, num_of_zeroes: usize) -> i32 {
 }
 
 fn part_1(secret_key: &str) -> i32 {
-    return general(secret_key, 5);
+    general(secret_key, 5)
 }
 
 fn part_2(secret_key: &str) -> i32 {
-    return general(secret_key, 6);
+    general(secret_key, 6)
 }
 
 fn main() {

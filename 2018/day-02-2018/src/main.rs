@@ -36,7 +36,7 @@ fn parse_input(input: &str) -> Parsed {
                 }
             }
 
-            return letter_counter;
+            letter_counter
         },
     );
 
@@ -45,7 +45,9 @@ fn parse_input(input: &str) -> Parsed {
     // - occur exactly three times
     // - or both
 
-    let result = letter_counter.into_iter().fold(
+    
+
+    letter_counter.into_iter().fold(
         Parsed::None, // accumulator
         |current_state, (_letter, num_of_occurrences)| {
             let has_two = num_of_occurrences == 2;
@@ -61,30 +63,28 @@ fn parse_input(input: &str) -> Parsed {
                         return Parsed::HasTwo;
                     }
 
-                    return Parsed::HasThree;
+                    Parsed::HasThree
                 }
                 Parsed::HasTwo => {
                     if has_two {
                         return Parsed::HasTwo;
                     }
 
-                    return Parsed::HasBoth;
+                    Parsed::HasBoth
                 }
                 Parsed::HasThree => {
                     if has_three {
                         return Parsed::HasThree;
                     }
 
-                    return Parsed::HasBoth;
+                    Parsed::HasBoth
                 }
                 Parsed::HasBoth => {
-                    return Parsed::HasBoth;
+                    Parsed::HasBoth
                 }
             }
         },
-    );
-
-    return result;
+    )
 }
 
 fn part_1(inputs: Vec<&str>) {
@@ -98,16 +98,16 @@ fn part_1(inputs: Vec<&str>) {
 
             match parsed_state {
                 Parsed::None => {
-                    return (num_of_two, num_of_three);
+                    (num_of_two, num_of_three)
                 }
                 Parsed::HasBoth => {
-                    return (num_of_two + 1, num_of_three + 1);
+                    (num_of_two + 1, num_of_three + 1)
                 }
                 Parsed::HasTwo => {
-                    return (num_of_two + 1, num_of_three);
+                    (num_of_two + 1, num_of_three)
                 }
                 Parsed::HasThree => {
-                    return (num_of_two, num_of_three + 1);
+                    (num_of_two, num_of_three + 1)
                 }
             }
         },
@@ -142,16 +142,16 @@ fn strings_diff_by_1(this: &str, other: &str) -> bool {
                     if has_diff {
                         return Diff::DiffByOne;
                     }
-                    return Diff::None;
+                    Diff::None
                 }
                 Diff::DiffByOne => {
                     if has_diff {
                         return Diff::DiffByMoreThanOne;
                     }
-                    return Diff::DiffByOne;
+                    Diff::DiffByOne
                 }
                 Diff::DiffByMoreThanOne => {
-                    return Diff::DiffByMoreThanOne;
+                    Diff::DiffByMoreThanOne
                 }
             }
         },
@@ -159,10 +159,10 @@ fn strings_diff_by_1(this: &str, other: &str) -> bool {
 
     match result {
         Diff::DiffByOne => {
-            return true;
+            true
         }
         _ => {
-            return false;
+            false
         }
     }
 }
@@ -172,12 +172,12 @@ fn common_letters(this: &str, other: &str) -> String {
         .chars()
         .zip(other.chars())
         .filter(|&(this_char, other_char): &(char, char)| -> bool {
-            return this_char == other_char;
+            this_char == other_char
         })
         .map(|(this_char, _other_char): (char, char)| this_char)
         .collect();
 
-    return result;
+    result
 }
 
 fn part_2(inputs: Vec<&str>) {

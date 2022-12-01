@@ -76,7 +76,7 @@ impl Route {
         let directions = &self.0;
         let directions: Vec<String> = directions.iter().map(|d| d.to_string()).collect();
 
-        return directions.join("");
+        directions.join("")
     }
 }
 
@@ -100,18 +100,18 @@ impl Branches {
                     .map(|routes| routes.to_string())
                     .collect();
 
-                if rest_str.len() == 0 {
+                if rest_str.is_empty() {
                     return format!("{}|", routes.to_string());
                 }
 
-                return format!("{}|{}|", routes.to_string(), rest_str.join("|"));
+                format!("{}|{}|", routes.to_string(), rest_str.join("|"))
             }
             Branches::CannotSkip(routes, rest_routes) => {
                 let rest_str: Vec<String> = rest_routes
                     .iter()
                     .map(|routes| routes.to_string())
                     .collect();
-                return format!("{}|{}", routes.to_string(), rest_str.join("|"));
+                format!("{}|{}", routes.to_string(), rest_str.join("|"))
             }
         }
     }
@@ -123,7 +123,7 @@ struct BranchGroup(Branches);
 impl BranchGroup {
     fn to_string(&self) -> String {
         let branches = &self.0;
-        return format!("({})", branches.to_string());
+        format!("({})", branches.to_string())
     }
 }
 
@@ -144,7 +144,7 @@ impl Routes {
                 } else {
                     routes.clone().unwrap().to_string()
                 };
-                return format!("{}{}", route.to_string(), rest);
+                format!("{}{}", route.to_string(), rest)
             }
             Routes::Branch(branch_group, routes) => {
                 let rest: String = if routes.is_none() {
@@ -152,7 +152,7 @@ impl Routes {
                 } else {
                     routes.clone().unwrap().to_string()
                 };
-                return format!("{}{}", branch_group.to_string(), rest);
+                format!("{}{}", branch_group.to_string(), rest)
             }
         }
     }
@@ -164,7 +164,7 @@ struct Directions(Routes);
 impl Directions {
     #[allow(dead_code)]
     fn to_string(&self) -> String {
-        return format!("^{}$", self.0.to_string());
+        format!("^{}$", self.0.to_string())
     }
 }
 
@@ -182,13 +182,13 @@ type ParseResult<T> = Option<(T, TokenPosition)>;
 fn parse_start(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()> {
     match tokens.get(start_at) {
         None => {
-            return None;
+            None
         }
         Some(token) => {
             if token == &Tokens::Start {
                 return Some(((), start_at + 1));
             }
-            return None;
+            None
         }
     }
 }
@@ -196,13 +196,13 @@ fn parse_start(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()>
 fn parse_end(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()> {
     match tokens.get(start_at) {
         None => {
-            return None;
+            None
         }
         Some(token) => {
             if token == &Tokens::End {
                 return Some(((), start_at + 1));
             }
-            return None;
+            None
         }
     }
 }
@@ -227,7 +227,7 @@ fn parse_route(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Rou
         }
     }
 
-    if route.len() == 0 {
+    if route.is_empty() {
         // no route was parsed
         return None;
     }
@@ -235,7 +235,7 @@ fn parse_route(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Rou
     let next_position = start_at + route.len();
     let result = Route(route);
 
-    return Some((result, next_position));
+    Some((result, next_position))
 }
 
 fn parse_branches(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Branches> {
@@ -329,7 +329,7 @@ fn parse_branches(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<
         Branches::CannotSkip(starting_routes, rest_routes)
     };
 
-    return Some((result, current_position));
+    Some((result, current_position))
 }
 
 fn parse_branch_group(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<BranchGroup> {
@@ -377,7 +377,7 @@ fn parse_branch_group(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseRes
     }
 
     let result = (BranchGroup(branches), current_position);
-    return Some(result);
+    Some(result)
 }
 
 fn parse_routes(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Routes> {
@@ -397,16 +397,16 @@ fn parse_routes(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Ro
 
     match parse_route(tokens, start_at) {
         None => {
-            return None;
+            None
         }
         Some((starting_route, next_position)) => match parse_routes(tokens, next_position) {
             None => {
                 let result = Routes::Route(starting_route, Box::new(None));
-                return Some((result, next_position));
+                Some((result, next_position))
             }
             Some((routes, next_position)) => {
                 let result = Routes::Route(starting_route, Box::new(Some(routes)));
-                return Some((result, next_position));
+                Some((result, next_position))
             }
         },
     }
@@ -448,7 +448,7 @@ fn parse_input(input_string: &str) -> Directions {
         Some((_, _next_position)) => {}
     }
 
-    return Directions(routes);
+    Directions(routes)
 }
 
 type Distance = usize;
@@ -470,7 +470,7 @@ impl OpenDirections {
             OpenDirections::East => "E",
         };
 
-        return result.to_string();
+        result.to_string()
     }
 
     fn from_char(d: char) -> Self {
@@ -498,22 +498,22 @@ trait Transitions {
 impl Transitions for Coordinate {
     fn north(&self) -> Coordinate {
         let (x, y) = self;
-        return (*x, y - 1);
+        (*x, y - 1)
     }
 
     fn south(&self) -> Coordinate {
         let (x, y) = self;
-        return (*x, y + 1);
+        (*x, y + 1)
     }
 
     fn west(&self) -> Coordinate {
         let (x, y) = self;
-        return (x - 1, *y);
+        (x - 1, *y)
     }
 
     fn east(&self) -> Coordinate {
         let (x, y) = self;
-        return (x + 1, *y);
+        (x + 1, *y)
     }
 }
 
@@ -565,13 +565,13 @@ impl Map {
             }
         }
 
-        return new_position;
+        new_position
     }
 
     fn parse_route(&mut self, route: Route, current_position: Coordinate) -> Coordinate {
         let Route(directions) = route;
 
-        if directions.len() == 0 {
+        if directions.is_empty() {
             return current_position;
         }
 
@@ -583,7 +583,7 @@ impl Map {
             new_position = self.visit_room(direction, new_position);
         }
 
-        return new_position;
+        new_position
     }
 
     fn generate_positions(
@@ -599,10 +599,10 @@ impl Map {
                 .fold(HashSet::new(), |mut acc, routes_choice| {
                     let new_positions = self.parse_routes(routes_choice, current_position);
                     acc.extend(new_positions);
-                    return acc;
+                    acc
                 });
 
-        return new_positions;
+        new_positions
     }
 
     fn parse_branch_group(
@@ -636,17 +636,17 @@ impl Map {
 
         match more_routes {
             None => {
-                return new_positions;
+                new_positions
             }
             Some(more_routes) => {
-                return new_positions.into_iter().fold(
+                new_positions.into_iter().fold(
                     HashSet::new(),
                     |mut acc, position: Coordinate| {
                         let new_positions = self.parse_routes(more_routes.clone(), position);
                         acc.extend(new_positions);
-                        return acc;
+                        acc
                     },
-                );
+                )
             }
         }
     }
@@ -663,15 +663,15 @@ impl Map {
                     None => {
                         let mut set = HashSet::new();
                         set.insert(new_position);
-                        return set;
+                        set
                     }
                     Some(more_routes) => {
-                        return self.parse_routes(more_routes, new_position);
+                        self.parse_routes(more_routes, new_position)
                     }
                 }
             }
             Routes::Branch(branch_group, more_routes) => {
-                return self.parse_branch_group(branch_group, *more_routes, current_position);
+                self.parse_branch_group(branch_group, *more_routes, current_position)
             }
         }
     }
@@ -701,7 +701,7 @@ fn main() {
         .values()
         .into_iter()
         .filter(|x| {
-            return *x >= &1000;
+            *x >= &1000
         })
         .count();
 

@@ -13,7 +13,7 @@ fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> Distance {
     let (a, b, e, g) = start;
     let (c, d, f, h) = end;
 
-    return (a - c).abs() + (b - d).abs() + (e - f).abs() + (g - h).abs();
+    (a - c).abs() + (b - d).abs() + (e - f).abs() + (g - h).abs()
 }
 
 type Coordinate = (i32, i32, i32, i32);
@@ -28,14 +28,14 @@ impl Constellation {
         let mut points = HashSet::new();
         points.insert(point);
 
-        return Constellation { points };
+        Constellation { points }
     }
 
     fn merge(self, other: Self) -> Self {
-        let mut new_points = self.points.clone();
+        let mut new_points = self.points;
         new_points.extend(other.points);
 
-        return Constellation { points: new_points };
+        Constellation { points: new_points }
     }
 
     fn can_merge(&mut self, other: &Self) -> bool {
@@ -45,7 +45,7 @@ impl Constellation {
             }
         }
 
-        return false;
+        false
     }
 
     fn can_add(&self, new_point: Coordinate) -> bool {
@@ -55,7 +55,7 @@ impl Constellation {
                 return true;
             }
         }
-        return false;
+        false
     }
 
     fn add(&mut self, point: Coordinate) {
@@ -70,7 +70,7 @@ fn parse_input(input_string: &str) -> Vec<Coordinate> {
         let input = input.trim();
 
         let coords: Vec<i32> = input
-            .split(",")
+            .split(',')
             .map(|x| x.trim())
             .map(|x| x.parse::<i32>().unwrap())
             .collect();
@@ -78,7 +78,7 @@ fn parse_input(input_string: &str) -> Vec<Coordinate> {
         output.push((coords[0], coords[1], coords[2], coords[3]));
     }
 
-    return output;
+    output
 }
 
 fn part_1(input_string: &str) -> usize {
@@ -109,7 +109,7 @@ fn part_1(input_string: &str) -> usize {
             .fold(vec![], |mut acc, mut constellation| {
                 // find a constellation to join
                 for potential_constellation in acc.iter_mut() {
-                    if constellation.can_merge(&potential_constellation) {
+                    if constellation.can_merge(potential_constellation) {
                         let new_constellation =
                             constellation.merge(potential_constellation.clone());
                         *potential_constellation = new_constellation;
@@ -120,7 +120,7 @@ fn part_1(input_string: &str) -> usize {
                 // invariant: no constellation found
                 acc.push(constellation);
 
-                return acc;
+                acc
             });
 
         let num_of_constellations_after = constellations.len();
@@ -130,7 +130,7 @@ fn part_1(input_string: &str) -> usize {
         }
     }
 
-    return constellations.len();
+    constellations.len()
 }
 
 fn main() {

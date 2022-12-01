@@ -44,7 +44,7 @@ impl Vertices {
     }
 
     fn len(&self) -> usize {
-        return self.set.len();
+        self.set.len()
     }
 
     fn pop(&mut self) -> Option<Vertex> {
@@ -54,17 +54,17 @@ impl Vertices {
             None => None,
             Some(popped) => {
                 self.set.remove(&popped);
-                return Some(popped);
+                Some(popped)
             }
         }
     }
 
     fn get_vertices(&self) -> HashSet<Vertex> {
-        return self.set.clone();
+        self.set.clone()
     }
 
     fn has_vertex(&self, vertex: &Vertex) -> bool {
-        return self.set.contains(vertex);
+        self.set.contains(vertex)
     }
 
     fn add_vertex(&mut self, vertex: Vertex) {
@@ -188,11 +188,11 @@ fn part_1(input_string: &str) -> String {
 
     let work_order: String = work_order.join("");
 
-    return work_order;
+    work_order
 }
 
 fn parse_to_work_load(x: char, base_workload: i32) -> i32 {
-    return x as i32 - 65 + 1 + base_workload;
+    x as i32 - 65 + 1 + base_workload
 }
 
 type RemainingWork = i32;
@@ -215,11 +215,11 @@ impl WorkTask {
     }
 
     fn remaining_work(&self) -> RemainingWork {
-        return self.1;
+        self.1
     }
 
     fn progress_work(&mut self, progress_work: RemainingWork) {
-        self.1 = self.1 - progress_work;
+        self.1 -= progress_work;
     }
 }
 
@@ -299,7 +299,7 @@ fn part_2(input_string: &str, base_workload: i32, max_worker_limit: i32) -> i32 
     let mut work_in_progress: BinaryHeap<WorkTask> = BinaryHeap::new();
 
     loop {
-        if remaining_work.len() == 0 && work_queue.len() == 0 {
+        if remaining_work.is_empty() && work_queue.len() == 0 {
             break;
         }
 
@@ -389,7 +389,7 @@ fn part_2(input_string: &str, base_workload: i32, max_worker_limit: i32) -> i32 
         }
     }
 
-    return duration;
+    duration
 }
 
 fn main() {

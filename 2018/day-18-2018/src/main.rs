@@ -22,22 +22,22 @@ trait Transitions {
 impl Transitions for Coordinate {
     fn up(&self) -> Coordinate {
         let (x, y) = self;
-        return (*x, y - 1);
+        (*x, y - 1)
     }
 
     fn down(&self) -> Coordinate {
         let (x, y) = self;
-        return (*x, y + 1);
+        (*x, y + 1)
     }
 
     fn left(&self) -> Coordinate {
         let (x, y) = self;
-        return (x - 1, *y);
+        (x - 1, *y)
     }
 
     fn right(&self) -> Coordinate {
         let (x, y) = self;
-        return (x + 1, *y);
+        (x + 1, *y)
     }
 }
 
@@ -63,7 +63,7 @@ impl Acre {
                     return Acre::Tree;
                 }
 
-                return self.clone();
+                self.clone()
             }
             Acre::Tree => {
                 // An acre filled with trees will become a lumberyard if three or more
@@ -76,7 +76,7 @@ impl Acre {
                 if num_of_adjacent_lumberyards >= 3 {
                     return Acre::Lumberyard;
                 }
-                return self.clone();
+                self.clone()
             }
             Acre::Lumberyard => {
                 // An acre containing a lumberyard will remain a lumberyard if it was adjacent
@@ -96,7 +96,7 @@ impl Acre {
                     return self.clone();
                 }
 
-                return Acre::Ground;
+                Acre::Ground
             }
         }
     }
@@ -164,13 +164,13 @@ impl Area {
                     }
                     Some(acre) => match acre {
                         Acre::Ground => {
-                            row_string.push_str(".");
+                            row_string.push('.');
                         }
                         Acre::Tree => {
-                            row_string.push_str("|");
+                            row_string.push('|');
                         }
                         Acre::Lumberyard => {
-                            row_string.push_str("#");
+                            row_string.push('#');
                         }
                     },
                 }
@@ -179,7 +179,7 @@ impl Area {
             map_string.push(row_string);
         }
 
-        return map_string.join("\n");
+        map_string.join("\n")
     }
 
     fn insert(&mut self, position: Coordinate, acre: char) {
@@ -215,7 +215,7 @@ impl Area {
         let next_area: CollectionArea = prev_area
             .par_iter()
             .map(|(coord, acre)| {
-                let adjacent = get_adjacent(&prev_area, &coord);
+                let adjacent = get_adjacent(prev_area, coord);
 
                 // Changes happen across all acres simultaneously,
                 // each of them using the state of all acres at the beginning of the minute
@@ -225,7 +225,7 @@ impl Area {
                 // ✨ magic
                 let next_acre = acre.next(adjacent);
 
-                return (coord.clone(), next_acre);
+                (*coord, next_acre)
             })
             .collect();
 
@@ -253,7 +253,7 @@ fn get_adjacent(area: &CollectionArea, position: &Coordinate) -> Vec<Acre> {
         .map(|s| s.unwrap().clone())
         .collect();
 
-    return result;
+    result
 }
 
 fn generate_area(input_string: &str) -> Area {
@@ -268,7 +268,7 @@ fn generate_area(input_string: &str) -> Area {
         }
     }
 
-    return area;
+    area
 }
 
 fn part_1(input_string: &str, ticks: i32) -> usize {
@@ -278,7 +278,7 @@ fn part_1(input_string: &str, ticks: i32) -> usize {
         area.tick();
     }
 
-    return area.num_of_lumberyards() * area.num_of_trees();
+    area.num_of_lumberyards() * area.num_of_trees()
 }
 
 fn part_2(input_string: &str) -> usize {
@@ -322,7 +322,7 @@ fn part_2(input_string: &str) -> usize {
         area.tick();
     }
 
-    return area.num_of_lumberyards() * area.num_of_trees();
+    area.num_of_lumberyards() * area.num_of_trees()
 }
 
 fn main() {

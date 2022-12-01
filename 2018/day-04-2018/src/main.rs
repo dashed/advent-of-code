@@ -47,7 +47,7 @@ struct Guard {
 impl Guard {
     fn new(id: GuardID) -> Guard {
         Guard {
-            id: id,
+            id,
             minutes_slept: 0,
             occurences_counter: HashMap::new(),
         }
@@ -75,18 +75,18 @@ impl Guard {
             None,
             |acc: Option<(Minute, Occurences)>, (minute, occurences_count)| match acc {
                 None => {
-                    return Some((*minute, *occurences_count));
+                    Some((*minute, *occurences_count))
                 }
                 Some((_prev_minute, prev_occurences_count)) => {
                     if occurences_count > &prev_occurences_count {
                         return Some((*minute, *occurences_count));
                     }
-                    return acc;
+                    acc
                 }
             },
         );
 
-        return result;
+        result
     }
 }
 
@@ -124,7 +124,7 @@ fn parse_record(input: &str) -> Record {
 
     Record {
         date_time: date_string,
-        state: state,
+        state,
     }
 }
 
@@ -153,9 +153,9 @@ fn main() {
 
         match record.state {
             GuardState::BeginsShift(guard_id) => {
-                current_guard = Some(guard_id.clone());
+                current_guard = Some(guard_id);
                 guard_sleep_tracker
-                    .entry(guard_id.clone())
+                    .entry(guard_id)
                     .or_insert(Guard::new(guard_id));
             }
             GuardState::Sleeps(minute) => {
@@ -169,7 +169,7 @@ fn main() {
 
                 // track minutes slept for current guard
 
-                let guard_id = current_guard.clone().unwrap();
+                let guard_id = current_guard.unwrap();
 
                 assert!(guard_sleep_tracker.contains_key(&guard_id));
 
@@ -190,14 +190,14 @@ fn main() {
                 .iter()
                 .fold(None, |acc: Option<&Guard>, (_guard_id, guard)| match acc {
                     None => {
-                        return Some(guard);
+                        Some(guard)
                     }
                     Some(prev_guard) => {
                         if guard.minutes_slept > prev_guard.minutes_slept {
                             return Some(guard);
                         }
 
-                        return acc;
+                        acc
                     }
                 });
 
@@ -236,25 +236,18 @@ fn main() {
         let result = guard_sleep_tracker.iter().fold(
             None,
             |acc: Option<(&Guard, Minute, Occurences)>, (_guard_id, guard)| match acc {
-                None => match guard.get_minute_slept_most_at() {
-                    None => {
-                        return None;
-                    }
-                    Some((minute, occurences_count)) => {
-                        return Some((guard, minute, occurences_count));
-                    }
-                },
+                None => guard.get_minute_slept_most_at().map(|(minute, occurences_count)| (guard, minute, occurences_count)),
                 Some((_prev_guard, _best_minute, best_occurences_count)) => {
                     match guard.get_minute_slept_most_at() {
                         None => {
-                            return acc;
+                            acc
                         }
                         Some((minute, occurences_count)) => {
                             if occurences_count > best_occurences_count {
                                 return Some((guard, minute, occurences_count));
                             }
 
-                            return acc;
+                            acc
                         }
                     }
                 }

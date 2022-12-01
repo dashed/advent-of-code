@@ -94,14 +94,14 @@ fn compare_vectors(
         }
     }
 
-    return (start_index, true);
+    (start_index, true)
 }
 
 fn part_2(part_1_input: String) -> usize {
     let needle = part_1_input
         .chars()
         .map(|x| -> i32 {
-            return x.to_string().parse().unwrap();
+            x.to_string().parse().unwrap()
         })
         .collect();
 

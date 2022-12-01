@@ -18,22 +18,22 @@ trait Transitions {
 impl Transitions for Coordinate {
     fn up(&self) -> Coordinate {
         let (x, y) = self;
-        return (*x, y + 1);
+        (*x, y + 1)
     }
 
     fn down(&self) -> Coordinate {
         let (x, y) = self;
-        return (*x, y - 1);
+        (*x, y - 1)
     }
 
     fn left(&self) -> Coordinate {
         let (x, y) = self;
-        return (x - 1, *y);
+        (x - 1, *y)
     }
 
     fn right(&self) -> Coordinate {
         let (x, y) = self;
-        return (x + 1, *y);
+        (x + 1, *y)
     }
 }
 

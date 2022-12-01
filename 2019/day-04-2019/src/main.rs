@@ -12,7 +12,7 @@ fn is_valid_password(password: String) -> bool {
     let chars: Vec<u8> = password
         .chars()
         .map(|digit| -> u8 {
-            return digit.to_digit(10).unwrap() as u8;
+            digit.to_digit(10).unwrap() as u8
         })
         .collect();
 
@@ -27,10 +27,8 @@ fn is_valid_password(password: String) -> bool {
             }
             Some(last_digit) => {
                 // Two adjacent digits are the same
-                if !equal_adjacent_digits {
-                    if digit == last_digit {
-                        equal_adjacent_digits = true;
-                    }
+                if !equal_adjacent_digits && digit == last_digit {
+                    equal_adjacent_digits = true;
                 }
 
                 // println!("{} <= {} {}", last_digit, digit, digit >= last_digit);
@@ -60,7 +58,7 @@ fn is_valid_password_part_2(password: String) -> bool {
     let chars: Vec<u8> = password
         .chars()
         .map(|digit| -> u8 {
-            return digit.to_digit(10).unwrap() as u8;
+            digit.to_digit(10).unwrap() as u8
         })
         .collect();
 
@@ -104,7 +102,7 @@ fn is_valid_password_part_2(password: String) -> bool {
         }
     }
 
-    return false;
+    false
 }
 
 fn main() {
@@ -116,7 +114,7 @@ fn main() {
             if is_valid_password(format!("{}", current_pass)) {
                 return 1;
             }
-            return 0;
+            0
         })
         .sum();
 
@@ -129,7 +127,7 @@ fn main() {
             if is_valid_password_part_2(format!("{}", current_pass)) {
                 return 1;
             }
-            return 0;
+            0
         })
         .sum();
 

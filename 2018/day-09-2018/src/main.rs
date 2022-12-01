@@ -84,10 +84,10 @@ impl GameState {
 
 fn part_1(input_string: &str) -> Score {
     let (num_of_players, nth_marble): (usize, i32) = {
-        let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
+        let inputs: Vec<&str> = input_string.split_whitespace().collect();
 
         (
-            inputs.get(0).unwrap().parse().unwrap(),
+            inputs.first().unwrap().parse().unwrap(),
             inputs.get(6).unwrap().parse().unwrap(),
         )
     };
@@ -99,15 +99,15 @@ fn part_1(input_string: &str) -> Score {
         game_state.add_marble();
     }
 
-    return game_state.max_score();
+    game_state.max_score()
 }
 
 fn part_2(input_string: &str) -> Score {
     let (num_of_players, nth_marble): (usize, i32) = {
-        let inputs: Vec<&str> = input_string.trim().split_whitespace().collect();
+        let inputs: Vec<&str> = input_string.split_whitespace().collect();
 
         (
-            inputs.get(0).unwrap().parse().unwrap(),
+            inputs.first().unwrap().parse().unwrap(),
             inputs.get(6).unwrap().parse().unwrap(),
         )
     };
@@ -119,7 +119,7 @@ fn part_2(input_string: &str) -> Score {
         game_state.add_marble();
     }
 
-    return game_state.max_score();
+    game_state.max_score()
 }
 
 fn main() {

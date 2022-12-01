@@ -15,11 +15,11 @@ type State = BTreeMap<PotIndex, PotState>;
 type Rules = HashMap<InitialRule, Rule>;
 
 fn has_plant(x: char) -> bool {
-    return x == '#';
+    x == '#'
 }
 
 fn is_valid_plant_state(x: char) -> bool {
-    return x == '.' || x == '#';
+    x == '.' || x == '#'
 }
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
@@ -36,7 +36,7 @@ impl PotState {
             return PotState::HasPlant;
         }
 
-        return PotState::NoPlant;
+        PotState::NoPlant
     }
 
     fn has_plant(&self) -> bool {
@@ -66,7 +66,7 @@ struct Rule {
 
 impl Rule {
     fn from_string(input: &str) -> Rule {
-        let mut iter = input.trim().split("=>").into_iter();
+        let mut iter = input.trim().split("=>");
 
         let initial_rule: Vec<PotState> = iter
             .next()
@@ -102,7 +102,7 @@ impl Rule {
         };
 
         Rule {
-            initial_rule: initial_rule,
+            initial_rule,
 
             next: next_state,
         }
@@ -160,7 +160,7 @@ fn generate_next_state(mut state: State, rules: &Rules) -> State {
         }
     }
 
-    return next_state;
+    next_state
 }
 
 fn state_to_string(state: &State) -> String {
@@ -177,7 +177,7 @@ fn state_to_string(state: &State) -> String {
             }
         })
         .collect();
-    return state_string;
+    state_string
 }
 
 fn state_to_sum(state: &State) -> i32 {
@@ -209,7 +209,7 @@ fn main() {
         let initial_state_iter = initial_state
             .chars()
             .filter(|x| {
-                return is_valid_plant_state(*x);
+                is_valid_plant_state(*x)
             })
             .enumerate();
 
