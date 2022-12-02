@@ -660,15 +660,15 @@ impl Unit {
     }
 
     fn to_health_string(&self) -> String {
-        return format!("{}({})", self.to_string(), self.hit_points);
+        format!("{}({})", self.to_string(), self.hit_points)
     }
 
     fn is_alive(&self) -> bool {
-        return self.hit_points > 0;
+        self.hit_points > 0
     }
 
     fn is_dead(&self) -> bool {
-        return self.hit_points <= 0;
+        self.hit_points <= 0
     }
 
     fn is_elf(&self) -> bool {
@@ -769,7 +769,7 @@ fn get_reachable_path(map: &Map, start: Coordinate, end: Coordinate) -> Option<V
         }
     }
 
-    return None;
+    None
 }
 
 // combat begins in a series of rounds
@@ -794,7 +794,7 @@ fn parse_input(input_string: &str) -> Map {
         }
     }
 
-    return map;
+    map
 }
 
 fn process_map(mut map: Map) -> i32 {
@@ -815,22 +815,18 @@ fn process_map(mut map: Map) -> i32 {
         .units
         .iter()
         .map(|(_key, unit)| unit)
-        .fold(0, |acc, unit| {
-            return acc + unit.hit_points;
-        });
+        .fold(0, |acc, unit| acc + unit.hit_points);
 
     println!("{}", map.to_string());
 
     println!("num_of_rounds_completed: {}", num_of_rounds_completed);
     println!("sum_hit_points: {}", sum_hit_points);
 
-    let result = num_of_rounds_completed * sum_hit_points;
-
-    return result;
+    num_of_rounds_completed * sum_hit_points
 }
 
 fn part_1(input_string: &str) -> i32 {
-    return process_map(parse_input(input_string));
+    process_map(parse_input(input_string))
 }
 
 fn part_2(input_string: &str) -> i32 {
@@ -869,9 +865,7 @@ fn part_2(input_string: &str) -> i32 {
             .units
             .iter()
             .map(|(_key, unit)| unit)
-            .fold(0, |acc, unit| {
-                return acc + unit.hit_points;
-            });
+            .fold(0, |acc, unit| acc + unit.hit_points);
 
         println!("{}", map.to_string());
 
@@ -883,7 +877,7 @@ fn part_2(input_string: &str) -> i32 {
         return result;
     }
 
-    return 0;
+    0
 }
 
 fn main() {
