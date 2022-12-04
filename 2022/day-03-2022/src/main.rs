@@ -2,6 +2,7 @@
 use std::collections::HashSet;
 
 struct Rucksack {
+    all: Vec<char>,
     first_compartment: Vec<char>,
     second_compartment: Vec<char>,
 }
@@ -23,6 +24,7 @@ impl Rucksack {
         };
 
         Rucksack {
+            all: chars,
             first_compartment,
             second_compartment,
         }
@@ -37,20 +39,56 @@ impl Rucksack {
     }
 }
 
-fn get_sum_of_priorities(inputs: Vec<String>) -> u64 {
+fn get_priority(x: char) -> u64 {
+    if x.is_ascii_lowercase() {
+        return (x as u64) - 96;
+    };
+
+    (x as u64) - 38
+}
+
+fn get_sum_of_priorities_part_1(inputs: Vec<String>) -> u64 {
     inputs
         .iter()
         .map(|input| -> Rucksack { Rucksack::new(input.trim().to_string()) })
         .map(|x: Rucksack| -> u64 {
             let common_item: char = x.get_common_item();
 
-            if common_item.is_ascii_lowercase() {
-                (common_item as u64) - 96
-            } else {
-                (common_item as u64) - 38
-            }
+            get_priority(common_item)
         })
         .sum()
+}
+
+fn get_sum_of_priorities_part_2(inputs: Vec<String>) -> u64 {
+    let mut iter = inputs
+        .iter()
+        .map(|input| -> Rucksack { Rucksack::new(input.trim().to_string()) })
+        .peekable();
+
+    let mut sum_of_priorities = 0;
+    loop {
+        if iter.peek().is_none() {
+            break;
+        }
+        let first = iter.next().unwrap();
+        let second = iter.next().unwrap();
+        let third = iter.next().unwrap();
+
+        let first: HashSet<&char> = HashSet::from_iter(first.all.iter());
+        let second: HashSet<&char> = HashSet::from_iter(second.all.iter());
+        let third: HashSet<&char> = HashSet::from_iter(third.all.iter());
+
+        let first_and_second: HashSet<&char> = first.intersection(&second).copied().collect();
+
+        let common_item: HashSet<&char> = first_and_second.intersection(&third).copied().collect();
+
+        assert!(common_item.len() == 1);
+        let common_item: char = *common_item.into_iter().next().unwrap();
+
+        sum_of_priorities += get_priority(common_item);
+    }
+
+    sum_of_priorities
 }
 
 fn main() {
@@ -61,11 +99,11 @@ fn main() {
         .map(|x| -> String { x.to_string() })
         .collect();
 
-    let sum_of_priorities = get_sum_of_priorities(inputs);
+    let sum_of_priorities = get_sum_of_priorities_part_1(inputs.clone());
 
     println!("Part 1: {}", sum_of_priorities);
-    // guesses:
-    // 28059
+
+    println!("Part 1: {}", get_sum_of_priorities_part_2(inputs));
 }
 
 #[cfg(test)]
@@ -89,8 +127,10 @@ CrZsJsPPZsGzwwsLwLmpwMDw
             .map(|x| -> String { x.to_string() })
             .collect();
 
-        let sum_of_priorities = get_sum_of_priorities(inputs);
+        let sum_of_priorities = get_sum_of_priorities_part_1(inputs.clone());
 
         assert_eq!(sum_of_priorities, 157);
+
+        assert_eq!(get_sum_of_priorities_part_2(inputs), 70);
     }
 }
