@@ -166,11 +166,11 @@ impl Map {
                             MapState::Wall => {
                                 // invariant: a unit cannot be within a wall
                                 assert!(!self.units.contains_key(&position));
-                                row_string.push_str("#");
+                                row_string.push('#');
                             }
                             MapState::Cavern => match self.units.get(&position) {
                                 None => {
-                                    row_string.push_str(".");
+                                    row_string.push('.');
                                 }
                                 Some(unit) => {
                                     row_string.push_str(&unit.to_string());
@@ -672,17 +672,11 @@ impl Unit {
     }
 
     fn is_elf(&self) -> bool {
-        match self.unit_type {
-            UnitType::Elf => true,
-            _ => false,
-        }
+        matches!(self.unit_type, UnitType::Elf)
     }
 
     fn is_goblin(&self) -> bool {
-        match self.unit_type {
-            UnitType::Goblin => true,
-            _ => false,
-        }
+        matches!(self.unit_type, UnitType::Goblin)
     }
 }
 
