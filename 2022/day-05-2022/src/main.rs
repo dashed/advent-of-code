@@ -8,7 +8,6 @@ struct Move {
 
 impl Move {
     fn new(input: String) -> Self {
-        // move 2 from 8 to 4
         let inputs: Vec<String> = input
             .trim()
             .split("from")
