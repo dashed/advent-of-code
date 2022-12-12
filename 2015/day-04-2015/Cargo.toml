@@ -8,4 +8,4 @@ edition = "2018"
 
 [dependencies]
 md5 = "0.7.0"
-rayon = "1.6.0"
+rayon = "1.6.1"
