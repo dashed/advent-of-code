@@ -125,30 +125,6 @@ impl Schematic {
         false
     }
 
-    fn is_adjacent_to_digit(&self, coordinate: &Coordinate) -> bool {
-        let coordinates_to_check = [
-            coordinate.north(),
-            coordinate.south(),
-            coordinate.west(),
-            coordinate.east(),
-            coordinate.north().west(),
-            coordinate.north().east(),
-            coordinate.south().west(),
-            coordinate.south().east(),
-        ];
-
-        let coordinates_to_check = coordinates_to_check
-            .iter()
-            .filter(|c| c.within_bounds(self.max_x_coord, self.max_y_coord));
-
-        for coordinate_to_check in coordinates_to_check {
-            if let MapState::Digit(_) = self.get(coordinate_to_check) {
-                return true;
-            }
-        }
-        false
-    }
-
     fn is_valid_coordinate(&self, coordinate: &Coordinate) -> bool {
         coordinate.within_bounds(self.max_x_coord, self.max_y_coord)
     }
