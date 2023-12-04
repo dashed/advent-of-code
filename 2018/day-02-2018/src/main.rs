@@ -143,10 +143,7 @@ fn strings_diff_by_1(this: &str, other: &str) -> bool {
         },
     );
 
-    match result {
-        Diff::DiffByOne => true,
-        _ => false,
-    }
+    matches!(result, Diff::DiffByOne)
 }
 
 fn common_letters(this: &str, other: &str) -> String {
