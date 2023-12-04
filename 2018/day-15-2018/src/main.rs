@@ -835,7 +835,7 @@ fn part_2(input_string: &str) -> i32 {
     'attack_power_loop: for elf_attack_power in powers {
         let mut map = original_map.clone();
 
-        map.with_elf_attack_power(elf_attack_power as i32);
+        map.with_elf_attack_power(elf_attack_power);
 
         let mut num_of_rounds_completed = 0;
         loop {
@@ -857,8 +857,7 @@ fn part_2(input_string: &str) -> i32 {
 
         let sum_hit_points: i32 = map
             .units
-            .iter()
-            .map(|(_key, unit)| unit)
+            .values()
             .fold(0, |acc, unit| acc + unit.hit_points);
 
         println!("{}", map.to_string());
