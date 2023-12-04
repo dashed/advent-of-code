@@ -69,20 +69,18 @@ impl Schematic {
         let mut terrain = Terrain::new();
 
         for (y_coord, line) in inputs.iter().enumerate() {
-            for (x_coord, character) in line.chars().enumerate() {
+            for (x_coord, character) in line.trim().chars().enumerate() {
                 let coordinate = (x_coord as i32, y_coord as i32);
                 match character {
                     '.' => {
                         terrain.insert(coordinate, MapState::Empty);
                     }
-                    '#' => {
-                        terrain.insert(coordinate, MapState::Symbol('#'));
-                    }
                     _ => {
-                        terrain.insert(
-                            coordinate,
-                            MapState::Digit(character.to_digit(10).unwrap() as i32),
-                        );
+                        if let Some(digit) = character.to_digit(10) {
+                            terrain.insert(coordinate, MapState::Digit(digit as i32));
+                        } else {
+                            terrain.insert(coordinate, MapState::Symbol(character));
+                        }
                     }
                 }
             }
@@ -148,8 +146,14 @@ fn part_1(input_string: &str) -> i32 {
             let mut digits_buffer: Vec<i32> = vec![];
 
             match map.get(&coordinate) {
-                MapState::Empty => break,
-                MapState::Symbol(_) => break,
+                MapState::Empty => {
+                    x_coord += 1;
+                    continue;
+                }
+                MapState::Symbol(_) => {
+                    x_coord += 1;
+                    continue;
+                }
                 MapState::Digit(digit) => {
                     if map.is_adjacent_to_symbol(&coordinate) {
                         is_adjacent_to_symbol = true;
@@ -174,24 +178,24 @@ fn part_1(input_string: &str) -> i32 {
                             _ => break,
                         }
                     }
+
+                    if is_adjacent_to_symbol {
+                        let digits = digits_buffer
+                            .into_iter()
+                            .map(|d| d.to_string())
+                            .collect::<Vec<String>>()
+                            .join("");
+                        let number = digits.parse::<i32>().unwrap();
+                        valid_numbers.push(number);
+                    }
+
+                    continue;
                 }
             }
-
-            if is_adjacent_to_symbol {
-                let digits = digits_buffer
-                    .into_iter()
-                    .map(|d| d.to_string())
-                    .collect::<Vec<String>>()
-                    .join("");
-                let number = digits.parse::<i32>().unwrap();
-                valid_numbers.push(number);
-            }
-
-            x_coord += 1;
         }
     }
 
-    0
+    valid_numbers.iter().sum()
 }
 
 fn main() {
