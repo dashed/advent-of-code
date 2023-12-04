@@ -5,7 +5,7 @@ struct Elf {
 }
 
 impl Elf {
-    fn get_recipe(&self, scoreboard: &Vec<Recipe>) -> Recipe {
+    fn get_recipe(&self, scoreboard: &[Recipe]) -> Recipe {
         return *scoreboard.get(self.position).unwrap();
     }
 
