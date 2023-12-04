@@ -44,9 +44,9 @@ impl Ord for OrderedCoordinate {
     }
 }
 
-impl Into<OrderedCoordinate> for Coordinate {
-    fn into(self) -> OrderedCoordinate {
-        OrderedCoordinate(self)
+impl From<Coordinate> for OrderedCoordinate {
+    fn from(val: Coordinate) -> Self {
+        OrderedCoordinate(val)
     }
 }
 
@@ -408,14 +408,9 @@ fn print_map(map: &Map, carts: &Carts, max_x: i32, max_y: i32) {
 
 fn parse_input(input_string: &str) -> (Map, Carts) {
     #[allow(unused_variables)]
-    let num_of_lines = input_string.lines().into_iter().count() as i32;
+    let num_of_lines = input_string.lines().count() as i32;
     #[allow(unused_variables)]
-    let num_of_cols = input_string
-        .lines()
-        .into_iter()
-        .map(|x| x.len())
-        .max()
-        .unwrap() as i32;
+    let num_of_cols = input_string.lines().map(|x| x.len()).max().unwrap() as i32;
 
     let mut carts: Carts = Carts::new();
 
@@ -615,9 +610,8 @@ fn part_2(input_string: &str) -> Option<Coordinate> {
         if carts.carts.len() <= 1 {
             return carts
                 .carts
-                .iter()
-                .map(|(position, _cart)| -> Coordinate { position.coordinate() })
-                .into_iter()
+                .keys()
+                .map(|position| position.coordinate())
                 .next();
         }
     }
@@ -671,13 +665,13 @@ mod tests {
 
     #[test]
     fn test_part_1() {
-        let input_string = r###"/->-\
+        let input_string = r"/->-\
 |   |  /----\
 | /-+--+-\  |
 | | |  | v  |
 \-+-/  \-+--/
   \------/
-        "###;
+        ";
 
         assert_eq!(part_1(input_string), (7, 3));
 
@@ -719,14 +713,14 @@ v
 
     #[test]
     fn test_part_2() {
-        let input_string = r###"/>-<\
+        let input_string = r"/>-<\
 |   |
 | /<+-\
 | | | v
 \>+</ |
   |   ^
   \<->/
-        "###;
+        ";
 
         assert_eq!(part_2(input_string), Some((6, 4)));
     }

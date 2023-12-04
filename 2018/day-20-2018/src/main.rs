@@ -526,7 +526,7 @@ impl Map {
     }
 
     fn distance_to_farthest_room(&self) -> Distance {
-        return *self.room_distance.values().into_iter().max().unwrap();
+        return *self.room_distance.values().max().unwrap();
     }
 
     fn visit_room(
@@ -685,12 +685,7 @@ fn main() {
     println!("Part 1: {}", map.distance_to_farthest_room());
 
     // find number of rooms that are reachable by at least 1000 doors
-    let num_of_rooms = map
-        .room_distance
-        .values()
-        .into_iter()
-        .filter(|x| *x >= &1000)
-        .count();
+    let num_of_rooms = map.room_distance.values().filter(|x| *x >= &1000).count();
 
     println!("Part 2: {}", num_of_rooms);
 }

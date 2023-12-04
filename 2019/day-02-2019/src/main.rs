@@ -55,8 +55,8 @@ fn run_computer(input_string: String, noun: u32, verb: u32) -> u32 {
 }
 
 fn part_2(input_string: String) {
-    let noun_range: Vec<u32> = (0..=99).into_iter().collect();
-    let verb_range: Vec<u32> = (0..=99).into_iter().collect();
+    let noun_range: Vec<u32> = (0..=99).collect();
+    let verb_range: Vec<u32> = (0..=99).collect();
 
     let result: Option<(u32, u32)> = noun_range
         .into_par_iter()

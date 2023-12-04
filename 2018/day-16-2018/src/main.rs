@@ -627,14 +627,14 @@ mod tests {
                 registers_after,
             );
 
-            assert_eq!(result, true);
+            assert!(result);
 
             // invalid
 
             let registers_after = Registers(0, 2, 3, 4);
             let result = opcode.matches(registers_before, instruction, registers_after);
 
-            assert_eq!(result, false);
+            assert!(!result);
         }
     }
 }

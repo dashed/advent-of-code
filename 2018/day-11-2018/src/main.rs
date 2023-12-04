@@ -18,7 +18,7 @@ impl SummedAreaTable {
 
         // this will be a square summed-area table
 
-        let area = (grid_size * grid_size) as usize;
+        let area = grid_size * grid_size;
 
         // linear array: https://en.wikipedia.org/wiki/Row-_and_column-major_order
         let mut inner_array = vec![0; area];
@@ -144,8 +144,8 @@ fn get_total_power_level_of_square(
     // similarly for end_y
     let end_y = size + start_y - 1;
 
-    let x_range: Vec<i32> = (start_x..=end_x).into_iter().collect();
-    let y_range: Vec<i32> = (start_y..=end_y).into_iter().collect();
+    let x_range: Vec<i32> = (start_x..=end_x).collect();
+    let y_range: Vec<i32> = (start_y..=end_y).collect();
 
     let total: i32 = x_range
         .into_par_iter()
@@ -166,8 +166,8 @@ fn part_1(grid_serial_number: i32, sub_grid_size: i32) -> ((i32, i32), i32) {
     let height = 300;
     let width = 300;
 
-    let x_range: Vec<i32> = (1..=(height - sub_grid_size + 1)).into_iter().collect();
-    let y_range: Vec<i32> = (1..=(width - sub_grid_size + 1)).into_iter().collect();
+    let x_range: Vec<i32> = (1..=(height - sub_grid_size + 1)).collect();
+    let y_range: Vec<i32> = (1..=(width - sub_grid_size + 1)).collect();
 
     let best: ((i32, i32), i32) = x_range
         .into_par_iter()
@@ -226,7 +226,7 @@ fn part_1_optimized(
 
 #[allow(dead_code)]
 fn part_2(grid_serial_number: i32) {
-    let range: Vec<i32> = (1..=300).into_iter().collect();
+    let range: Vec<i32> = (1..=300).collect();
 
     let result = range
         .into_par_iter()
@@ -252,7 +252,7 @@ fn part_2_optimized(summed_area_table: &SummedAreaTable) -> ((usize, usize), usi
     let width = summed_area_table.grid_size;
     let height = summed_area_table.grid_size;
 
-    let sub_grid_size_range: Vec<usize> = (1..=summed_area_table.grid_size).into_iter().collect();
+    let sub_grid_size_range: Vec<usize> = (1..=summed_area_table.grid_size).collect();
 
     let result = sub_grid_size_range
         .into_par_iter()

@@ -138,18 +138,18 @@ mod tests {
 
     #[test]
     fn test_is_nice() {
-        assert_eq!(is_nice("ugknbfddgicrmopn".to_string()), true);
-        assert_eq!(is_nice("aaa".to_string()), true);
-        assert_eq!(is_nice("jchzalrnumimnmhp".to_string()), false);
-        assert_eq!(is_nice("haegwjzuvuyypxyu".to_string()), false);
-        assert_eq!(is_nice("dvszwmarrgswjxmb".to_string()), false);
+        assert!(is_nice("ugknbfddgicrmopn".to_string()));
+        assert!(is_nice("aaa".to_string()));
+        assert!(!is_nice("jchzalrnumimnmhp".to_string()));
+        assert!(!is_nice("haegwjzuvuyypxyu".to_string()));
+        assert!(!is_nice("dvszwmarrgswjxmb".to_string()));
     }
 
     #[test]
     fn test_is_nice_part_2() {
-        assert_eq!(is_nice_part_2("qjhvhtzxzqqjkmpb".to_string()), true);
-        assert_eq!(is_nice_part_2("xxyxx".to_string()), true);
-        assert_eq!(is_nice_part_2("uurcxstgmygtbstg".to_string()), false);
-        assert_eq!(is_nice_part_2("ieodomkazucvgmuy".to_string()), false);
+        assert!(is_nice_part_2("qjhvhtzxzqqjkmpb".to_string()));
+        assert!(is_nice_part_2("xxyxx".to_string()));
+        assert!(!is_nice_part_2("uurcxstgmygtbstg".to_string()));
+        assert!(!is_nice_part_2("ieodomkazucvgmuy".to_string()));
     }
 }

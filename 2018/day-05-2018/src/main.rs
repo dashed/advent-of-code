@@ -120,25 +120,25 @@ mod tests {
 
     #[test]
     fn test_is_same_type() {
-        assert_eq!(is_same_type('a', 'a'), true);
-        assert_eq!(is_same_type('a', 'A'), true);
-        assert_eq!(is_same_type('a', 'b'), false);
+        assert!(is_same_type('a', 'a'));
+        assert!(is_same_type('a', 'A'));
+        assert!(!is_same_type('a', 'b'));
     }
 
     #[test]
     fn test_is_opposite_polarity() {
-        assert_eq!(is_opposite_polarity('a', 'a'), false);
-        assert_eq!(is_opposite_polarity('B', 'B'), false);
-        assert_eq!(is_opposite_polarity('a', 'A'), true);
-        assert_eq!(is_opposite_polarity('A', 'a'), true);
-        assert_eq!(is_opposite_polarity('a', 'B'), true);
+        assert!(!is_opposite_polarity('a', 'a'));
+        assert!(!is_opposite_polarity('B', 'B'));
+        assert!(is_opposite_polarity('a', 'A'));
+        assert!(is_opposite_polarity('A', 'a'));
+        assert!(is_opposite_polarity('a', 'B'));
     }
 
     #[test]
     fn test_does_react() {
-        assert_eq!(does_react('a', 'a'), false);
-        assert_eq!(does_react('A', 'A'), false);
-        assert_eq!(does_react('a', 'A'), true);
+        assert!(!does_react('a', 'a'));
+        assert!(!does_react('A', 'A'));
+        assert!(does_react('a', 'A'));
     }
 
     #[test]

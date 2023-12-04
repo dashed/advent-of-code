@@ -136,27 +136,27 @@ mod tests {
 
     #[test]
     fn test_is_valid_password() {
-        assert_eq!(is_valid_password("111111".to_string()), true);
-        assert_eq!(is_valid_password("122345".to_string()), true);
-        assert_eq!(is_valid_password("111123".to_string()), true);
-        assert_eq!(is_valid_password("135679".to_string()), false);
+        assert!(is_valid_password("111111".to_string()));
+        assert!(is_valid_password("122345".to_string()));
+        assert!(is_valid_password("111123".to_string()));
+        assert!(!is_valid_password("135679".to_string()));
 
-        assert_eq!(is_valid_password("223450".to_string()), false);
-        assert_eq!(is_valid_password("123789".to_string()), false);
+        assert!(!is_valid_password("223450".to_string()));
+        assert!(!is_valid_password("123789".to_string()));
     }
 
     #[test]
     fn test_is_valid_password_part_2() {
-        assert_eq!(is_valid_password_part_2("111111".to_string()), false);
-        assert_eq!(is_valid_password_part_2("122345".to_string()), true);
-        assert_eq!(is_valid_password_part_2("111123".to_string()), false);
-        assert_eq!(is_valid_password_part_2("135679".to_string()), false);
+        assert!(!is_valid_password_part_2("111111".to_string()));
+        assert!(is_valid_password_part_2("122345".to_string()));
+        assert!(!is_valid_password_part_2("111123".to_string()));
+        assert!(!is_valid_password_part_2("135679".to_string()));
 
-        assert_eq!(is_valid_password_part_2("223450".to_string()), false);
-        assert_eq!(is_valid_password_part_2("123789".to_string()), false);
-        assert_eq!(is_valid_password_part_2("112233".to_string()), true);
-        assert_eq!(is_valid_password_part_2("123444".to_string()), false);
-        assert_eq!(is_valid_password_part_2("111122".to_string()), true);
-        assert_eq!(is_valid_password_part_2("112345".to_string()), true);
+        assert!(!is_valid_password_part_2("223450".to_string()));
+        assert!(!is_valid_password_part_2("123789".to_string()));
+        assert!(is_valid_password_part_2("112233".to_string()));
+        assert!(!is_valid_password_part_2("123444".to_string()));
+        assert!(is_valid_password_part_2("111122".to_string()));
+        assert!(is_valid_password_part_2("112345".to_string()));
     }
 }

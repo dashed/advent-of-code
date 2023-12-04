@@ -22,17 +22,17 @@ trait Transitions {
 impl Transitions for Coordinate {
     fn down(&self) -> Coordinate {
         let (x, y) = self;
-        return (*x, y + 1);
+        (*x, y + 1)
     }
 
     fn left(&self) -> Coordinate {
         let (x, y) = self;
-        return (x - 1, *y);
+        (x - 1, *y)
     }
 
     fn right(&self) -> Coordinate {
         let (x, y) = self;
-        return (x + 1, *y);
+        (x + 1, *y)
     }
 }
 
@@ -81,12 +81,12 @@ impl Map {
                 continue;
             }
 
-            if self.is_water_at_rest(&position) {
+            if self.is_water_at_rest(position) {
                 total += 1;
             }
         }
 
-        return total;
+        total
     }
 
     fn num_of_water_tiles(&mut self) -> i32 {
@@ -106,12 +106,12 @@ impl Map {
                 continue;
             }
 
-            if self.is_water(&position) {
+            if self.is_water(position) {
                 total += 1;
             }
         }
 
-        return total;
+        total
     }
 
     fn is_coord_out_of_bounds(&mut self, position: &Coordinate) -> bool {
@@ -127,7 +127,7 @@ impl Map {
             return true;
         }
 
-        return false;
+        false
     }
 
     fn min_y(&mut self) -> i32 {
@@ -140,19 +140,19 @@ impl Map {
             .iter()
             .filter(|item| {
                 let (coord, _map_state) = item;
-                return self.is_clay(coord);
+                self.is_clay(coord)
             })
             .map(|item| {
                 let (coord, _map_state) = item;
                 let (_x, y) = coord;
-                return *y;
+                *y
             })
             .min()
             .unwrap();
 
         self.min_y = Some(value);
 
-        return value;
+        value
     }
 
     fn max_y(&mut self) -> i32 {
@@ -165,19 +165,19 @@ impl Map {
             .iter()
             .filter(|item| {
                 let (coord, _map_state) = item;
-                return self.is_clay(coord);
+                self.is_clay(coord)
             })
             .map(|item| {
                 let (coord, _map_state) = item;
                 let (_x, y) = coord;
-                return *y;
+                *y
             })
             .max()
             .unwrap();
 
         self.max_y = Some(value);
 
-        return value;
+        value
     }
 
     fn min_x(&mut self) -> i32 {
@@ -187,7 +187,7 @@ impl Map {
             .map(|item| {
                 let (coord, _map_state) = item;
                 let (x, _y) = coord;
-                return *x;
+                *x
             })
             .min()
             .unwrap();
@@ -200,7 +200,7 @@ impl Map {
             .map(|item| {
                 let (coord, _map_state) = item;
                 let (x, _y) = coord;
-                return *x;
+                *x
             })
             .max()
             .unwrap();
@@ -230,9 +230,9 @@ impl Map {
                 match self.terrain.get(&position) {
                     None => {
                         if position == WATER_SPRING {
-                            row_string.push_str("+");
+                            row_string.push('+');
                         } else {
-                            row_string.push_str(".");
+                            row_string.push('.');
                         }
                     }
                     Some(map_state) => {
@@ -240,14 +240,14 @@ impl Map {
 
                         match map_state {
                             MapState::Clay => {
-                                row_string.push_str("#");
+                                row_string.push('#');
                             }
                             MapState::Water(water) => match water {
                                 Water::AtRest => {
-                                    row_string.push_str("~");
+                                    row_string.push('~');
                                 }
                                 Water::Flowing => {
-                                    row_string.push_str("|");
+                                    row_string.push('|');
                                 }
                             },
                         };
@@ -258,33 +258,25 @@ impl Map {
             map_string.push(row_string);
         }
 
-        return map_string.join("\n");
+        map_string.join("\n")
     }
 
     fn is_clay(&self, position: &Coordinate) -> bool {
-        match self.terrain.get(&position) {
-            None => {
-                return false;
-            }
-            Some(map_state) => {
-                match map_state {
-                    MapState::Clay => {
-                        return true;
-                    }
-                    _ => {
-                        return false;
-                    }
-                };
-            }
+        match self.terrain.get(position) {
+            None => false,
+            Some(map_state) => match map_state {
+                MapState::Clay => true,
+                _ => false,
+            },
         }
     }
 
     fn is_dry_sand(&self, position: &Coordinate) -> bool {
-        return self.terrain.get(&position).is_none();
+        return self.terrain.get(position).is_none();
     }
 
     fn upgrade_water(&mut self, position: &Coordinate) {
-        match self.terrain.get(&position) {
+        match self.terrain.get(position) {
             None => {
                 self.terrain
                     .insert(*position, MapState::Water(Water::Flowing));
@@ -307,14 +299,10 @@ impl Map {
     }
 
     fn is_water_at_rest(&self, position: &Coordinate) -> bool {
-        match self.terrain.get(&position) {
-            None => {
-                return false;
-            }
+        match self.terrain.get(position) {
+            None => false,
             Some(map_state) => match map_state {
-                MapState::Clay => {
-                    return false;
-                }
+                MapState::Clay => false,
                 MapState::Water(water_state) => match water_state {
                     Water::Flowing => false,
                     Water::AtRest => true,
@@ -324,14 +312,10 @@ impl Map {
     }
 
     fn is_water_flowing(&self, position: &Coordinate) -> bool {
-        match self.terrain.get(&position) {
-            None => {
-                return false;
-            }
+        match self.terrain.get(position) {
+            None => false,
             Some(map_state) => match map_state {
-                MapState::Clay => {
-                    return false;
-                }
+                MapState::Clay => false,
                 MapState::Water(water_state) => match water_state {
                     Water::Flowing => true,
                     Water::AtRest => false,
@@ -341,17 +325,11 @@ impl Map {
     }
 
     fn is_water(&self, position: &Coordinate) -> bool {
-        match self.terrain.get(&position) {
-            None => {
-                return false;
-            }
+        match self.terrain.get(position) {
+            None => false,
             Some(map_state) => match map_state {
-                MapState::Clay => {
-                    return false;
-                }
-                MapState::Water(_water_state) => {
-                    return true;
-                }
+                MapState::Clay => false,
+                MapState::Water(_water_state) => true,
             },
         }
     }
@@ -384,7 +362,7 @@ impl Map {
 
         // flood left
         let mut water_at_rest = vec![];
-        water_at_rest.push(position.clone());
+        water_at_rest.push(*position);
 
         let mut current = position.left();
         let has_left_wall;
@@ -456,15 +434,15 @@ fn generate_map(input_string: &str) -> Map {
 
     let clay_coordinates: Vec<Coordinate> =
         input_string.trim().lines().fold(vec![], |mut acc, line| {
-            let tokens: Vec<&str> = line.split(",").map(|s| s.trim()).collect();
+            let tokens: Vec<&str> = line.split(',').map(|s| s.trim()).collect();
 
             assert!(tokens.len() == 2);
 
             let axis: (Option<i32>, Option<i32>) = {
-                let parsed_axis: Vec<&str> = tokens[0].split("=").map(|s| s.trim()).collect();
+                let parsed_axis: Vec<&str> = tokens[0].split('=').map(|s| s.trim()).collect();
                 let axis_str = parsed_axis[0];
                 let value: i32 = parsed_axis[1].parse().unwrap();
-                match axis_str.as_ref() {
+                match axis_str {
                     "x" => (Some(value), None),
                     "y" => (None, Some(value)),
                     _ => {
@@ -474,7 +452,7 @@ fn generate_map(input_string: &str) -> Map {
             };
 
             let range = {
-                let parsed_range: Vec<&str> = tokens[1].split("=").map(|s| s.trim()).collect();
+                let parsed_range: Vec<&str> = tokens[1].split('=').map(|s| s.trim()).collect();
                 let _axis_str = parsed_range[0];
                 let range: Vec<i32> = parsed_range[1]
                     .split("..")
@@ -504,7 +482,7 @@ fn generate_map(input_string: &str) -> Map {
                 }
             }
 
-            return acc;
+            acc
         });
 
     // add clay to terrain
@@ -515,7 +493,7 @@ fn generate_map(input_string: &str) -> Map {
         map.insert_clay(&coordinate);
     }
 
-    return map;
+    map
 }
 
 fn main() {

@@ -22,7 +22,7 @@ fn parse_input(input_string: &str) -> Battle {
     let skip_spaces = || spaces().silent();
 
     let constant = |needle: String| {
-        let chars: Vec<char> = needle.chars().into_iter().collect();
+        let chars: Vec<char> = needle.chars().collect();
         tokens(|l, r| l.eq_ignore_ascii_case(&r), "error".into(), chars)
             .map(move |_| needle.clone())
     };
@@ -470,11 +470,7 @@ impl Battle {
 
         let mut new_groups: BinaryHeap<Group> = BinaryHeap::new();
 
-        let remaining_groups = groups_lookup
-            .values()
-            .into_iter()
-            .cloned()
-            .filter(|g| g.is_alive());
+        let remaining_groups = groups_lookup.values().cloned().filter(|g| g.is_alive());
 
         new_groups.extend(remaining_groups);
 
