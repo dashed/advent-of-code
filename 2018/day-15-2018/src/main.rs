@@ -76,7 +76,7 @@ impl Ord for DistanceCoordinate {
 
 impl Into<Coordinate> for DistanceCoordinate {
     fn into(self) -> Coordinate {
-        return self.1;
+        self.1
     }
 }
 
@@ -87,7 +87,7 @@ fn get_manhattan_distance(start: Coordinate, end: Coordinate) -> Distance {
     let (a, b) = start;
     let (c, d) = end;
 
-    return (a - c).abs() + (b - d).abs();
+    (a - c).abs() + (b - d).abs()
 }
 
 // sort coordinates according to their reading order
@@ -99,7 +99,7 @@ fn reading_order(first_coord: &Coordinate, second_coord: &Coordinate) -> Orderin
         return y1.cmp(y2);
     }
 
-    return x1.cmp(x2);
+    x1.cmp(x2)
 }
 
 #[derive(Debug, Clone)]
@@ -135,7 +135,7 @@ impl Map {
         }
     }
 
-    fn to_string(&self) -> String {
+    fn to_str(&self) -> String {
         let max_x = self
             .terrain
             .iter()
@@ -159,7 +159,7 @@ impl Map {
 
                 match self.terrain.get(&position) {
                     None => {
-                        row_string.push_str("#");
+                        row_string.push('#');
                     }
                     Some(map_state) => {
                         match map_state {
@@ -184,7 +184,7 @@ impl Map {
             map_string.push(row_string);
         }
 
-        return map_string.join("\n");
+        map_string.join("\n")
     }
 
     #[allow(dead_code)]
@@ -213,18 +213,18 @@ impl Map {
 
                 match self.terrain.get(&position) {
                     None => {
-                        row_string.push_str("#");
+                        row_string.push('#');
                     }
                     Some(map_state) => {
                         match map_state {
                             MapState::Wall => {
                                 // invariant: a unit cannot be within a wall
                                 assert!(!self.units.contains_key(&position));
-                                row_string.push_str("#");
+                                row_string.push('#');
                             }
                             MapState::Cavern => match self.units.get(&position) {
                                 None => {
-                                    row_string.push_str(".");
+                                    row_string.push('.');
                                 }
                                 Some(unit) => {
                                     visited_units.push(unit.to_health_string());
@@ -236,15 +236,15 @@ impl Map {
                 }
             }
 
-            if visited_units.len() >= 1 {
-                let foo = visited_units.join(", ");
-                row_string.push_str(&format!("  {}", foo));
+            if !visited_units.is_empty() {
+                let joined_units = visited_units.join(", ");
+                row_string.push_str(&format!("  {}", joined_units));
             }
 
             map_string.push(row_string);
         }
 
-        return map_string.join("\n");
+        map_string.join("\n")
     }
 
     fn insert(&mut self, position: Coordinate, cell: char) {
@@ -265,7 +265,7 @@ impl Map {
                 self.units.insert(position, Unit::new_elf(self.units.len()));
             }
             _ => {
-                assert!(false, "Unknown cell: {}", cell);
+                panic!("Unknown cell: {}", cell);
             }
         }
     }
@@ -286,51 +286,33 @@ impl Map {
         }
 
         // check if the position is occupied by a unit
-        return self.units.contains_key(&position);
+        self.units.contains_key(&position)
     }
 
     fn get_elves(&self) -> Vec<(Coordinate, Unit)> {
         return self
             .units
             .par_iter()
-            .filter(|(_position, unit)| {
-                return unit.is_elf();
-            })
-            .map(|(position, unit)| (position.clone(), unit.clone()))
+            .filter(|(_position, unit)| unit.is_elf())
+            .map(|(position, unit)| (*position, unit.clone()))
             .collect();
     }
 
     fn has_elves(&self) -> bool {
-        return self
-            .units
-            .iter()
-            .filter(|(_position, unit)| {
-                return unit.is_elf();
-            })
-            .next()
-            .is_some();
+        self.units.iter().any(|(_position, unit)| unit.is_elf())
     }
 
     fn get_goblins(&self) -> Vec<(Coordinate, Unit)> {
         return self
             .units
             .par_iter()
-            .filter(|(_position, unit)| {
-                return unit.is_goblin();
-            })
-            .map(|(position, unit)| (position.clone(), unit.clone()))
+            .filter(|(_position, unit)| unit.is_goblin())
+            .map(|(position, unit)| (*position, unit.clone()))
             .collect();
     }
 
     fn has_goblins(&self) -> bool {
-        return self
-            .units
-            .iter()
-            .filter(|(_position, unit)| {
-                return unit.is_goblin();
-            })
-            .next()
-            .is_some();
+        self.units.iter().any(|(_position, unit)| unit.is_goblin())
     }
 
     // checks if a round can be executed
@@ -346,12 +328,12 @@ impl Map {
                 let (pos_1, _) = item_1;
                 let (pos_2, _) = item_2;
 
-                return reading_order(pos_1, pos_2);
+                reading_order(pos_1, pos_2)
             });
             units
         };
 
-        let (_position, unit) = units.iter().next().unwrap();
+        let (_position, unit) = units.first().unwrap();
 
         if unit.is_elf() {
             return self.has_goblins();
@@ -372,22 +354,20 @@ impl Map {
             position.right(),
         ];
 
-        return coords
+        coords
             .into_par_iter()
-            .filter(|coord| {
-                return !self.is_occupied(*coord);
-            })
-            .collect();
+            .filter(|coord| !self.is_occupied(*coord))
+            .collect()
     }
 
     fn get_targets(&self, unit: &Unit) -> Vec<(Coordinate, Unit)> {
         if unit.is_elf() {
-            return self.get_goblins();
+            self.get_goblins()
         } else if unit.is_goblin() {
-            return self.get_elves();
+            self.get_elves()
         } else {
             unreachable!();
-        };
+        }
     }
 
     fn get_attackable_target(
@@ -808,7 +788,7 @@ fn process_map(mut map: Map) -> i32 {
         .values()
         .fold(0, |acc, unit| acc + unit.hit_points);
 
-    println!("{}", map.to_string());
+    println!("{}", map.to_str());
 
     println!("num_of_rounds_completed: {}", num_of_rounds_completed);
     println!("sum_hit_points: {}", sum_hit_points);
@@ -857,7 +837,7 @@ fn part_2(input_string: &str) -> i32 {
             .values()
             .fold(0, |acc, unit| acc + unit.hit_points);
 
-        println!("{}", map.to_string());
+        println!("{}", map.to_str());
 
         println!("num_of_rounds_completed: {}", num_of_rounds_completed);
         println!("sum_hit_points: {}", sum_hit_points);
@@ -934,7 +914,7 @@ mod tests {
 
         let map = parse_input(input_string);
 
-        assert_eq!(map.to_string(), input_string);
+        assert_eq!(map.to_str(), input_string);
 
         assert_eq!(map.is_wall((0, 0)), true);
         assert_eq!(map.is_occupied((0, 0)), true);
@@ -995,7 +975,7 @@ mod tests {
         // round 1
         map.execute_round();
         assert_eq!(
-            map.to_string(),
+            map.to_str(),
             r###"
 #########
 #.G...G.#
@@ -1013,7 +993,7 @@ mod tests {
         // round 2
         map.execute_round();
         assert_eq!(
-            map.to_string(),
+            map.to_str(),
             r###"
 #########
 #..G.G..#
@@ -1031,7 +1011,7 @@ mod tests {
         // round 3
         map.execute_round();
         assert_eq!(
-            map.to_string(),
+            map.to_str(),
             r###"
 #########
 #.......#
@@ -1173,7 +1153,7 @@ mod tests {
         // src: https://www.reddit.com/r/adventofcode/comments/a6f100/day_15_details_easy_to_be_wrong_on/ebvkuxr/
         map.execute_round();
         assert_eq!(
-            map.to_string(),
+            map.to_str(),
             r###"
 #######
 #..EG.#
