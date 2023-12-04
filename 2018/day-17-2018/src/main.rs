@@ -214,7 +214,7 @@ impl Map {
     }
 
     #[allow(dead_code)]
-    fn to_string(&mut self) -> String {
+    fn to_string_mut(&mut self) -> String {
         let max_y = self.max_y();
         let min_x = self.min_x();
         let max_x = self.max_x();
@@ -503,7 +503,7 @@ fn main() {
     println!("Part 1: {}", map.num_of_water_tiles());
 
     let mut output = File::create("day-17/part_1_result.txt").unwrap();
-    write!(output, "{}", map.to_string()).unwrap();
+    write!(output, "{}", map.to_string_mut()).unwrap();
 
     println!("Part 2: {}", map.num_of_rested_water_tiles());
 }
@@ -560,7 +560,7 @@ y=13, x=498..504
 
         let mut map = generate_map(input_string);
 
-        assert_eq!(map.to_string(), expected);
+        assert_eq!(map.to_string_mut(), expected);
 
         map.run_flood();
 
