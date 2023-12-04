@@ -15,13 +15,13 @@ struct Vertex(char);
 
 impl PartialOrd for Vertex {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        other.0.partial_cmp(&self.0)
+        Some(other.cmp(self))
     }
 }
 
 impl Ord for Vertex {
     fn cmp(&self, other: &Vertex) -> Ordering {
-        let ord = self.partial_cmp(other).unwrap();
+        let ord = other.0.partial_cmp(&self.0).unwrap();
         match ord {
             Ordering::Greater => Ordering::Less,
             Ordering::Less => Ordering::Greater,
@@ -225,13 +225,13 @@ impl WorkTask {
 
 impl PartialOrd for WorkTask {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        other.1.partial_cmp(&self.1)
+        Some(other.cmp(self))
     }
 }
 
 impl Ord for WorkTask {
     fn cmp(&self, other: &WorkTask) -> Ordering {
-        let ord = self.partial_cmp(other).unwrap();
+        let ord = other.1.partial_cmp(&self.1).unwrap();
         match ord {
             Ordering::Greater => Ordering::Less,
             Ordering::Less => Ordering::Greater,
