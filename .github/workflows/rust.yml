@@ -17,7 +17,7 @@ jobs:
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-          override: true
+          rustflags: -Awarnings
       - run: cargo check
 
   test:
@@ -34,6 +34,7 @@ jobs:
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
+          rustflags: -Awarnings
       - run: cargo test
 
   fmt:
@@ -50,6 +51,7 @@ jobs:
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
+          rustflags: -Awarnings
           components: rustfmt
       - uses: actions-rust-lang/rustfmt@v1
       - run: cargo fmt --all -- --check
@@ -69,4 +71,5 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           components: clippy
+          rustflags: -Awarnings
       - run: cargo clippy
