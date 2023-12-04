@@ -115,7 +115,7 @@ a1b2c3d4e5f
 treb7uchet
 "###;
 
-        assert_eq!(part_1(input_string.clone()), 142);
+        assert_eq!(part_1(input_string), 142);
 
         let input_string = r###"
 two1nine
@@ -127,13 +127,13 @@ zoneight234
 7pqrstsixteen
 "###;
 
-        assert_eq!(part_2(input_string.clone()), 281);
+        assert_eq!(part_2(input_string), 281);
 
         let input_string = r###"
 eighthree
 sevenine
 "###;
 
-        assert_eq!(part_2(input_string.clone()), 83 + 79);
+        assert_eq!(part_2(input_string), 83 + 79);
     }
 }
