@@ -396,7 +396,7 @@ impl Map {
         attacking_unit: &Unit,
     ) -> Option<(Coordinate, Unit)> {
         // check if this unit is still alive.
-        if !self.units.contains_key(&position_of_unit) {
+        if !self.units.contains_key(position_of_unit) {
             return None;
         }
 
@@ -406,10 +406,10 @@ impl Map {
             let mut adjacent_targets: Vec<(Coordinate, Unit)> = targets
                 .par_iter()
                 .map(|(position_of_target, target)| -> (Coordinate, Unit) {
-                    (position_of_target.clone(), (*target).clone())
+                    (*position_of_target, (*target).clone())
                 })
                 .filter(|(position_of_target, _target)| {
-                    return get_manhattan_distance(*position_of_unit, *position_of_target) <= 1;
+                    get_manhattan_distance(*position_of_unit, *position_of_target) <= 1
                 })
                 .collect();
 
@@ -423,18 +423,18 @@ impl Map {
                 }
 
                 // in a tie, the adjacent target with the fewest hit points which is first in reading order is selected.
-                return reading_order(position_of_target_1, position_of_target_2);
+                reading_order(position_of_target_1, position_of_target_2)
             });
 
             adjacent_targets
         };
 
-        if adjacent_targets.len() >= 1 {
+        if !adjacent_targets.is_empty() {
             let (position_of_target, chosen_target) = adjacent_targets.first().unwrap();
             return Some((*position_of_target, chosen_target.clone()));
         }
 
-        return None;
+        None
     }
 
     // returns true if combat has ended (i.e. round didn't run)
@@ -457,7 +457,7 @@ impl Map {
                 let (pos_1, _) = item_1;
                 let (pos_2, _) = item_2;
 
-                return reading_order(pos_1, pos_2);
+                reading_order(pos_1, pos_2)
             });
 
             units
@@ -490,7 +490,7 @@ impl Map {
             let targets = self.get_targets(&unit);
 
             // If no targets remain, combat ends.
-            if targets.len() == 0 {
+            if targets.is_empty() {
                 return RoundState::Incomplete;
             }
 
@@ -535,11 +535,9 @@ impl Map {
                         })
                         .filter(|(_reachable_square, path)| {
                             // filter out un-reachable squares
-                             path.is_some()
+                            path.is_some()
                         })
-                        .map(|(reachable_square, path)| {
-                            (reachable_square, path.unwrap())
-                        })
+                        .map(|(reachable_square, path)| (reachable_square, path.unwrap()))
                         .filter(|(_reachable_square, path)| {
                             // only consider non-empty paths
                             !path.is_empty()
@@ -612,7 +610,7 @@ impl Map {
             return RoundState::Incomplete;
         }
 
-        return RoundState::Complete;
+        RoundState::Complete
     }
 }
 
