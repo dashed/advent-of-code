@@ -344,7 +344,7 @@ fn main() {
 
     let answer = part_2(input_string);
     println!("Part 2: {}", answer);
-    assert_eq!(answer, 539637);
+    assert_eq!(answer, 82818007);
 }
 
 #[cfg(test)]
@@ -366,7 +366,7 @@ mod tests {
 .664.598..
 "###;
 
-        // assert_eq!(part_1(input_string), 4361);
+        assert_eq!(part_1(input_string), 4361);
 
         assert_eq!(part_2(input_string), 467835);
     }
