@@ -531,21 +531,21 @@ impl Map {
                         .into_par_iter()
                         .map(|reachable_square| {
                             let path = get_reachable_path(self, position_of_unit, reachable_square);
-                            return (reachable_square, path);
+                            (reachable_square, path)
                         })
                         .filter(|(_reachable_square, path)| {
                             // filter out un-reachable squares
-                            return path.is_some();
+                             path.is_some()
                         })
                         .map(|(reachable_square, path)| {
-                            return (reachable_square, path.unwrap());
+                            (reachable_square, path.unwrap())
                         })
                         .filter(|(_reachable_square, path)| {
                             // only consider non-empty paths
                             !path.is_empty()
                         })
                         .collect();
-                    return reachable_paths;
+                    reachable_paths
                 })
                 .reduce(
                     Vec::new,
