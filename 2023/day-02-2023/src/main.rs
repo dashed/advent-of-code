@@ -8,6 +8,12 @@ fn main() {
     let answer = part_1(input_string);
     println!("Part 1: {}", answer);
     assert_eq!(answer, 2006);
+
+    // Part 2
+
+    let answer = part_2(input_string);
+    println!("Part 2: {}", answer);
+    assert_eq!(answer, 84911);
 }
 
 #[derive(Debug)]
@@ -35,9 +41,34 @@ impl Game {
 
         true
     }
+
+    fn fewest_cubes(&self) -> (i32, i32, i32) {
+        let mut max_red_cubes = 0;
+        let mut max_blue_cubes = 0;
+        let mut max_green_cubes = 0;
+        for reveal in &self.reveals {
+            if reveal.red_cubes > max_red_cubes {
+                max_red_cubes = reveal.red_cubes;
+            }
+            if reveal.blue_cubes > max_blue_cubes {
+                max_blue_cubes = reveal.blue_cubes;
+            }
+            if reveal.green_cubes > max_green_cubes {
+                max_green_cubes = reveal.green_cubes;
+            }
+        }
+
+        (max_red_cubes, max_blue_cubes, max_green_cubes)
+    }
+
+    fn power_of_min_set(&self) -> i32 {
+        let (max_red_cubes, max_blue_cubes, max_green_cubes) = self.fewest_cubes();
+
+        max_red_cubes * max_blue_cubes * max_green_cubes
+    }
 }
 
-fn part_1(input_string: &str) -> i32 {
+fn parse_input(input_string: &str) -> Vec<Game> {
     let inputs: Vec<&str> = input_string.trim().lines().collect();
 
     let mut games: Vec<Game> = vec![];
@@ -94,15 +125,27 @@ fn part_1(input_string: &str) -> i32 {
         games.push(game);
     }
 
+    games
+}
+
+fn part_1(input_string: &str) -> i32 {
+    let games = parse_input(input_string);
+
     let max_red_cubes = 12;
-    let max_green_cubes = 13;
     let max_blue_cubes = 14;
+    let max_green_cubes = 13;
 
     games
         .into_iter()
         .filter(|x| x.is_valid(max_red_cubes, max_blue_cubes, max_green_cubes))
         .map(|x| x.id)
         .sum()
+}
+
+fn part_2(input_string: &str) -> i32 {
+    let games = parse_input(input_string);
+
+    games.into_iter().map(|x| x.power_of_min_set()).sum()
 }
 
 #[cfg(test)]
@@ -120,5 +163,7 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
 "###;
 
         assert_eq!(part_1(input_string), 8);
+
+        assert_eq!(part_2(input_string), 2286);
     }
 }
