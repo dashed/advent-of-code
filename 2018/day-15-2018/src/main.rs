@@ -916,19 +916,19 @@ mod tests {
 
         assert_eq!(map.to_str(), input_string);
 
-        assert_eq!(map.is_wall((0, 0)), true);
-        assert_eq!(map.is_occupied((0, 0)), true);
+        assert!(map.is_wall((0, 0)));
+        assert!(map.is_occupied((0, 0)));
 
-        assert_eq!(map.is_wall((1, 1)), false);
-        assert_eq!(map.is_occupied((1, 1)), true);
+        assert!(!map.is_wall((1, 1)));
+        assert!(map.is_occupied((1, 1)));
 
-        assert_eq!(map.is_wall((2, 1)), false);
-        assert_eq!(map.is_occupied((2, 1)), false);
+        assert!(!map.is_wall((2, 1)));
+        assert!(!map.is_occupied((2, 1)));
 
         assert_eq!(map.get_elves().len(), 1);
-        assert_eq!(map.has_elves(), true);
+        assert!(map.has_elves());
         assert_eq!(map.get_goblins().len(), 8);
-        assert_eq!(map.has_goblins(), true);
+        assert!(map.has_goblins());
     }
 
     #[test]
@@ -1170,7 +1170,7 @@ mod tests {
         fn part_2_with_elf_attack(input_string: &str, elf_attack_power: i32) -> i32 {
             let mut map = parse_input(input_string);
             map.with_elf_attack_power(elf_attack_power);
-            return process_map(map);
+            process_map(map)
         }
 
         let input_string = r###"
