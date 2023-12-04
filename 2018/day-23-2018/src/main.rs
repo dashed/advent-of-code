@@ -125,14 +125,14 @@ fn part_2(input_string: String) -> i32 {
         .flat_map(|s| s.into_iter())
         .collect();
 
-    let mut foo = BTreeMap::new();
-    foo.extend(queue);
+    let mut btree = BTreeMap::new();
+    btree.extend(queue);
 
     let mut count = 0;
     let mut max_count = 0;
     let mut result = 0;
 
-    for (distance, e) in foo {
+    for (distance, e) in btree {
         count += e;
 
         if count > max_count {

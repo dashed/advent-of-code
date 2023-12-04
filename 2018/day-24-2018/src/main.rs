@@ -214,7 +214,7 @@ struct Group {
 
 impl Group {
     #[allow(dead_code)]
-    fn to_string(&self) -> String {
+    fn to_str(&self) -> String {
         format!(
             "Group {} ({:?}) with {} units (HP: {})",
             self.id, self.race, self.num_of_units, self.hit_points

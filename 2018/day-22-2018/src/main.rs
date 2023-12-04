@@ -148,7 +148,7 @@ impl RegionType {
         }
     }
 
-    fn to_string(&self) -> String {
+    fn to_str(&self) -> String {
         let result = match self {
             RegionType::Rocky => ".",
             RegionType::Wet => "=",
@@ -358,7 +358,7 @@ impl Cave {
     }
 
     #[allow(dead_code)]
-    fn to_string(&mut self) -> String {
+    fn to_str_mut(&mut self) -> String {
         let (target_x, target_y) = self.target;
 
         let mut map_string: Vec<String> = vec![];
@@ -379,7 +379,7 @@ impl Cave {
                     continue;
                 }
 
-                let result = self.get_region_type(&coord).to_string();
+                let result = self.get_region_type(&coord).to_str();
 
                 row_string.push_str(&result);
             }
