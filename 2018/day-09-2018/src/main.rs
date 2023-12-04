@@ -13,12 +13,8 @@ struct GameState {
 
 impl GameState {
     fn new(num_of_players: usize) -> GameState {
-        let mut players = Vec::with_capacity(num_of_players);
-
-        for _ in 1..=num_of_players {
-            // each player has an initial score of 0
-            players.push(0);
-        }
+        // each player has an initial score of 0
+        let players = vec![0; num_of_players];
 
         // the head of the ring buffer is always the current position
         let mut state = VecDeque::new();
