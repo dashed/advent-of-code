@@ -1,3 +1,0 @@
-needless_return = false
-dead_code = false
-inherent_to_string = false
