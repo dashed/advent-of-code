@@ -30,22 +30,22 @@ type Path = Vec<Coordinate>;
 impl Transitions for Coordinate {
     fn up(&self) -> Coordinate {
         let (x, y) = self;
-        return (*x, y - 1);
+        (*x, y - 1)
     }
 
     fn down(&self) -> Coordinate {
         let (x, y) = self;
-        return (*x, y + 1);
+        (*x, y + 1)
     }
 
     fn left(&self) -> Coordinate {
         let (x, y) = self;
-        return (x - 1, *y);
+        (x - 1, *y)
     }
 
     fn right(&self) -> Coordinate {
         let (x, y) = self;
-        return (x + 1, *y);
+        (x + 1, *y)
     }
 }
 
@@ -58,14 +58,14 @@ impl PartialOrd for DistanceCoordinate {
         if self.0 != other.0 {
             return Some(other.0.cmp(&self.0));
         }
-        return Some(reading_order(&other.1, &self.1));
+        Some(reading_order(&other.1, &self.1))
     }
 }
 
 impl Ord for DistanceCoordinate {
     fn cmp(&self, other: &Self) -> Ordering {
         let ord = self.partial_cmp(other).unwrap();
-        return ord;
+        ord
         // match ord {
         //     Ordering::Greater => Ordering::Less,
         //     Ordering::Less => Ordering::Greater,
@@ -74,9 +74,9 @@ impl Ord for DistanceCoordinate {
     }
 }
 
-impl Into<Coordinate> for DistanceCoordinate {
-    fn into(self) -> Coordinate {
-        self.1
+impl From<DistanceCoordinate> for Coordinate {
+    fn from(val: DistanceCoordinate) -> Self {
+        val.1
     }
 }
 
