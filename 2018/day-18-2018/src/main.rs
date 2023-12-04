@@ -113,7 +113,7 @@ impl PartialEq for Area {
     fn eq(&self, other: &Self) -> bool {
         let equal_max_y = self.max_y == other.max_y;
         let equal_max_x = self.max_x == other.max_x;
-        let equal_string = self.to_string() == other.to_string();
+        let equal_string = self.to_str() == other.to_str();
 
         equal_max_y && equal_max_x && equal_string
     }
@@ -123,7 +123,7 @@ impl Hash for Area {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.max_y.hash(state);
         self.max_x.hash(state);
-        self.to_string().hash(state);
+        self.to_str().hash(state);
     }
 }
 
@@ -149,7 +149,7 @@ impl Area {
     }
 
     #[allow(dead_code)]
-    fn to_string(&self) -> String {
+    fn to_str(&self) -> String {
         let mut map_string: Vec<String> = vec![];
 
         for y in 0..=self.max_y {
@@ -345,7 +345,7 @@ mod tests {
 
         let area = generate_area(expected_string);
 
-        assert_eq!(area.to_string(), expected_string);
+        assert_eq!(area.to_str(), expected_string);
     }
 
     #[test]
@@ -386,7 +386,7 @@ mod tests {
         let mut area = generate_area(input_string);
 
         // initial
-        assert_eq!(area.to_string(), input_string);
+        assert_eq!(area.to_str(), input_string);
 
         // after 1 minute
         area.tick();
@@ -405,7 +405,7 @@ mod tests {
     "###
         .trim();
 
-        assert_eq!(area.to_string(), result);
+        assert_eq!(area.to_str(), result);
 
         // after 2 minutes
         area.tick();
@@ -424,7 +424,7 @@ mod tests {
     "###
         .trim();
 
-        assert_eq!(area.to_string(), result);
+        assert_eq!(area.to_str(), result);
 
         // after 3 minutes
         area.tick();
@@ -443,7 +443,7 @@ mod tests {
     "###
         .trim();
 
-        assert_eq!(area.to_string(), result);
+        assert_eq!(area.to_str(), result);
 
         // after 4 minutes
         area.tick();
@@ -462,7 +462,7 @@ mod tests {
     "###
         .trim();
 
-        assert_eq!(area.to_string(), result);
+        assert_eq!(area.to_str(), result);
 
         // after 10 minutes
         for _ in 5..=10 {
@@ -483,6 +483,6 @@ mod tests {
     "###
         .trim();
 
-        assert_eq!(area.to_string(), result);
+        assert_eq!(area.to_str(), result);
     }
 }

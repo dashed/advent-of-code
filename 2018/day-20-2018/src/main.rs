@@ -72,9 +72,9 @@ fn tokenize(input_string: &str) -> Vec<Tokens> {
 struct Route(Vec<OpenDirections>);
 
 impl Route {
-    fn to_string(&self) -> String {
+    fn to_str(&self) -> String {
         let directions = &self.0;
-        let directions: Vec<String> = directions.iter().map(|d| d.to_string()).collect();
+        let directions: Vec<String> = directions.iter().map(|d| d.to_str()).collect();
 
         directions.join("")
     }
@@ -92,26 +92,22 @@ enum Branches {
 }
 
 impl Branches {
-    fn to_string(&self) -> String {
+    fn to_str(&self) -> String {
         match self {
             Branches::CanSkip(routes, rest_routes) => {
-                let rest_str: Vec<String> = rest_routes
-                    .iter()
-                    .map(|routes| routes.to_string())
-                    .collect();
+                let rest_str: Vec<String> =
+                    rest_routes.iter().map(|routes| routes.to_str()).collect();
 
                 if rest_str.is_empty() {
-                    return format!("{}|", routes.to_string());
+                    return format!("{}|", routes.to_str());
                 }
 
-                format!("{}|{}|", routes.to_string(), rest_str.join("|"))
+                format!("{}|{}|", routes.to_str(), rest_str.join("|"))
             }
             Branches::CannotSkip(routes, rest_routes) => {
-                let rest_str: Vec<String> = rest_routes
-                    .iter()
-                    .map(|routes| routes.to_string())
-                    .collect();
-                format!("{}|{}", routes.to_string(), rest_str.join("|"))
+                let rest_str: Vec<String> =
+                    rest_routes.iter().map(|routes| routes.to_str()).collect();
+                format!("{}|{}", routes.to_str(), rest_str.join("|"))
             }
         }
     }
@@ -121,9 +117,9 @@ impl Branches {
 struct BranchGroup(Branches);
 
 impl BranchGroup {
-    fn to_string(&self) -> String {
+    fn to_str(&self) -> String {
         let branches = &self.0;
-        format!("({})", branches.to_string())
+        format!("({})", branches.to_str())
     }
 }
 
@@ -136,23 +132,23 @@ enum Routes {
 }
 
 impl Routes {
-    fn to_string(&self) -> String {
+    fn to_str(&self) -> String {
         match self {
             Routes::Route(route, routes) => {
                 let rest: String = if routes.is_none() {
                     "".to_string()
                 } else {
-                    routes.clone().unwrap().to_string()
+                    routes.clone().unwrap().to_str()
                 };
-                format!("{}{}", route.to_string(), rest)
+                format!("{}{}", route.to_str(), rest)
             }
             Routes::Branch(branch_group, routes) => {
                 let rest: String = if routes.is_none() {
                     "".to_string()
                 } else {
-                    routes.clone().unwrap().to_string()
+                    routes.clone().unwrap().to_str()
                 };
-                format!("{}{}", branch_group.to_string(), rest)
+                format!("{}{}", branch_group.to_str(), rest)
             }
         }
     }
@@ -163,8 +159,8 @@ struct Directions(Routes);
 
 impl Directions {
     #[allow(dead_code)]
-    fn to_string(&self) -> String {
-        format!("^{}$", self.0.to_string())
+    fn to_str(&self) -> String {
+        format!("^{}$", self.0.to_str())
     }
 }
 
@@ -304,18 +300,11 @@ fn parse_branches(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<
     // expect next token to be a closing ).
     // peek on next token
     match tokens.get(current_position) {
-        None => {
-            return None;
+        Some(Tokens::ParenClose) => {
+            // this is a peek
         }
-        Some(token) => {
-            match token {
-                Tokens::ParenClose => {
-                    // this is a peek
-                }
-                _ => {
-                    return None;
-                }
-            }
+        _ => {
+            return None;
         }
     }
 
@@ -456,7 +445,7 @@ enum OpenDirections {
 }
 
 impl OpenDirections {
-    fn to_string(&self) -> String {
+    fn to_str(&self) -> String {
         let result = match self {
             OpenDirections::North => "N",
             OpenDirections::South => "S",
@@ -709,7 +698,7 @@ mod tests {
 
         for (input_string, distance) in examples {
             let directions = parse_input(input_string);
-            assert_eq!(directions.to_string(), input_string);
+            assert_eq!(directions.to_str(), input_string);
 
             let mut map = Map::new();
             map.parse_directions(directions);
