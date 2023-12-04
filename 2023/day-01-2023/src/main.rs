@@ -1,3 +1,5 @@
+// https://adventofcode.com/2023/day/1
+
 fn main() {
     let input_string = include_str!("input.txt");
 
