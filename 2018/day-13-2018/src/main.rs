@@ -3,9 +3,11 @@
 // imports
 
 use core::cmp::Ordering;
+use core::panic;
 use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::fmt;
 
 // code
 
@@ -34,13 +36,13 @@ impl OrderedCoordinate {
 
 impl PartialOrd for OrderedCoordinate {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(reading_order(&self.0, &other.0))
+        Some(self.cmp(other))
     }
 }
 
 impl Ord for OrderedCoordinate {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.partial_cmp(other).unwrap()
+        reading_order(&self.0, &other.0)
     }
 }
 
@@ -82,8 +84,8 @@ enum Track {
     TopAndRight,
 }
 
-impl Track {
-    fn to_string(&self) -> String {
+impl fmt::Display for Track {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let result = match self {
             Track::Vertical => "|",
             Track::Horizontal => "-",
@@ -92,22 +94,16 @@ impl Track {
             Track::BottomAndLeft | Track::TopAndRight => "\\",
         };
 
-        result.to_string()
+        write!(f, "{}", result)
     }
 }
 
 fn is_horizontal(cell: char) -> bool {
-    match cell {
-        '-' | '+' => true,
-        _ => false,
-    }
+    matches!(cell, '-' | '+')
 }
 
 fn is_vertical(cell: char) -> bool {
-    match cell {
-        '|' | '+' => true,
-        _ => false,
-    }
+    matches!(cell, '|' | '+')
 }
 
 type Map = HashMap<Coordinate, Track>;
@@ -176,10 +172,7 @@ struct Cart {
 
 impl Cart {
     fn is_cart(cell: char) -> bool {
-        match cell {
-            '^' | 'v' | '<' | '>' => true,
-            _ => false,
-        }
+        matches!(cell, '^' | 'v' | '<' | '>')
     }
 
     fn new(cell: char, position: Coordinate) -> Cart {
@@ -202,7 +195,7 @@ impl Cart {
         }
     }
 
-    fn to_string(&self) -> String {
+    fn to_str(&self) -> String {
         let orientation = match self.orientation {
             Orientation::Up => "^",
             Orientation::Down => "v",
@@ -231,8 +224,7 @@ impl Cart {
 
         let next_track: Track = match map.get(&next_position) {
             None => {
-                assert!(false, "No track found at: {:?}", next_position);
-                unreachable!();
+                panic!("No track found at: {:?}", next_position);
             }
             Some(track) => track.clone(),
         };
@@ -393,11 +385,11 @@ fn print_map(map: &Map, carts: &Carts, max_x: i32, max_y: i32) {
                         print!(" ");
                     }
                     Some(track) => {
-                        print!("{}", track.to_string());
+                        print!("{}", track);
                     }
                 },
                 Some(cart) => {
-                    print!("{}", cart.to_string());
+                    print!("{}", cart.to_str());
                 }
             }
         }
@@ -500,7 +492,7 @@ fn parse_input(input_string: &str) -> (Map, Carts) {
                         continue;
                     }
 
-                    assert!(false, "Invalid placement of track: / at {:?}", position);
+                    panic!("Invalid placement of track: / at {:?}", position)
                 }
                 '\\' => {
                     // match configuration:
@@ -547,11 +539,11 @@ fn parse_input(input_string: &str) -> (Map, Carts) {
                         continue;
                     }
 
-                    assert!(false, "Invalid placement of track: \\ at {:?}", position);
+                    panic!("Invalid placement of track: \\ at {:?}", position);
                 }
                 ' ' => {}
                 _ => {
-                    assert!(false, "Unknown cell at {:?}: {}", position, cell);
+                    panic!("Unknown cell at {:?}: {}", position, cell)
                 }
             }
         }
