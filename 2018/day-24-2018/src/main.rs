@@ -470,7 +470,7 @@ impl Battle {
 
         let mut new_groups: BinaryHeap<Group> = BinaryHeap::new();
 
-        let remaining_groups = groups_lookup.values().cloned().filter(|g| g.is_alive());
+        let remaining_groups = groups_lookup.values().filter(|&g| g.is_alive()).cloned();
 
         new_groups.extend(remaining_groups);
 
