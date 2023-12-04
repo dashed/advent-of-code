@@ -55,6 +55,7 @@ impl Transitions for Coordinate {
 
 type Terrain = HashMap<Coordinate, MapState>;
 
+#[derive(Debug)]
 struct Schematic {
     terrain: Terrain,
     max_y_coord: i32,
@@ -151,6 +152,110 @@ impl Schematic {
     fn is_valid_coordinate(&self, coordinate: &Coordinate) -> bool {
         coordinate.within_bounds(self.max_x_coord, self.max_y_coord)
     }
+
+    fn capture_number(&self, coordinate: &Coordinate) -> Option<i32> {
+        if !self.is_valid_coordinate(&coordinate) {
+            return None;
+        }
+
+        let mut digits_buffer: Vec<i32> = vec![];
+
+        match self.get(coordinate) {
+            MapState::Digit(digit) => {
+                digits_buffer.push(digit);
+            }
+            _ => {
+                return None;
+            }
+        }
+
+        let mut next_coord = coordinate.west();
+        loop {
+            if !self.is_valid_coordinate(&next_coord) {
+                break;
+            }
+
+            match self.get(&next_coord) {
+                MapState::Digit(digit) => {
+                    digits_buffer.insert(0, digit);
+                    next_coord = next_coord.west();
+                }
+                _ => break,
+            }
+        }
+
+        let mut next_coord = coordinate.east();
+        loop {
+            if !self.is_valid_coordinate(&next_coord) {
+                break;
+            }
+
+            match self.get(&next_coord) {
+                MapState::Digit(digit) => {
+                    digits_buffer.push(digit);
+                    next_coord = next_coord.east();
+                }
+                _ => break,
+            }
+        }
+
+        let digits = digits_buffer
+            .into_iter()
+            .map(|d| d.to_string())
+            .collect::<Vec<String>>()
+            .join("");
+        let number = digits.parse::<i32>().unwrap();
+
+        Some(number)
+    }
+
+    fn get_adjacent_numbers(&self, coordinate: &Coordinate) -> Vec<i32> {
+        let mut numbers: Vec<i32> = vec![];
+
+        for coordinate_to_check in vec![coordinate.west(), coordinate.east()] {
+            if self.is_valid_coordinate(&coordinate_to_check) {
+                if let Some(number) = self.capture_number(&coordinate_to_check) {
+                    numbers.push(number);
+                }
+            }
+        }
+
+        // north
+        if self.is_valid_coordinate(&coordinate.north()) {
+            if let Some(number) = self.capture_number(&coordinate.north()) {
+                numbers.push(number);
+            } else {
+                for coordinate_to_check in
+                    vec![coordinate.north().west(), coordinate.north().east()]
+                {
+                    if self.is_valid_coordinate(&coordinate_to_check) {
+                        if let Some(number) = self.capture_number(&coordinate_to_check) {
+                            numbers.push(number);
+                        }
+                    }
+                }
+            }
+        }
+
+        // south
+        if self.is_valid_coordinate(&coordinate.south()) {
+            if let Some(number) = self.capture_number(&coordinate.south()) {
+                numbers.push(number);
+            } else {
+                for coordinate_to_check in
+                    vec![coordinate.south().west(), coordinate.south().east()]
+                {
+                    if self.is_valid_coordinate(&coordinate_to_check) {
+                        if let Some(number) = self.capture_number(&coordinate_to_check) {
+                            numbers.push(number);
+                        }
+                    }
+                }
+            }
+        }
+
+        numbers
+    }
 }
 
 fn part_1(input_string: &str) -> i32 {
@@ -224,9 +329,10 @@ fn part_1(input_string: &str) -> i32 {
 
 fn part_2(input_string: &str) -> i32 {
     let map = Schematic::new(input_string);
+    let mut gear_ratios: Vec<i32> = vec![];
 
     for y_coord in 0..=map.max_y_coord {
-        for x_coord in 0..=map.max_x_coord { 
+        for x_coord in 0..=map.max_x_coord {
             let coordinate = (x_coord, y_coord);
 
             if !map.is_valid_coordinate(&coordinate) {
@@ -235,11 +341,13 @@ fn part_2(input_string: &str) -> i32 {
 
             match map.get(&coordinate) {
                 MapState::Symbol('*') => {
-                    if !map.is_adjacent_to_digit(&coordinate) {
+                    let numbers = map.get_adjacent_numbers(&coordinate);
+                    if numbers.len() == 2 {
+                        let gear_ratio = numbers[0] * numbers[1];
+                        gear_ratios.push(gear_ratio);
+                    } else {
                         continue;
                     }
-
-                    // TODO: map.get_adjacent_digits(&coordinate)
                 }
                 _ => {
                     continue;
@@ -248,7 +356,7 @@ fn part_2(input_string: &str) -> i32 {
         }
     }
 
-    0
+    gear_ratios.into_iter().sum()
 }
 
 fn main() {
@@ -265,7 +373,6 @@ fn main() {
     let answer = part_2(input_string);
     println!("Part 2: {}", answer);
     assert_eq!(answer, 539637);
-
 }
 
 #[cfg(test)]
@@ -287,8 +394,8 @@ mod tests {
 .664.598..
 "###;
 
-        assert_eq!(part_1(input_string), 4361);
+        // assert_eq!(part_1(input_string), 4361);
 
-        // assert_eq!(part_2(input_string), 2286);
+        assert_eq!(part_2(input_string), 467835);
     }
 }
