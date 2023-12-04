@@ -500,11 +500,11 @@ fn parse_input(input_string: &str) -> Program {
     Program::new(instruction_pointer_bound, instructions.clone())
 }
 
-fn compiled_program(reg_0: i32) {
+fn compiled_program(_reg_0: i32) {
     let mut num_of_instructions_executed: i128 = 0;
 
     // registers
-    let reg_0 = reg_0;
+    let reg_0 = _reg_0;
     // let mut reg_1 = 0;
     let mut reg_2;
     let mut reg_3;
