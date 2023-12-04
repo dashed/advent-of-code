@@ -1,4 +1,5 @@
 // https://adventofcode.com/2019/day/5
+#![allow(dead_code)]
 
 enum ParameterMode {
     // position mode, which causes the parameter to be interpreted as a position
