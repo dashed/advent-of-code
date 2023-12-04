@@ -54,18 +54,18 @@ struct DistanceCoordinate(Distance, Coordinate);
 
 impl PartialOrd for DistanceCoordinate {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        // reversed for the binary heap which is a max-heap
-        if self.0 != other.0 {
-            return Some(other.0.cmp(&self.0));
-        }
-        Some(reading_order(&other.1, &self.1))
+        Some(self.cmp(other))
     }
 }
 
 impl Ord for DistanceCoordinate {
     fn cmp(&self, other: &Self) -> Ordering {
-        let ord = self.partial_cmp(other).unwrap();
-        ord
+        // reversed for the binary heap which is a max-heap
+        if self.0 != other.0 {
+            return other.0.cmp(&self.0);
+        }
+        reading_order(&other.1, &self.1)
+
         // match ord {
         //     Ordering::Greater => Ordering::Less,
         //     Ordering::Less => Ordering::Greater,
