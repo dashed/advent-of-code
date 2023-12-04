@@ -74,8 +74,8 @@ fn part_2(input_string: String) {
                 })
                 .find_first(|result: &Option<(u32, u32)>| result.is_some());
 
-            if result.is_some() {
-                return result.unwrap();
+            if let Some(result) = result {
+                return result;
             }
 
             None

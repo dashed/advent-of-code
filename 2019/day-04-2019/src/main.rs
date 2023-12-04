@@ -92,7 +92,7 @@ fn is_valid_password_part_2(password: String) -> bool {
         }
     }
 
-    for (_digit, count) in &digit_counter {
+    for count in digit_counter.values() {
         if *count == 2 {
             return true;
         }
