@@ -130,7 +130,7 @@ impl Schematic {
     }
 
     fn capture_number(&self, coordinate: &Coordinate) -> Option<i32> {
-        if !self.is_valid_coordinate(&coordinate) {
+        if !self.is_valid_coordinate(coordinate) {
             return None;
         }
 
@@ -188,7 +188,7 @@ impl Schematic {
     fn get_adjacent_numbers(&self, coordinate: &Coordinate) -> Vec<i32> {
         let mut numbers: Vec<i32> = vec![];
 
-        for coordinate_to_check in vec![coordinate.west(), coordinate.east()] {
+        for coordinate_to_check in [coordinate.west(), coordinate.east()] {
             if self.is_valid_coordinate(&coordinate_to_check) {
                 if let Some(number) = self.capture_number(&coordinate_to_check) {
                     numbers.push(number);
@@ -201,9 +201,7 @@ impl Schematic {
             if let Some(number) = self.capture_number(&coordinate.north()) {
                 numbers.push(number);
             } else {
-                for coordinate_to_check in
-                    vec![coordinate.north().west(), coordinate.north().east()]
-                {
+                for coordinate_to_check in [coordinate.north().west(), coordinate.north().east()] {
                     if self.is_valid_coordinate(&coordinate_to_check) {
                         if let Some(number) = self.capture_number(&coordinate_to_check) {
                             numbers.push(number);
@@ -218,9 +216,7 @@ impl Schematic {
             if let Some(number) = self.capture_number(&coordinate.south()) {
                 numbers.push(number);
             } else {
-                for coordinate_to_check in
-                    vec![coordinate.south().west(), coordinate.south().east()]
-                {
+                for coordinate_to_check in [coordinate.south().west(), coordinate.south().east()] {
                     if self.is_valid_coordinate(&coordinate_to_check) {
                         if let Some(number) = self.capture_number(&coordinate_to_check) {
                             numbers.push(number);
