@@ -103,23 +103,24 @@ impl Schematic {
     }
 
     fn is_adjacent_to_symbol(&self, coordinate: &Coordinate) -> bool {
-        let coordinates_to_check = [coordinate.north(),
+        let coordinates_to_check = [
+            coordinate.north(),
             coordinate.south(),
             coordinate.west(),
             coordinate.east(),
             coordinate.north().west(),
             coordinate.north().east(),
             coordinate.south().west(),
-            coordinate.south().east()];
+            coordinate.south().east(),
+        ];
 
         let coordinates_to_check = coordinates_to_check
             .iter()
             .filter(|c| c.within_bounds(self.max_x_coord, self.max_y_coord));
 
         for coordinate_to_check in coordinates_to_check {
-            match self.get(coordinate_to_check) {
-                MapState::Symbol(_) => return true,
-                _ => (),
+            if let MapState::Symbol(_) = self.get(coordinate_to_check) {
+                return true;
             }
         }
         false
