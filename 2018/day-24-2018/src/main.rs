@@ -5,8 +5,8 @@
 extern crate combine;
 
 use crate::combine::EasyParser;
-use combine::parser::token::token;
 use combine::parser::char::{char, digit, letter, spaces};
+use combine::parser::token::token;
 use combine::stream::easy;
 use combine::{between, choice, many1, optional, sep_by, sep_by1, tokens, Parser};
 
@@ -24,39 +24,41 @@ fn parse_input(input_string: &str) -> Battle {
 
     let constant = |needle: String| {
         let chars: Vec<char> = needle.chars().collect();
-        tokens(|l, r| l.eq_ignore_ascii_case(&r), "error".into(), chars)
-            .map(move |_| needle.clone())
+        tokens(|l, r| l.eq_ignore_ascii_case(&r), "error", chars).map(move |_| needle.clone())
     };
-
-    let integer = || many1(digit()).map(|string: String| -> i32 { string.parse::<i32>().unwrap() });
 
     let immunity_start = (constant("Immune System:".to_string()), skip_spaces());
     let infection_start = (constant("Infection:".to_string()), skip_spaces());
 
-    let list_of_words = || {
-        sep_by1::<HashSet<String>, _, _, _>(many1(letter()), spaces().skip(char(',')).skip(spaces()))
-    };
-
-    let parse_immunities = (
-        constant("immune to".to_string()).with(skip_spaces()),
-        list_of_words(),
-    )
-        .map(|(_, words)| Trait::Immunities(words));
-
-    let parse_weaknesses = (
-        constant("weak to".to_string()).with(skip_spaces()),
-        list_of_words(),
-    )
-        .map(|(_, words)| Trait::Weaknesses(words));
-
-    let traits_list = sep_by::<Vec<Trait>, _, _, _>(
-        choice((parse_immunities, parse_weaknesses)),
-        spaces().skip(char(';')).skip(spaces()),
-    );
-
-    let parse_traits_group = between(token('('), token(')'), traits_list);
-
     let parse_group = |race: Race| {
+        let integer =
+            || many1(digit()).map(|string: String| -> i32 { string.parse::<i32>().unwrap() });
+
+        let list_of_words = || {
+            sep_by1::<HashSet<String>, _, _, _>(
+                many1(letter()),
+                spaces().skip(char(',')).skip(spaces()),
+            )
+        };
+
+        let parse_immunities = (
+            constant("immune to".to_string()).with(skip_spaces()),
+            list_of_words(),
+        )
+            .map(|(_, words)| Trait::Immunities(words));
+
+        let parse_weaknesses = (
+            constant("weak to".to_string()).with(skip_spaces()),
+            list_of_words(),
+        )
+            .map(|(_, words)| Trait::Weaknesses(words));
+
+        let traits_list = sep_by::<Vec<Trait>, _, _, _>(
+            choice((parse_immunities, parse_weaknesses)),
+            spaces().skip(char(';')).skip(spaces()),
+        );
+
+        let parse_traits_group = between(token('('), token(')'), traits_list);
         (
             integer(), // num of units
             skip_spaces()
@@ -134,7 +136,7 @@ fn parse_input(input_string: &str) -> Battle {
 
     let mut parser = (
         immunity_start,
-        many1::<Vec<Group>, _, _>(parse_group.clone()(Race::Immunity)),
+        many1::<Vec<Group>, _, _>(parse_group(Race::Immunity)),
         skip_spaces(),
         infection_start,
         many1::<Vec<Group>, _, _>(parse_group(Race::Infection)),
