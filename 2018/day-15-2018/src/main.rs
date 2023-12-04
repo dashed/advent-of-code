@@ -173,7 +173,7 @@ impl Map {
                                     row_string.push('.');
                                 }
                                 Some(unit) => {
-                                    row_string.push_str(&unit.to_string());
+                                    row_string.push_str(&unit.to_str());
                                 }
                             },
                         }
@@ -228,7 +228,7 @@ impl Map {
                                 }
                                 Some(unit) => {
                                     visited_units.push(unit.to_health_string());
-                                    row_string.push_str(&unit.to_string());
+                                    row_string.push_str(&unit.to_str());
                                 }
                             },
                         }
@@ -542,18 +542,18 @@ impl Map {
                         })
                         .filter(|(_reachable_square, path)| {
                             // only consider non-empty paths
-                            return path.len() >= 1;
+                            !path.is_empty()
                         })
                         .collect();
                     return reachable_paths;
                 })
                 .reduce(
-                    || vec![],
+                    Vec::new,
                     |mut acc: Vec<(Coordinate, Path)>,
                      reachable_paths: Vec<(Coordinate, Path)>|
                      -> Vec<(Coordinate, Path)> {
                         acc.extend(reachable_paths);
-                        return acc;
+                        acc
                     },
                 );
 
@@ -568,10 +568,10 @@ impl Map {
                     return len_1.cmp(&len_2);
                 }
 
-                return reading_order(reachable_square_1, reachable_square_2);
+                reading_order(reachable_square_1, reachable_square_2)
             });
 
-            if reachable_paths.len() >= 1 {
+            if !reachable_paths.is_empty() {
                 let path: &Path = reachable_paths
                     .first()
                     .map(|(_reachable_square, path)| path)
@@ -641,7 +641,7 @@ impl Unit {
     }
 
     fn attack(&self, other_unit: &mut Unit) {
-        other_unit.hit_points = other_unit.hit_points - self.attack_power;
+        other_unit.hit_points -= self.attack_power;
     }
 
     fn new_elf(id: usize) -> Unit {
@@ -652,7 +652,7 @@ impl Unit {
         Unit::new(UnitType::Goblin, id)
     }
 
-    fn to_string(&self) -> String {
+    fn to_str(&self) -> String {
         match self.unit_type {
             UnitType::Goblin => "G".to_string(),
             UnitType::Elf => "E".to_string(),
@@ -660,7 +660,7 @@ impl Unit {
     }
 
     fn to_health_string(&self) -> String {
-        format!("{}({})", self.to_string(), self.hit_points)
+        format!("{}({})", self.to_str(), self.hit_points)
     }
 
     fn is_alive(&self) -> bool {
@@ -807,8 +807,7 @@ fn process_map(mut map: Map) -> i32 {
 
     let sum_hit_points: i32 = map
         .units
-        .iter()
-        .map(|(_key, unit)| unit)
+        .values()
         .fold(0, |acc, unit| acc + unit.hit_points);
 
     println!("{}", map.to_string());
