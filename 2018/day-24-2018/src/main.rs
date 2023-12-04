@@ -4,7 +4,8 @@
 
 extern crate combine;
 
-use combine::combinator::token;
+use crate::combine::EasyParser;
+use combine::parser::token::token;
 use combine::parser::char::{char, digit, letter, spaces};
 use combine::stream::easy;
 use combine::{between, choice, many1, optional, sep_by, sep_by1, tokens, Parser};
@@ -33,7 +34,7 @@ fn parse_input(input_string: &str) -> Battle {
     let infection_start = (constant("Infection:".to_string()), skip_spaces());
 
     let list_of_words = || {
-        sep_by1::<HashSet<String>, _, _>(many1(letter()), spaces().skip(char(',')).skip(spaces()))
+        sep_by1::<HashSet<String>, _, _, _>(many1(letter()), spaces().skip(char(',')).skip(spaces()))
     };
 
     let parse_immunities = (
@@ -48,7 +49,7 @@ fn parse_input(input_string: &str) -> Battle {
     )
         .map(|(_, words)| Trait::Weaknesses(words));
 
-    let traits_list = sep_by::<Vec<Trait>, _, _>(
+    let traits_list = sep_by::<Vec<Trait>, _, _, _>(
         choice((parse_immunities, parse_weaknesses)),
         spaces().skip(char(';')).skip(spaces()),
     );
@@ -71,7 +72,7 @@ fn parse_input(input_string: &str) -> Battle {
                 .with(skip_spaces()),
             integer(), /* attack damage */
             skip_spaces(),
-            many1::<String, _>(letter()), /* attack type */
+            many1::<String, _, _>(letter()), /* attack type */
             skip_spaces()
                 .with(constant("damage at initiative".to_string()))
                 .with(skip_spaces()),
@@ -133,10 +134,10 @@ fn parse_input(input_string: &str) -> Battle {
 
     let mut parser = (
         immunity_start,
-        many1::<Vec<Group>, _>(parse_group.clone()(Race::Immunity)),
+        many1::<Vec<Group>, _, _>(parse_group.clone()(Race::Immunity)),
         skip_spaces(),
         infection_start,
-        many1::<Vec<Group>, _>(parse_group(Race::Infection)),
+        many1::<Vec<Group>, _, _>(parse_group(Race::Infection)),
     )
         .map(|(_, immunities, _, _, infections)| {
             let mut groups = BinaryHeap::new();

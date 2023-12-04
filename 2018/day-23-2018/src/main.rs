@@ -3,7 +3,9 @@
 // imports
 
 extern crate combine;
-use combine::combinator::token;
+
+use crate::combine::EasyParser;
+use combine::parser::token::token;
 use combine::parser::char::{char, digit, letter, spaces};
 use combine::stream::easy;
 use combine::{between, choice, many1, sep_by, Parser};
@@ -51,7 +53,7 @@ fn parse_nanobot(input: &str) -> NanoBot {
         if word == "pos" {
             Ok(word)
         } else {
-            Err(easy::Error::Expected(easy::Info::Borrowed("pos")))
+            Err(easy::Error::Expected(easy::Info::Static("pos")))
         }
     });
 
