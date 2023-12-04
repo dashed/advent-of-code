@@ -5,8 +5,8 @@
 extern crate combine;
 
 use crate::combine::EasyParser;
-use combine::parser::token::token;
 use combine::parser::char::{char, digit, letter, spaces};
+use combine::parser::token::token;
 use combine::stream::easy;
 use combine::{between, choice, many1, sep_by, Parser};
 use std::cmp;
