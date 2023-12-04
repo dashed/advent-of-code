@@ -96,23 +96,21 @@ impl Schematic {
     }
 
     fn get(&self, coordinate: &Coordinate) -> MapState {
-        match self.terrain.get(&coordinate) {
+        match self.terrain.get(coordinate) {
             None => MapState::Empty,
             Some(state) => state.clone(),
         }
     }
 
     fn is_adjacent_to_symbol(&self, coordinate: &Coordinate) -> bool {
-        let coordinates_to_check = vec![
-            coordinate.north(),
+        let coordinates_to_check = [coordinate.north(),
             coordinate.south(),
             coordinate.west(),
             coordinate.east(),
             coordinate.north().west(),
             coordinate.north().east(),
             coordinate.south().west(),
-            coordinate.south().east(),
-        ];
+            coordinate.south().east()];
 
         let coordinates_to_check = coordinates_to_check
             .iter()
