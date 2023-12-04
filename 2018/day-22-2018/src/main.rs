@@ -211,11 +211,8 @@ impl Cave {
     }
 
     fn get_region_type(&mut self, coord: &Coordinate) -> RegionType {
-        match self.region_types.get(coord) {
-            Some(region_type) => {
-                return region_type.clone();
-            }
-            None => {}
+        if let Some(region_type) = self.region_types.get(coord) {
+            return region_type.clone();
         }
 
         let result = self.get_erosion_level(coord) % 3;

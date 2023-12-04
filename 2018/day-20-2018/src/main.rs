@@ -179,7 +179,7 @@ type TokenPosition = usize;
 //
 type ParseResult<T> = Option<(T, TokenPosition)>;
 
-fn parse_start(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()> {
+fn parse_start(tokens: &[Tokens], start_at: TokenPosition) -> ParseResult<()> {
     match tokens.get(start_at) {
         None => None,
         Some(token) => {
@@ -191,7 +191,7 @@ fn parse_start(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()>
     }
 }
 
-fn parse_end(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()> {
+fn parse_end(tokens: &[Tokens], start_at: TokenPosition) -> ParseResult<()> {
     match tokens.get(start_at) {
         None => None,
         Some(token) => {
@@ -203,7 +203,7 @@ fn parse_end(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<()> {
     }
 }
 
-fn parse_route(tokens: &Vec<Tokens>, start_at: TokenPosition) -> ParseResult<Route> {
+fn parse_route(tokens: &[Tokens], start_at: TokenPosition) -> ParseResult<Route> {
     let mut current_position = start_at;
     let mut route = vec![];
 

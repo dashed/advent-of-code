@@ -877,11 +877,8 @@ fn part_1(mut program: Program, reg_0: i32) {
 
         let result = program.execute_instruction();
         num_of_instructions_executed += 1;
-        match result {
-            Status::Halted => {
-                break;
-            }
-            _ => {}
+        if let Status::Halted = result {
+            break;
         }
     }
 

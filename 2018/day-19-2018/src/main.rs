@@ -502,11 +502,8 @@ fn parse_input(input_string: &str) -> Program {
 fn part_1(mut program: Program) {
     loop {
         let result = program.execute_instruction();
-        match result {
-            Status::Halted => {
-                break;
-            }
-            _ => {}
+        if let Status::Halted = result {
+            break;
         }
     }
 
@@ -549,11 +546,8 @@ fn part_2(mut program: Program) {
         }
 
         let result = program.execute_instruction();
-        match result {
-            Status::Halted => {
-                break;
-            }
-            _ => {}
+        if let Status::Halted = result {
+            break;
         }
     }
 

@@ -98,19 +98,13 @@ fn parse_input(input_string: &str) -> Battle {
                         .map(|traits| {
                             let immunities = traits
                                 .iter()
-                                .find(|item| match item {
-                                    Trait::Immunities(_) => true,
-                                    _ => false,
-                                })
+                                .find(|item| matches!(item, Trait::Immunities(_)))
                                 .map(|x| (*x).clone().unwrap())
                                 .unwrap_or_default();
 
                             let weaknesses = traits
                                 .iter()
-                                .find(|item| match item {
-                                    Trait::Weaknesses(_) => true,
-                                    _ => false,
-                                })
+                                .find(|item| matches!(item, Trait::Weaknesses(_)))
                                 .map(|x| (*x).clone().unwrap())
                                 .unwrap_or_default();
 

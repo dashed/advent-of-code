@@ -264,10 +264,7 @@ impl Map {
     fn is_clay(&self, position: &Coordinate) -> bool {
         match self.terrain.get(position) {
             None => false,
-            Some(map_state) => match map_state {
-                MapState::Clay => true,
-                _ => false,
-            },
+            Some(map_state) => matches!(map_state, MapState::Clay),
         }
     }
 
