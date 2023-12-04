@@ -72,4 +72,4 @@ jobs:
           toolchain: ${{ matrix.rust }}
           components: clippy
           rustflags: -Awarnings
-      - run: cargo clippy -A clippy::needless_return -A clippy::dead_code -A clippy::inherent_to_string
+      - run: cargo clippy -- -A clippy::needless_return -A clippy::inherent_to_string
