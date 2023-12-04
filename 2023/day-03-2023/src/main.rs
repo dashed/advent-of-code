@@ -205,7 +205,7 @@ fn main() {
 
     let answer = part_1(input_string);
     println!("Part 1: {}", answer);
-    // assert_eq!(answer, 2006);
+    assert_eq!(answer, 539637);
 }
 
 #[cfg(test)]
