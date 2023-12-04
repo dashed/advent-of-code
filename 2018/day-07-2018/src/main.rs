@@ -210,7 +210,7 @@ impl WorkTask {
         WorkTask(vertex, work_load)
     }
 
-    fn to_vertex(self) -> Vertex {
+    fn into_vertex(self) -> Vertex {
         self.0
     }
 
@@ -353,7 +353,7 @@ fn part_2(input_string: &str, base_workload: i32, max_worker_limit: i32) -> i32 
         // and add them to the work_queue only if their remaining work is completed
 
         for current_work_task in completed_work {
-            let current_work = current_work_task.to_vertex();
+            let current_work = current_work_task.into_vertex();
 
             let adjacent_vertices = edges.get(&current_work);
 
