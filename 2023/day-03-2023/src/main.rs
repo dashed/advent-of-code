@@ -124,6 +124,30 @@ impl Schematic {
         false
     }
 
+    fn is_adjacent_to_digit(&self, coordinate: &Coordinate) -> bool {
+        let coordinates_to_check = [
+            coordinate.north(),
+            coordinate.south(),
+            coordinate.west(),
+            coordinate.east(),
+            coordinate.north().west(),
+            coordinate.north().east(),
+            coordinate.south().west(),
+            coordinate.south().east(),
+        ];
+
+        let coordinates_to_check = coordinates_to_check
+            .iter()
+            .filter(|c| c.within_bounds(self.max_x_coord, self.max_y_coord));
+
+        for coordinate_to_check in coordinates_to_check {
+            if let MapState::Digit(_) = self.get(coordinate_to_check) {
+                return true;
+            }
+        }
+        false
+    }
+
     fn is_valid_coordinate(&self, coordinate: &Coordinate) -> bool {
         coordinate.within_bounds(self.max_x_coord, self.max_y_coord)
     }
@@ -134,7 +158,7 @@ fn part_1(input_string: &str) -> i32 {
 
     let mut valid_numbers: Vec<i32> = vec![];
 
-    for y_coord in 0..map.max_y_coord {
+    for y_coord in 0..=map.max_y_coord {
         let mut x_coord = 0;
         loop {
             let coordinate = (x_coord, y_coord);
@@ -198,6 +222,35 @@ fn part_1(input_string: &str) -> i32 {
     valid_numbers.iter().sum()
 }
 
+fn part_2(input_string: &str) -> i32 {
+    let map = Schematic::new(input_string);
+
+    for y_coord in 0..=map.max_y_coord {
+        for x_coord in 0..=map.max_x_coord { 
+            let coordinate = (x_coord, y_coord);
+
+            if !map.is_valid_coordinate(&coordinate) {
+                break;
+            }
+
+            match map.get(&coordinate) {
+                MapState::Symbol('*') => {
+                    if !map.is_adjacent_to_digit(&coordinate) {
+                        continue;
+                    }
+
+                    // TODO: map.get_adjacent_digits(&coordinate)
+                }
+                _ => {
+                    continue;
+                }
+            }
+        }
+    }
+
+    0
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
@@ -206,6 +259,13 @@ fn main() {
     let answer = part_1(input_string);
     println!("Part 1: {}", answer);
     assert_eq!(answer, 539637);
+
+    // Part 2
+
+    let answer = part_2(input_string);
+    println!("Part 2: {}", answer);
+    assert_eq!(answer, 539637);
+
 }
 
 #[cfg(test)]
