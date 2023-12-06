@@ -51,9 +51,8 @@ fn part_1(part_1_input: usize) -> String {
                 .iter()
                 .skip(part_1_input)
                 .take(10)
-                .map(|x| x.to_string())
-                .collect::<Vec<String>>()
-                .join("");
+                .map(std::string::ToString::to_string)
+                .collect::<String>();
 
             return result;
         }
@@ -145,12 +144,12 @@ fn part_2(part_1_input: String) -> usize {
 }
 
 fn main() {
-    let input = 540391;
+    let input = 540_391;
     let result = part_1(input);
-    println!("Part 1: {}", result);
+    println!("Part 1: {result}");
 
     let result = part_2(input.to_string());
-    println!("Part 2: {}", result);
+    println!("Part 2: {result}");
 }
 
 #[cfg(test)]
