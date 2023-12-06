@@ -1,4 +1,5 @@
 // https://adventofcode.com/2023/day/4
+use std::collections::HashMap;
 use std::{cmp, collections::HashSet};
 
 #[derive(Debug, Clone)]
@@ -32,6 +33,49 @@ fn part_1(cards: Vec<Card>) -> i32 {
 }
 
 fn part_2(cards: Vec<Card>) -> i32 {
+    let cards_len = cards.len();
+    let mut total_num_of_cards = 0;
+    let mut copies_map: HashMap<i32, i32> = HashMap::new();
+
+    for (current_card_index, current_card) in cards.into_iter().enumerate() {
+        // count original card
+        total_num_of_cards += 1;
+
+        // count copies
+        let num_of_copies = *copies_map.get(&(current_card_index as i32)).unwrap_or(&0);
+
+        total_num_of_cards += num_of_copies;
+
+        let num_of_winning_cards = current_card.get_num_of_winning_cards();
+
+        if num_of_winning_cards == 0 {
+            continue;
+        }
+
+        let start_range = current_card_index + 1;
+        let max_range = current_card_index + num_of_winning_cards as usize;
+        let max_range = cmp::min(max_range, cards_len - 1);
+
+        if start_range > max_range {
+            break;
+        }
+
+        let created_num_of_copies = num_of_copies + 1;
+
+        // do this for the original card and for each copy
+        for card_copy_index in start_range..=max_range {
+            copies_map
+                .entry(card_copy_index as i32)
+                .and_modify(|counter| *counter += created_num_of_copies)
+                .or_insert(created_num_of_copies);
+        }
+    }
+
+    total_num_of_cards
+}
+
+#[allow(dead_code)]
+fn part_2_naive(cards: Vec<Card>) -> i32 {
     let mut total_num_of_cards = cards.len() as i32;
 
     let mut card_buffer: Vec<(usize, Card)> = cards.clone().into_iter().enumerate().collect();
@@ -126,8 +170,7 @@ fn main() {
 
     let answer = part_2(cards);
     println!("Part 2: {}", answer);
-    assert_ne!(answer, 362);
-    // assert_eq!(answer, 26914);
+    assert_eq!(answer, 13080971);
 }
 
 #[cfg(test)]
