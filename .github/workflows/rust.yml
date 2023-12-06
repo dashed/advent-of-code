@@ -11,12 +11,11 @@ jobs:
         rust:
           - stable
           - beta
-          - nightly
+          # - nightly
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust }}
+      - name: Install Rust Toolchain
+        run: rustup toolchain install ${{ matrix.rust }} --profile minimal --no-self-update
       - run: cargo check
 
   test:
@@ -27,12 +26,11 @@ jobs:
         rust:
           - stable
           - beta
-          - nightly
+          # - nightly
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust }}
+      - name: Install Rust Toolchain
+        run: rustup toolchain install ${{ matrix.rust }} --profile minimal --no-self-update
       - run: cargo test
 
   fmt:
@@ -43,14 +41,11 @@ jobs:
         rust:
           - stable
           - beta
-          - nightly
+          # - nightly
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust }}
-          components: rustfmt
-      - uses: actions-rust-lang/rustfmt@v1
+      - name: Install Rust Toolchain
+        run: rustup toolchain install ${{ matrix.rust }} --profile minimal --component rustfmt --no-self-update
       - run: cargo fmt --all -- --check
 
   clippy:
@@ -61,11 +56,9 @@ jobs:
         rust:
           - stable
           - beta
-          - nightly
+          # - nightly
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rust-lang/setup-rust-toolchain@v1
-        with:
-          toolchain: ${{ matrix.rust }}
-          components: clippy
+      - name: Install Rust Toolchain
+        run: rustup toolchain install ${{ matrix.rust }} --profile minimal --component clippy --no-self-update
       - run: cargo clippy
