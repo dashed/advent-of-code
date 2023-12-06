@@ -9,7 +9,7 @@ impl Elf {
         return *scoreboard.get(self.position).unwrap();
     }
 
-    fn move_to_new_position(&mut self, current_recipe: Recipe, scoreboard: &Vec<Recipe>) {
+    fn move_to_new_position(&mut self, current_recipe: Recipe, scoreboard: &[Recipe]) {
         let num_of_moves: usize = (1 + current_recipe) as usize;
         self.position = (self.position + num_of_moves) % scoreboard.len();
     }
