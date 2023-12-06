@@ -1,6 +1,7 @@
 // https://adventofcode.com/2023/day/4
-use std::collections::HashSet;
+use std::{cmp, collections::HashSet};
 
+#[derive(Debug, Clone)]
 struct Card {
     #[allow(dead_code)]
     card_id: i32,
@@ -9,7 +10,7 @@ struct Card {
 }
 
 impl Card {
-    fn get_points(self) -> i32 {
+    fn get_points(&self) -> i32 {
         let intersection: HashSet<&i32> =
             self.winning_numbers.intersection(&self.numbers).collect();
         if intersection.is_empty() {
@@ -18,9 +19,57 @@ impl Card {
         let base: i32 = 2;
         base.pow(intersection.len() as u32 - 1)
     }
+
+    fn get_num_of_winning_cards(&self) -> i32 {
+        let intersection: HashSet<&i32> =
+            self.winning_numbers.intersection(&self.numbers).collect();
+        intersection.len() as i32
+    }
 }
 
-fn part_1(input_string: &str) -> i32 {
+fn part_1(cards: Vec<Card>) -> i32 {
+    cards.into_iter().map(|x| x.get_points()).sum::<i32>()
+}
+
+fn part_2(cards: Vec<Card>) -> i32 {
+    let mut total_num_of_cards = cards.len() as i32;
+
+    let mut card_buffer: Vec<(usize, Card)> = cards.clone().into_iter().enumerate().collect();
+
+    loop {
+        if card_buffer.is_empty() {
+            break;
+        }
+        let (current_card_index, current_card) = card_buffer.remove(0);
+        let num_of_winning_cards = current_card.get_num_of_winning_cards();
+
+        if num_of_winning_cards == 0 {
+            continue;
+        }
+
+        let start_range = current_card_index + 1;
+
+        let max_range = current_card_index + num_of_winning_cards as usize;
+        let max_range = cmp::min(max_range, cards.len() - 1);
+
+        if start_range > max_range {
+            break;
+        }
+
+        let num_of_winning_cards = max_range - start_range + 1;
+
+        total_num_of_cards += num_of_winning_cards as i32;
+
+        let range = start_range..=max_range;
+        for (card_copy_index, card_copy) in cards[range].iter().enumerate() {
+            let card_copy = card_copy.clone();
+            card_buffer.push((start_range + card_copy_index, card_copy));
+        }
+    }
+    total_num_of_cards
+}
+
+fn process_input(input_string: &str) -> Vec<Card> {
     let inputs: Vec<&str> = input_string.trim().lines().collect();
 
     let mut cards: Vec<Card> = Vec::new();
@@ -60,18 +109,25 @@ fn part_1(input_string: &str) -> i32 {
         };
         cards.push(card);
     }
-
-    cards.into_iter().map(|x| x.get_points()).sum::<i32>()
+    cards
 }
 
 fn main() {
     let input_string = include_str!("input.txt");
+    let cards = process_input(input_string);
 
     // Part 1
 
-    let answer = part_1(input_string);
+    let answer = part_1(cards.clone());
     println!("Part 1: {}", answer);
-    // assert_eq!(answer, 539637);
+    assert_eq!(answer, 26914);
+
+    // Part 2
+
+    let answer = part_2(cards);
+    println!("Part 2: {}", answer);
+    assert_ne!(answer, 362);
+    // assert_eq!(answer, 26914);
 }
 
 #[cfg(test)]
@@ -89,6 +145,9 @@ Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
 Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
 "###;
 
-        assert_eq!(part_1(input_string), 13);
+        let cards = process_input(input_string);
+
+        assert_eq!(part_1(cards.clone()), 13);
+        assert_eq!(part_2(cards), 30);
     }
 }
