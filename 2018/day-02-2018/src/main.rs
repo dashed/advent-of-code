@@ -113,9 +113,9 @@ enum Diff {
     // indicates two strings have no difference in positional characters
     None,
     // indicates strings differ by exactly one character
-    DiffByOne,
+    ByOne,
     // indicates strings differ by more than one character
-    DiffByMoreThanOne,
+    ByMoreThanOne,
 }
 
 // Check if two strings which differ by exactly one character at the same position in both strings
@@ -128,22 +128,22 @@ fn strings_diff_by_1(this: &str, other: &str) -> bool {
             match acc {
                 Diff::None => {
                     if has_diff {
-                        return Diff::DiffByOne;
+                        return Diff::ByOne;
                     }
                     Diff::None
                 }
-                Diff::DiffByOne => {
+                Diff::ByOne => {
                     if has_diff {
-                        return Diff::DiffByMoreThanOne;
+                        return Diff::ByMoreThanOne;
                     }
-                    Diff::DiffByOne
+                    Diff::ByOne
                 }
-                Diff::DiffByMoreThanOne => Diff::DiffByMoreThanOne,
+                Diff::ByMoreThanOne => Diff::ByMoreThanOne,
             }
         },
     );
 
-    matches!(result, Diff::DiffByOne)
+    matches!(result, Diff::ByOne)
 }
 
 fn common_letters(this: &str, other: &str) -> String {
