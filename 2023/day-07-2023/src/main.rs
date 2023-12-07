@@ -30,7 +30,6 @@ struct Hand {
 }
 
 impl Hand {
-    #[allow(dead_code)]
     fn from_string(input: &str) -> Hand {
         assert!(input.len() == 5);
         let cards = input
