@@ -16,13 +16,13 @@ fn quadratic_formula(a: f64, b: f64, c: f64) -> (f64, f64) {
 struct Race {
     // For each race, how far can the toy boat travel within time_allowed?
     // milliseconds
-    time_allowed: i32,
+    time_allowed: i64,
     // millimeters
-    best_distance: i32,
+    best_distance: i64,
 }
 
 impl Race {
-    fn ways_to_win(&self) -> i32 {
+    fn ways_to_win(&self) -> i64 {
         // Your toy boat has a starting speed of zero millimeters per millisecond. For each whole millisecond you
         // spend at the beginning of the race holding down the button, the boat's speed increases by
         // one millimeter per millisecond.
@@ -52,8 +52,8 @@ impl Race {
         // -charge_time^2 + self.time_allowed * charge_time  - self.best_distance = 0
         let (left, right) =
             quadratic_formula(-1.0, self.time_allowed as f64, -self.best_distance as f64);
-        let charge_time_minimum = left.floor() as i32 + 1;
-        let charge_time_maximum = right.ceil() as i32 - 1;
+        let charge_time_minimum = left.floor() as i64 + 1;
+        let charge_time_maximum = right.ceil() as i64 - 1;
         assert!(charge_time_minimum <= charge_time_maximum);
         assert!(charge_time_minimum > 0);
 
@@ -61,11 +61,11 @@ impl Race {
     }
 }
 
-fn part_1(input_string: &str) -> i32 {
+fn part_1(input_string: &str) -> i64 {
     let inputs: Vec<&str> = input_string.trim().lines().collect();
 
-    let mut time_allowed_vec: Vec<i32> = Vec::new();
-    let mut best_distance_vec: Vec<i32> = Vec::new();
+    let mut time_allowed_vec: Vec<i64> = Vec::new();
+    let mut best_distance_vec: Vec<i64> = Vec::new();
 
     for input in inputs.into_iter() {
         let input = input.trim();
@@ -81,7 +81,7 @@ fn part_1(input_string: &str) -> i32 {
                 .split(' ')
                 .map(|x| x.trim())
                 .filter(|x| !x.is_empty())
-                .map(|x| x.parse::<i32>().unwrap())
+                .map(|x| x.parse::<i64>().unwrap())
                 .collect();
 
             continue;
@@ -94,7 +94,7 @@ fn part_1(input_string: &str) -> i32 {
                 .split(' ')
                 .map(|x| x.trim())
                 .filter(|x| !x.is_empty())
-                .map(|x| x.parse::<i32>().unwrap())
+                .map(|x| x.parse::<i64>().unwrap())
                 .collect();
 
             println!("{:?}", input);
@@ -117,12 +117,67 @@ fn part_1(input_string: &str) -> i32 {
         })
         .collect();
 
-    
+    races.into_iter().map(|x| x.ways_to_win()).product::<i64>()
+}
 
-    races
+fn part_2(input_string: &str) -> i64 {
+    let inputs: Vec<&str> = input_string.trim().lines().collect();
+
+    let mut time_allowed_vec: Vec<i64> = Vec::new();
+    let mut best_distance_vec: Vec<i64> = Vec::new();
+
+    for input in inputs.into_iter() {
+        let input = input.trim();
+
+        if input.is_empty() {
+            continue;
+        }
+
+        if input.starts_with("Time:") {
+            time_allowed_vec = input
+                .trim_start_matches("Time:")
+                .trim()
+                .split(' ')
+                .map(|x| x.trim())
+                .filter(|x| !x.is_empty())
+                .map(|x| x.parse::<i64>().unwrap())
+                .collect();
+
+            continue;
+        }
+
+        if input.starts_with("Distance:") {
+            best_distance_vec = input
+                .trim_start_matches("Distance:")
+                .trim()
+                .split(' ')
+                .map(|x| x.trim())
+                .filter(|x| !x.is_empty())
+                .map(|x| x.parse::<i64>().unwrap())
+                .collect();
+
+            println!("{:?}", input);
+            continue;
+        }
+        panic!("Unknown input: {}", input);
+    }
+
+    let time_allowed: String = time_allowed_vec
         .into_iter()
-        .map(|x| x.ways_to_win())
-        .product::<i32>()
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>()
+        .join("");
+    let best_distance: String = best_distance_vec
+        .into_iter()
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>()
+        .join("");
+
+    let race = Race {
+        time_allowed: time_allowed.parse::<i64>().unwrap(),
+        best_distance: best_distance.parse::<i64>().unwrap(),
+    };
+    race.ways_to_win()
 }
 
 fn main() {
@@ -133,6 +188,12 @@ fn main() {
     let answer = part_1(input_string);
     println!("Part 1: {}", answer);
     assert_eq!(answer, 2065338);
+
+    // Part 2
+
+    let answer = part_2(input_string);
+    println!("Part 2: {}", answer);
+    assert_eq!(answer, 34934171);
 }
 
 #[cfg(test)]
@@ -147,6 +208,6 @@ Distance:  9  40  200
 "###;
 
         assert_eq!(part_1(input_string), 288);
-        // assert_eq!(part_2(input_string), 46);
+        assert_eq!(part_2(input_string), 71503);
     }
 }
