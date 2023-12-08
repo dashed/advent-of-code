@@ -3,24 +3,16 @@ use std::collections::HashMap;
 #[derive(Debug, Clone)]
 struct Card {
     label: char,
-    strength: i64,
 }
 
 impl Card {
-    fn new(label: char) -> Card {
-        Card {
-            label,
-            strength: Card::get_strength(label),
-        }
-    }
-
-    fn get_strength(label: char) -> i64 {
+    fn get_strength(&self) -> i64 {
         // A hand consists of five cards labeled one of A, K, Q, J, T, 9, 8, 7, 6, 5, 4, 3, or 2.
         // The relative strength of each card follows this order, where A is the highest and 2 is the lowest.
         let strength = [
             '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A',
         ];
-        strength.iter().position(|&x| x == label).unwrap() as i64 + 1
+        strength.iter().position(|&x| x == self.label).unwrap() as i64 + 1
     }
 
     fn part_2_get_strength(&self) -> i64 {
@@ -40,7 +32,10 @@ struct Hand {
 impl Hand {
     fn from_string(input: &str) -> Hand {
         assert!(input.len() == 5);
-        let cards = input.chars().map(|x| Card::new(x)).collect::<Vec<Card>>();
+        let cards = input
+            .chars()
+            .map(|x| Card { label: x })
+            .collect::<Vec<Card>>();
 
         assert!(cards.len() == 5);
         let bid_amount = 0;
@@ -200,8 +195,8 @@ impl Hand {
             if self_card.label == other_card.label {
                 continue;
             }
-            let self_card_strength = self_card.strength;
-            let other_card_strength = other_card.strength;
+            let self_card_strength = self_card.get_strength();
+            let other_card_strength = other_card.get_strength();
 
             return self_card_strength > other_card_strength;
         }
@@ -303,7 +298,7 @@ fn part_1(input_string: &str) -> i64 {
 
         let cards = inputs[0]
             .chars()
-            .map(|x| Card::new(x))
+            .map(|x| Card { label: x })
             .collect::<Vec<Card>>();
         let bid_amount = inputs[1].parse::<i64>().unwrap();
 
@@ -355,7 +350,7 @@ fn part_2(input_string: &str) -> i64 {
 
         let cards = inputs[0]
             .chars()
-            .map(|x| Card::new(x))
+            .map(|x| Card { label: x })
             .collect::<Vec<Card>>();
         let bid_amount = inputs[1].parse::<i64>().unwrap();
 
