@@ -34,6 +34,7 @@ cargo check -p <day-num-year>
 
 # creating a new cargo package
 # for example: cargo new day-01-2020
+# Then add an entry to the workspace in Cargo.toml
 cargo new <year>/<day-num-year>
 ```
 
