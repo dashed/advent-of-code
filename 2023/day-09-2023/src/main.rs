@@ -32,10 +32,19 @@ impl History {
         let last_value = *self.sequence.last().unwrap();
 
         if let Some(history_difference) = &*self.differences {
-            
             last_value + history_difference.find_next_value()
         } else {
             last_value
+        }
+    }
+
+    fn find_previous_value(&self) -> i64 {
+        let first_value = *self.sequence.first().unwrap();
+
+        if let Some(history_difference) = &*self.differences {
+            first_value - history_difference.find_previous_value()
+        } else {
+            first_value
         }
     }
 }
@@ -62,6 +71,28 @@ fn part_1(input_string: &str) -> i64 {
     histories.into_iter().map(|x| x.find_next_value()).sum()
 }
 
+fn part_2(input_string: &str) -> i64 {
+    let inputs: Vec<&str> = input_string.trim().lines().collect();
+
+    let mut histories = Vec::new();
+
+    for input in inputs.into_iter() {
+        let input = input.trim();
+
+        let history = input
+            .split(' ')
+            .map(|x| x.trim())
+            .filter(|x| !x.is_empty())
+            .map(|x| x.parse::<i64>().unwrap())
+            .collect::<Vec<i64>>();
+
+        let history = History::new(history);
+        histories.push(history);
+    }
+
+    histories.into_iter().map(|x| x.find_previous_value()).sum()
+}
+
 fn main() {
     let input_string = include_str!("input.txt");
 
@@ -70,6 +101,12 @@ fn main() {
     let answer = part_1(input_string);
     println!("Part 1: {}", answer);
     assert_eq!(answer, 1930746032);
+
+    // Part 2
+
+    let answer = part_2(input_string);
+    println!("Part 2: {}", answer);
+    assert_eq!(answer, 1154);
 }
 
 #[cfg(test)]
@@ -85,5 +122,6 @@ mod tests {
 "###;
 
         assert_eq!(part_1(input_string), 114);
+        assert_eq!(part_2(input_string), 2);
     }
 }
