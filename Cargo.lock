@@ -324,7 +324,7 @@ version = "0.1.0"
 name = "day-12-2023"
 version = "0.1.0"
 dependencies = [
- "itertools",
+ "rayon",
 ]
 
 [[package]]

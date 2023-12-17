@@ -1,4 +1,5 @@
 use core::panic;
+use rayon::prelude::*;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -73,14 +74,9 @@ fn part_1(input_string: &str) -> usize {
         rows.push(row);
     }
 
-    let mut possible_combinations = 0;
-
-    for row in rows.into_iter() {
-        // possible_combinations += row.num_of_arrangements();
-        possible_combinations += count_possible_arangements(row);
-    }
-
-    possible_combinations
+    rows.into_par_iter()
+        .map(|row| -> usize { count_possible_arangements(row) })
+        .sum()
 }
 
 fn count_possible_arangements(row: Row) -> usize {
@@ -130,13 +126,22 @@ fn process_damaged_group(
     counts: &Vec<usize>,
     cache: &mut HashMap<(Vec<usize>, Vec<Spring>), usize>,
 ) -> usize {
-    if let Some(&result) = cache.get(&(counts.clone(), springs.clone())) {
-        return result;
-    }
+
+    // invariant: assume springs[0] is damaged
 
     if counts.is_empty() {
         return 0;
     }
+
+    if springs.is_empty() {
+        return 0;
+    }
+
+    if let Some(&result) = cache.get(&(counts.clone(), springs.clone())) {
+        return result;
+    }
+
+
 
     let current_group_size = counts[0];
     if springs.len() < current_group_size {
@@ -212,35 +217,33 @@ fn part_2(input_string: &str) -> usize {
         rows.push(row);
     }
 
-    let mut possible_combinations = 0;
+    rows.into_par_iter()
+        .map(|row| -> usize {
+            let springs: Vec<Spring> = row
+                .springs
+                .iter()
+                .copied()
+                .chain([Spring::Unknown])
+                .cycle()
+                .take(row.springs.len() * 5 + 4)
+                .collect();
 
-    for row in rows.into_iter() {
-        let springs: Vec<Spring> = row
-            .springs
-            .iter()
-            .copied()
-            .chain([Spring::Unknown])
-            .cycle()
-            .take(row.springs.len() * 5 + 4)
-            .collect();
+            let damage_report: Vec<usize> = row
+                .damage_report
+                .iter()
+                .copied()
+                .cycle()
+                .take(row.damage_report.len() * 5)
+                .collect();
 
-        let damage_report: Vec<usize> = row
-            .damage_report
-            .iter()
-            .copied()
-            .cycle()
-            .take(row.damage_report.len() * 5)
-            .collect();
+            let row = Row {
+                springs,
+                damage_report,
+            };
 
-        let row = Row {
-            springs,
-            damage_report,
-        };
-
-        possible_combinations += count_possible_arangements(row);
-    }
-
-    possible_combinations
+            count_possible_arangements(row)
+        })
+        .sum()
 }
 
 fn main() {
