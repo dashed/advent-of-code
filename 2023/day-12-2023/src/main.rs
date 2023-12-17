@@ -126,7 +126,6 @@ fn process_damaged_group(
     counts: &Vec<usize>,
     cache: &mut HashMap<(Vec<usize>, Vec<Spring>), usize>,
 ) -> usize {
-
     // invariant: assume springs[0] is damaged
 
     if counts.is_empty() {
@@ -140,8 +139,6 @@ fn process_damaged_group(
     if let Some(&result) = cache.get(&(counts.clone(), springs.clone())) {
         return result;
     }
-
-
 
     let current_group_size = counts[0];
     if springs.len() < current_group_size {
