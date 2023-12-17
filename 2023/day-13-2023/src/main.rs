@@ -193,9 +193,6 @@ impl Valley {
             let reflected_terrain = self.map.get(&reflected_coordinate).unwrap();
 
             if current_terrain != reflected_terrain {
-                // println!("{}", self.to_str());
-                // println!("current_terrain: {:?} at {:?}", current_terrain, current_coord);
-                // println!("reflected_terrain: {:?} at {:?}", reflected_terrain, reflected_coordinate);
                 return false;
             }
 
@@ -217,7 +214,6 @@ impl Valley {
 
             // found a perfect reflection
             // return the number of columns to the left of each vertical line of reflection
-            // println!("Found perfect reflection at x_coord: {}", x_coord);
             return x_coord + 1;
         }
         // No perfect reflection found
@@ -242,7 +238,6 @@ impl Valley {
 
             // found a perfect reflection
             // return the number of columns to the left of each vertical line of reflection
-            // println!("Found perfect reflection at x_coord: {}", x_coord);
             return x_coord + 1;
         }
         // No perfect reflection found
@@ -297,7 +292,6 @@ impl Valley {
             for x_coord in 0..=self.max_x_coord {
                 let coordinate = (x_coord, y_coord);
                 if !self.has_reflection_on_column(coordinate) {
-                    // println!("No reflection on y_coord: {}", y_coord);
                     continue 'y_coord_loop;
                 }
             }
@@ -314,18 +308,6 @@ impl Valley {
         'y_coord_loop: for y_coord in (0..=(self.max_y_coord - 1)).rev() {
             let reflected_smudge = smudge.reflect_about_horizontal_line(y_coord + 1);
 
-            // if (8, 1) == smudge && y_coord + 1 == 4 {
-            //     println!("smudge: {:?}", smudge);
-            //     println!("y_coord: {}", y_coord);
-            //     println!("reflected_smudge: {:?}", reflected_smudge);
-            //     println!(
-            //         "within_bounds: {}",
-            //         reflected_smudge.within_bounds(self.max_x_coord, self.max_y_coord)
-            //     );
-            //     println!("{}", self.to_str_highlight(smudge));
-            //     println!("{}", self.to_str_highlight(reflected_smudge));
-            // }
-
             if !reflected_smudge.within_bounds(self.max_x_coord, self.max_y_coord) {
                 continue 'y_coord_loop;
             }
@@ -333,7 +315,6 @@ impl Valley {
             for x_coord in 0..=self.max_x_coord {
                 let coordinate = (x_coord, y_coord);
                 if !self.has_reflection_on_column(coordinate) {
-                    // println!("No reflection on y_coord: {}", y_coord);
                     continue 'y_coord_loop;
                 }
             }
@@ -372,39 +353,13 @@ impl Valley {
                     max_x_coord: self.max_x_coord,
                 };
 
-                // if (8, 1) == coordinate {
-                //     println!("old:");
-                //     println!("{}", self.to_str_highlight(coordinate));
-                //     println!("new_valley:");
-                //     println!("{}", new_valley.to_str_highlight(coordinate));
-                //     println!("new_terrain: {:?}", new_terrain);
-                //     println!("{:?}", self.map.get(&coordinate).unwrap());
-                //     println!("{:?}", new_valley.map.get(&coordinate).unwrap());
-                // }
-
                 let result = new_valley.find_reflect_across_horizontal_line_with_smudge(coordinate);
-
-                // if (8, 1) == coordinate {
-                //     println!("result: {}", result);
-                // }
 
                 if result > 0 {
                     // fixed smudge needs to impact the result
                     // reflected smudge coordinate about fixed_y_coord
                     let reflected_coordinate = coordinate.reflect_about_horizontal_line(result);
                     let reflected_y_coord = reflected_coordinate.1;
-
-                    // if (4, 5) == coordinate {
-                    //     println!("coordinate: {:?}", coordinate);
-                    //     println!("reflected_y_coord: {}", reflected_y_coord);
-                    //     println!("result: {}", result);
-                    //     println!(
-                    //         "within_bounds: {}",
-                    //         reflected_coordinate.within_bounds(self.max_x_coord, self.max_y_coord)
-                    //     );
-                    //     println!("result: {}", result);
-                    //     println!("old_reflection: {}", old_reflection);
-                    // }
 
                     if reflected_y_coord >= result
                         && result != old_reflection
