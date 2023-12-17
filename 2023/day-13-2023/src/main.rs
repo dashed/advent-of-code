@@ -454,8 +454,6 @@ fn part_2(input_string: &str) -> i32 {
                 return horizontal * 100;
             }
 
-            
-
             // assert!(
             //     result > 0,
             //     "No result found for valley:\n{}",
