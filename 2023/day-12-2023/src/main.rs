@@ -9,7 +9,7 @@ enum Spring {
     Unknown,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 struct Row {
     springs: Vec<Spring>,
     damage_report: Vec<usize>,
@@ -87,6 +87,7 @@ fn count_possible_arangements(row: Row) -> usize {
     count_possible_arangements_inner(&springs, &counts, &mut cache)
 }
 
+
 fn count_possible_arangements_inner(
     springs: &Vec<Spring>,
     counts: &Vec<usize>,
@@ -96,7 +97,18 @@ fn count_possible_arangements_inner(
         if counts.is_empty() {
             return 1;
         } else {
+            // Exhaused all springs, but still have counts to satisfy
             return 0;
+        }
+    }
+
+    if counts.is_empty() {
+        if springs.contains(&Spring::Damaged) {
+            // Too many previous unknowns were counted as damaged
+            return 0;
+        } else {
+            // All remaining unknowns are operational
+            return 1;
         }
     }
 
