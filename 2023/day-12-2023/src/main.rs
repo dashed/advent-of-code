@@ -275,5 +275,6 @@ mod tests {
 "###;
 
         assert_eq!(part_1(input_string), 21);
+        assert_eq!(part_2(input_string), 525152);
     }
 }
