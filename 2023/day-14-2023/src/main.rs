@@ -155,7 +155,7 @@ impl Platform {
                 return std::cmp::Ordering::Less;
             }
 
-            return std::cmp::Ordering::Greater;
+            std::cmp::Ordering::Greater
         });
 
         // for rocks in rocks_to_move.windows(2) {
@@ -310,7 +310,7 @@ fn part_2(input_string: &str) -> i32 {
             // println!("Cycle target: {}", cycle_target);
 
             // return cycle_to_platform.get(&cycle_target).unwrap().get_load();
-            return cycle_to_load.get(&cycle_target).unwrap().clone();
+            return *cycle_to_load.get(&cycle_target).unwrap();
         }
 
         platform.cache_platform(&mut cache);
