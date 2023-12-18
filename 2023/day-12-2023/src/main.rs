@@ -87,7 +87,6 @@ fn count_possible_arangements(row: Row) -> usize {
     count_possible_arangements_inner(&springs, &counts, &mut cache)
 }
 
-
 fn count_possible_arangements_inner(
     springs: &Vec<Spring>,
     counts: &Vec<usize>,

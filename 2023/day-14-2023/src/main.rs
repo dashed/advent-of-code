@@ -1,0 +1,249 @@
+use std::collections::{HashMap, HashSet};
+
+type Coordinate = (i32, i32);
+
+trait BoundsCheck {
+    fn within_bounds(&self, max_x: i32, max_y: i32) -> bool;
+}
+
+impl BoundsCheck for Coordinate {
+    fn within_bounds(&self, max_x: i32, max_y: i32) -> bool {
+        let (x, y) = self;
+        let x_bounds = 0 <= *x && *x <= max_x;
+        let y_bounds = 0 <= *y && *y <= max_y;
+        x_bounds && y_bounds
+    }
+}
+
+trait Transitions {
+    fn north(&self) -> Coordinate;
+    fn south(&self) -> Coordinate;
+    fn west(&self) -> Coordinate;
+    fn east(&self) -> Coordinate;
+}
+
+impl Transitions for Coordinate {
+    fn north(&self) -> Coordinate {
+        let (x, y) = self;
+        (*x, y - 1)
+    }
+
+    fn south(&self) -> Coordinate {
+        let (x, y) = self;
+        (*x, y + 1)
+    }
+
+    fn west(&self) -> Coordinate {
+        let (x, y) = self;
+        (x - 1, *y)
+    }
+
+    fn east(&self) -> Coordinate {
+        let (x, y) = self;
+        (x + 1, *y)
+    }
+}
+
+#[derive(Debug, PartialEq)]
+enum Rocks {
+    Round,
+    Cube,
+}
+
+type Map = HashMap<Coordinate, Rocks>;
+
+struct Platform {
+    map: Map,
+    // rocks that can move
+    round_rocks: HashSet<Coordinate>,
+    // rocks that can't move
+    cube_rocks: HashSet<Coordinate>,
+    max_y_coord: i32,
+    max_x_coord: i32,
+}
+
+impl Platform {
+    fn move_rock_north(&mut self, coord: Coordinate) -> Option<Coordinate> {
+        // Returns the new coordinate of the rock if it moved, or None if it didn't move north.
+
+        assert!(self.round_rocks.contains(&coord), "Rock is not round");
+        assert!(
+            self.map.get(&coord).unwrap() == &Rocks::Round,
+            "Rock is not round"
+        );
+
+        let new_coord = coord.north();
+
+        if !new_coord.within_bounds(self.max_x_coord, self.max_y_coord) {
+            return None;
+        }
+
+        if self.map.get(&new_coord).is_some() {
+            return None;
+        }
+
+        assert!(
+            !self.round_rocks.contains(&new_coord),
+            "Round rock in the way"
+        );
+        assert!(
+            !self.cube_rocks.contains(&new_coord),
+            "Cube rock in the way"
+        );
+
+        self.round_rocks.remove(&coord);
+        self.round_rocks.insert(new_coord);
+
+        self.map.remove(&coord);
+        self.map.insert(new_coord, Rocks::Round);
+
+        Some(new_coord)
+    }
+
+    fn move_rocks_north(&mut self) {
+        let mut rocks_to_move: Vec<Coordinate> = self.round_rocks.clone().into_iter().collect();
+
+        // order rocks row-wise from left to right, top to bottom
+        // (0, 0), (1, 0), (2, 0), (3, 0), (0, 1), (1, 1), ...
+        rocks_to_move.sort_by(|a, b| {
+            if a.1 < b.1 {
+                return std::cmp::Ordering::Less;
+            }
+            if a.0 <= b.0 && a.1 <= b.1 {
+                return std::cmp::Ordering::Less;
+            }
+
+            return std::cmp::Ordering::Greater;
+        });
+
+        for rocks in rocks_to_move.windows(2) {
+            let rock = rocks[0];
+            let next_rock = rocks[1];
+
+            assert!(
+                rock.1 <= next_rock.1,
+                "Rocks are not ordered correctly: {:?} {:?}",
+                rock,
+                next_rock
+            );
+
+            if rock.1 == next_rock.1 {
+                assert!(
+                    rock.0 < next_rock.0,
+                    "Rocks are not ordered correctly: {:?} {:?}",
+                    rock,
+                    next_rock
+                );
+            }
+        }
+
+        loop {
+            if rocks_to_move.is_empty() {
+                break;
+            }
+
+            let rock = rocks_to_move.remove(0);
+            match self.move_rock_north(rock) {
+                None => {}
+                Some(coord) => {
+                    rocks_to_move.push(coord);
+                }
+            }
+        }
+
+        // for y_coord in 0..=self.max_y_coord {
+        //     for x_coord in 0..=self.max_x_coord {
+        //     }
+        // }
+    }
+
+    fn get_load(&self) -> i32 {
+        let mut load = 0;
+        for rock in self.round_rocks.iter() {
+            let (_, y) = rock;
+            load += (self.max_y_coord - y).abs() + 1;
+        }
+
+        load
+    }
+}
+
+fn generate_platform(input_string: &str) -> Platform {
+    let inputs: Vec<&str> = input_string.trim().lines().collect();
+
+    let max_y_coord = inputs.len() as i32 - 1;
+    let max_x_coord = inputs[0].len() as i32 - 1;
+
+    let mut map = Map::new();
+    let mut round_rocks = HashSet::new();
+    let mut cube_rocks = HashSet::new();
+
+    for (y_coord, line) in inputs.iter().enumerate() {
+        for (x_coord, character) in line.trim().chars().enumerate() {
+            let coordinate = (x_coord as i32, y_coord as i32);
+
+            match character {
+                'O' => {
+                    map.insert(coordinate, Rocks::Round);
+                    round_rocks.insert(coordinate);
+                }
+                '#' => {
+                    map.insert(coordinate, Rocks::Cube);
+                    cube_rocks.insert(coordinate);
+                }
+                '.' => {
+                    // Empty space
+                }
+                _ => panic!("Unknown character: {}", character),
+            }
+        }
+    }
+
+    Platform {
+        map,
+        round_rocks,
+        cube_rocks,
+        max_y_coord,
+        max_x_coord,
+    }
+}
+
+fn part_1(input_string: &str) -> i32 {
+    let mut platform = generate_platform(input_string);
+    platform.move_rocks_north();
+    platform.get_load()
+}
+
+fn main() {
+    let input_string = include_str!("input.txt");
+
+    // Part 1
+
+    let answer = part_1(input_string);
+    println!("Part 1: {}", answer);
+    assert_eq!(answer, 111979);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_puzzle() {
+        let input_string = r###"
+O....#....
+O.OO#....#
+.....##...
+OO.#O....O
+.O.....O#.
+O.#..O.#.#
+..O..#O..O
+.......O..
+#....###..
+#OO..#....
+"###;
+
+        assert_eq!(part_1(input_string), 136);
+        // assert_eq!(part_2(input_string), 400);
+    }
+}
