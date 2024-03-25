@@ -5,4 +5,4 @@ authors = ["Alberto Leal <mail4alberto@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-rayon = "1.9.0"
+rayon = "1.10.0"
